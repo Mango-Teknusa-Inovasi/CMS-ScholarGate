@@ -90,6 +90,12 @@ export function MemberLoginPage() {
         </form>
 
         <p className="mt-6 text-center text-xs text-subtle">
+          Belum punya akun?{' '}
+          <Link to="/daftar" className="font-semibold text-teal-600 hover:underline">
+            Daftar member
+          </Link>
+        </p>
+        <p className="mt-3 text-center text-xs text-subtle">
           Demo: <code className="rounded bg-muted px-1">member@scholargate.test</code> /{' '}
           <code className="rounded bg-muted px-1">Scholargate!Member2026</code>
         </p>

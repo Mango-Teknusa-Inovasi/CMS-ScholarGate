@@ -10,6 +10,7 @@ import { AchievementDetailPage } from './pages/AchievementDetailPage'
 import { ExtracurricularPage } from './pages/ExtracurricularPage'
 import { DownloadsPage } from './pages/DownloadsPage'
 import { MemberLoginPage } from './pages/MemberLoginPage'
+import { MemberRegisterPage } from './pages/MemberRegisterPage'
 import { MemberAccountPage } from './pages/MemberAccountPage'
 import { AdminLoginPage } from './pages/admin/AdminLoginPage'
 import { AdminLayout } from './pages/admin/AdminLayout'
@@ -65,6 +66,8 @@ export default function App() {
           </Route>
 
           <Route path="/login" element={<MemberLoginPage />} />
+          <Route path="/daftar" element={<MemberRegisterPage />} />
+          <Route path="/register" element={<Navigate to="/daftar" replace />} />
           <Route path="/member/login" element={<Navigate to="/login" replace />} />
           <Route path="/admin/login" element={<AdminLoginPage />} />
           <Route path="/admin" element={<AdminLayout />}>

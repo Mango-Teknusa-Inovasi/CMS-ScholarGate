@@ -63,18 +63,18 @@ Route::prefix('v1')->group(function () {
             Route::delete('/tags/{tag}', [TagAdminController::class, 'destroy']);
 
             // Media library
-            // Path A: multipart → kompres lokal → R2 (gambar raster)
             Route::get('/media-library', [MediaAdminController::class, 'index']);
-            Route::post('/media-library', [MediaAdminController::class, 'store']);
-            // Path B: presign → client PUT R2 → confirm (PDF/DOC/SVG/file tanpa kompres)
-            Route::post('/media-library/presign', [MediaAdminController::class, 'presign']);
-            Route::post('/media-library/confirm', [MediaAdminController::class, 'confirm']);
+            Route::middleware('throttle:30,1')->group(function () {
+                // Path A: multipart → kompres lokal → R2
+                Route::post('/media-library', [MediaAdminController::class, 'store']);
+                // Path B: presign → PUT R2 → confirm
+                Route::post('/media-library/presign', [MediaAdminController::class, 'presign']);
+                Route::post('/media-library/confirm', [MediaAdminController::class, 'confirm']);
+                Route::post('/media', [ResourceAdminController::class, 'upload']);
+            });
             Route::post('/media-library/bulk-delete', [MediaAdminController::class, 'bulkDestroy']);
             Route::put('/media-library/{medium}', [MediaAdminController::class, 'update']);
             Route::delete('/media-library/{medium}', [MediaAdminController::class, 'destroy']);
-
-            // Legacy upload alias (optimize path)
-            Route::post('/media', [ResourceAdminController::class, 'upload']);
 
             // Users
             Route::get('/users', [UserAdminController::class, 'index']);

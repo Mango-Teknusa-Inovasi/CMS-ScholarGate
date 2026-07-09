@@ -104,10 +104,11 @@ class AuthController extends Controller
             'password' => ['required', 'string', 'min:6', 'confirmed'],
         ]);
 
+        // password cast 'hashed' di model — jangan Hash::make lagi (double-hash)
         $user = User::query()->create([
             'name' => $data['name'],
             'email' => $data['email'],
-            'password' => Hash::make($data['password']),
+            'password' => $data['password'],
             'role' => 'member',
         ]);
 

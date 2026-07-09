@@ -84,8 +84,17 @@ Jadwalkan cron harian di server.
 ## 7. Smoke test
 
 1. `/login` member → navbar Gravatar + logout  
-2. `/admin/login` admin → dashboard  
-3. Member token tidak bisa akses `/api/v1/admin/dashboard`  
-4. Upload gambar (kompres → R2 CDN URL)  
-5. Upload PDF (presign → R2)  
-6. `/sitemap.xml`, `/robots.txt`, `/llms.txt`
+2. `/daftar` registrasi member baru  
+3. `/admin/login` admin → dashboard  
+4. Member token tidak bisa akses `/api/v1/admin/dashboard`  
+5. Upload gambar (kompres → R2 CDN URL)  
+6. Upload PDF (presign → R2)  
+7. `/sitemap.xml`, `/robots.txt`, `/llms.txt`  
+8. View-source beranda/artikel: meta OG + JSON-LD sudah di HTML server (bot)
+
+## 8. Fitur lanjutan (setelah prioritas sedang)
+
+- Preview draft artikel (token)
+- Revisi konten
+- CI GitHub Actions (test + build)
+- Migrasi file `/storage` lama → R2
