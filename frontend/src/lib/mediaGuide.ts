@@ -93,6 +93,18 @@ export const MEDIA_GUIDES: MediaGuide[] = [
     tips: 'PNG transparan lebih bagus. Logo gelap agar terbaca di background cream.',
   },
   {
+    key: 'ekskul',
+    label: 'Logo ekstrakurikuler',
+    field: 'logo_path',
+    ratio: '1:1',
+    width: 512,
+    height: 512,
+    maxMb: 0.8,
+    format: 'PNG transparan / WebP / JPG',
+    where: 'Admin → Ekstrakurikuler',
+    tips: 'Logo persegi, subject di tengah. Jika kosong, sistem memakai icon Lucide.',
+  },
+  {
     key: 'inline',
     label: 'Gambar dalam isi artikel',
     field: 'body',
@@ -114,6 +126,8 @@ export function guideForField(
   if (resource === 'welcome-blocks' && fieldKey === 'image_path') return MEDIA_GUIDES.find((g) => g.key === 'welcome')
   if (resource === 'gallery' && fieldKey === 'image_path') return MEDIA_GUIDES.find((g) => g.key === 'gallery')
   if (resource === 'partners' && fieldKey === 'logo_path') return MEDIA_GUIDES.find((g) => g.key === 'partner')
+  if (resource === 'ekstrakurikuler' && fieldKey === 'logo_path')
+    return MEDIA_GUIDES.find((g) => g.key === 'ekskul')
   if (resource === 'achievements' && (fieldKey === 'cover_path' || fieldKey === 'image_path'))
     return MEDIA_GUIDES.find((g) => g.key === 'achievement')
   if (fieldKey === 'cover_path') return MEDIA_GUIDES.find((g) => g.key === 'article_cover')

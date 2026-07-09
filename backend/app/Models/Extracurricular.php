@@ -10,6 +10,7 @@ class Extracurricular extends Model
         'title',
         'description',
         'icon',
+        'logo_path',
         'schedule',
         'coach',
         'url',

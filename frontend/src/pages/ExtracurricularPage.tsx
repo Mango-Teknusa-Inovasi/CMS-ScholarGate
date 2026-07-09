@@ -16,13 +16,14 @@ import { api } from '../lib/api'
 import { SeoHead } from '../components/seo/SeoHead'
 import { CardGridSkeleton } from '../components/ui/Skeleton'
 import { softTones, toneAt } from '../lib/buttonTones'
-import { cn } from '../lib/utils'
+import { cn, mediaUrl } from '../lib/utils'
 
 type Extracurricular = {
   id: number
   title: string
   description?: string
   icon?: string | null
+  logo_path?: string | null
   schedule?: string | null
   coach?: string | null
   url?: string | null
@@ -71,16 +72,30 @@ export function ExtracurricularPage() {
             {data.map((item, i) => {
               const Icon = iconMap[item.icon || ''] || Sparkles
               const tone = softTones[toneAt(i)]
+              const logo = mediaUrl(item.logo_path)
               const CardInner = (
                 <>
-                  <div
-                    className={cn(
-                      'mb-3 flex h-12 w-12 items-center justify-center rounded-2xl',
-                      tone.chip,
-                    )}
-                  >
-                    <Icon className="h-6 w-6" />
-                  </div>
+                  {logo ? (
+                    <div className="mb-3 flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl border border-line bg-white p-1.5 shadow-sm">
+                      <img
+                        src={logo}
+                        alt={`Logo ${item.title}`}
+                        className="h-full w-full object-contain"
+                        loading="lazy"
+                        width={56}
+                        height={56}
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      className={cn(
+                        'mb-3 flex h-12 w-12 items-center justify-center rounded-2xl',
+                        tone.chip,
+                      )}
+                    >
+                      <Icon className="h-6 w-6" />
+                    </div>
+                  )}
                   <h2 className="text-lg font-bold text-ink">{item.title}</h2>
                   {item.description && (
                     <p className="mt-2 text-sm leading-relaxed text-subtle">{item.description}</p>
