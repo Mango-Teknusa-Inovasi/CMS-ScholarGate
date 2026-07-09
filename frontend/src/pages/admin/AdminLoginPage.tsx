@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { easeOutExpo } from '../../lib/motion'
 import { useQueryClient } from '@tanstack/react-query'
-import { adminLogin, getAdminToken } from '../../lib/auth'
+import { adminLogin, fetchAdminMe, getAdminToken } from '../../lib/auth'
+import { Skeleton } from '../../components/ui/Skeleton'
 
 export function AdminLoginPage() {
   const navigate = useNavigate()
@@ -12,6 +13,28 @@ export function AdminLoginPage() {
   const [password, setPassword] = useState('Scholargate!Admin2026')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [checking, setChecking] = useState(!!getAdminToken())
+
+  // Sudah login admin → langsung ke dashboard
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      if (!getAdminToken()) {
+        setChecking(false)
+        return
+      }
+      const me = await fetchAdminMe()
+      if (cancelled) return
+      if (me) {
+        navigate('/admin', { replace: true })
+        return
+      }
+      setChecking(false)
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [navigate])
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -23,7 +46,6 @@ export function AdminLoginPage() {
         setError('Login gagal: token tidak diterima.')
         return
       }
-      // Bersihkan cache auth lama (member) agar panel admin fresh
       await qc.invalidateQueries({ queryKey: ['auth-me-admin'] })
       qc.removeQueries({ queryKey: ['auth-me'] })
       navigate('/admin', { replace: true })
@@ -37,6 +59,18 @@ export function AdminLoginPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (checking) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-page px-4">
+        <div className="w-full max-w-sm space-y-3">
+          <Skeleton className="mx-auto h-12 w-12 rounded-2xl" />
+          <Skeleton className="h-4 w-full" />
+          <p className="text-center text-sm text-subtle">Memeriksa sesi admin…</p>
+        </div>
+      </div>
+    )
   }
 
   return (

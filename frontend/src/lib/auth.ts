@@ -64,6 +64,24 @@ export async function fetchMemberMe(): Promise<AuthUser | null> {
   }
 }
 
+export async function fetchAdminMe(): Promise<AuthUser | null> {
+  const token = getAdminToken()
+  if (!token) return null
+  try {
+    const { data } = await api.get<{ user: AuthUser }>('/auth/me', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (!data.user?.is_admin && data.user?.role !== 'admin' && data.user?.role !== 'editor') {
+      setAdminToken(null)
+      return null
+    }
+    return data.user
+  } catch {
+    setAdminToken(null)
+    return null
+  }
+}
+
 export async function memberLogin(email: string, password: string) {
   const { data } = await api.post<{ user: AuthUser; token: string }>('/auth/member/login', {
     email,

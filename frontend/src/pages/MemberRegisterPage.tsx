@@ -1,20 +1,29 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { UserPlus } from 'lucide-react'
 import { easeOutExpo } from '../lib/motion'
 import { api } from '../lib/api'
 import { setMemberToken, type AuthUser } from '../lib/auth'
+import { useMemberAuth } from '../hooks/useMemberAuth'
 import { Logo } from '../components/ui/Logo'
+import { Skeleton } from '../components/ui/Skeleton'
 
 export function MemberRegisterPage() {
   const navigate = useNavigate()
+  const { isLoggedIn, loading: authLoading } = useMemberAuth()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [passwordConfirmation, setPasswordConfirmation] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (!authLoading && isLoggedIn) {
+      navigate('/', { replace: true })
+    }
+  }, [authLoading, isLoggedIn, navigate])
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -53,6 +62,20 @@ export function MemberRegisterPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (authLoading || isLoggedIn) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-page px-4">
+        <div className="w-full max-w-sm space-y-3">
+          <Skeleton className="mx-auto h-12 w-12 rounded-2xl" />
+          <Skeleton className="h-4 w-full" />
+          <p className="text-center text-sm text-subtle">
+            {isLoggedIn ? 'Mengalihkan…' : 'Memeriksa sesi…'}
+          </p>
+        </div>
+      </div>
+    )
   }
 
   return (
