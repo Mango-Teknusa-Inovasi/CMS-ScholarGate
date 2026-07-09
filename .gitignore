@@ -1,0 +1,77 @@
+# OS
+.DS_Store
+Thumbs.db
+.AppleDouble
+.LSOverride
+
+# IDE / agents local
+.idea/
+.vscode/
+*.swp
+*.swo
+.cursor/
+.grok/
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+frontend/.env
+frontend/.env.*
+frontend/.env.local
+
+# Backend (Laravel)
+backend/vendor/
+backend/node_modules/
+backend/storage/*.key
+backend/storage/pail/
+backend/storage/logs/*
+!backend/storage/logs/.gitignore
+backend/storage/framework/cache/*
+!backend/storage/framework/cache/.gitignore
+backend/storage/framework/sessions/*
+!backend/storage/framework/sessions/.gitignore
+backend/storage/framework/testing/*
+!backend/storage/framework/testing/.gitignore
+backend/storage/framework/views/*
+!backend/storage/framework/views/.gitignore
+backend/storage/app/public/*
+!backend/storage/app/public/.gitignore
+backend/storage/app/private/*
+!backend/storage/app/private/.gitignore
+backend/bootstrap/cache/*.php
+!backend/bootstrap/cache/.gitignore
+backend/public/storage
+backend/public/hot
+backend/database/*.sqlite
+backend/database/*.sqlite-journal
+backend/database/*.sqlite-*
+.phpunit.result.cache
+backend/.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+auth.json
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/coverage/
+
+# Logs & caches
+*.log
+npm-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.cache/
+.turbo/
+
+# Reference dumps (not product assets)
+screenshot-*.png
+*.local.md
+
+# Optional local tooling
+.agents/skills/*/node_modules/
+skills-lock.json

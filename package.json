@@ -1,0 +1,12 @@
+{
+  "name": "cms-scholargate",
+  "private": true,
+  "description": "Scholargate CMS — Laravel API + React SPA (shared-hosting friendly)",
+  "scripts": {
+    "dev:api": "cd backend && php artisan serve",
+    "dev:web": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "install:app": "cd backend && php artisan scholargate:install",
+    "postbuild": "echo 'SPA built to backend/public/spa — ready for shared hosting'"
+  }
+}
