@@ -1,11 +1,12 @@
 import { Link, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { Eye, Share2 } from 'lucide-react'
+import { Eye } from 'lucide-react'
 import { api, type Article, type Category } from '../lib/api'
 import { coverSrc, formatDate } from '../lib/utils'
 import { Badge } from '../components/ui/Badge'
 import { SeoHead } from '../components/seo/SeoHead'
 import { ArticleDetailSkeleton } from '../components/ui/Skeleton'
+import { ShareButton } from '../components/ShareButton'
 
 type DetailResponse = {
   article: Article
@@ -67,13 +68,7 @@ export function ArticleDetailPage() {
             {article.title}
           </h1>
           <div className="mt-4 flex gap-2">
-            <button
-              className="inline-flex items-center gap-2 rounded-[12px] border border-line bg-white px-3 py-2 text-sm font-medium text-body"
-              onClick={() => navigator.clipboard?.writeText(window.location.href)}
-            >
-              <Share2 className="h-4 w-4" />
-              Bagikan
-            </button>
+            <ShareButton title={article.title} text={article.excerpt || article.title} />
           </div>
         </div>
       </section>

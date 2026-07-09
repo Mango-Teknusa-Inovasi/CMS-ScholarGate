@@ -79,5 +79,6 @@ skills-lock.json
 
 # Database backups
 backups/
+backend/storage/app/backups/
 *.sql
 *.sql.gz

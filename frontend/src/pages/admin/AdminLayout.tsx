@@ -27,6 +27,7 @@ import {
   Handshake,
   Images,
   UserCog,
+  DatabaseBackup,
 } from 'lucide-react'
 import { api, setAuthToken } from '../../lib/api'
 import { getAdminToken } from '../../lib/auth'
@@ -100,6 +101,7 @@ const navGroups: NavGroup[] = [
     items: [
       { to: '/admin/users', label: 'Pengguna', icon: UserCog },
       { to: '/admin/settings', label: 'Pengaturan', icon: Settings },
+      { to: '/admin/backups', label: 'Backup', icon: DatabaseBackup },
       { to: '/admin/media-guide', label: 'Ukuran gambar', icon: BookImage },
     ],
   },
@@ -126,6 +128,7 @@ const pathTitles: Record<string, string> = {
   '/admin/downloads': 'Download',
   '/admin/media-guide': 'Ukuran gambar',
   '/admin/settings': 'Pengaturan',
+  '/admin/backups': 'Backup & restore',
 }
 
 function resolvePageTitle(pathname: string): string {

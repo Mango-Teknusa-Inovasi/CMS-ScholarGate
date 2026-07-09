@@ -21,6 +21,7 @@ import { ArticleEditorPage } from './pages/admin/ArticleEditorPage'
 import { ResourceListPage } from './pages/admin/ResourceListPage'
 import { ResourceEditorPage } from './pages/admin/ResourceEditorPage'
 import { SettingsAdminPage } from './pages/admin/SettingsAdminPage'
+import { BackupAdminPage } from './pages/admin/BackupAdminPage'
 import { WelcomeAdminPage } from './pages/admin/WelcomeAdminPage'
 import { ProfileContentAdminPage } from './pages/admin/ProfileContentAdminPage'
 import { MediaGuidePage } from './pages/admin/MediaGuidePage'
@@ -86,6 +87,7 @@ export default function App() {
             <Route path="media-guide" element={<MediaGuidePage />} />
             <Route path="users" element={<UsersAdminPage />} />
             <Route path="settings" element={<SettingsAdminPage />} />
+            <Route path="backups" element={<BackupAdminPage />} />
 
             {/* Resource CRUD — list + halaman new/edit (bukan popup) */}
             {resourceRoutes('categories')}

@@ -1,11 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../lib/api'
 import { AdminPageHeader } from '../../components/admin/AdminPageHeader'
 import { ImageUploadField } from '../../components/admin/ImageUploadField'
 import { Skeleton } from '../../components/ui/Skeleton'
 
-const fieldMeta: Record<string, { label: string; hint?: string; multiline?: boolean; group?: string }> = {
+const fieldMeta: Record<
+  string,
+  { label: string; hint?: string; multiline?: boolean; group: string }
+> = {
   site_name: { label: 'Nama situs', group: 'Identitas' },
   site_tagline: { label: 'Tagline', group: 'Identitas' },
   site_description: {
@@ -15,6 +18,7 @@ const fieldMeta: Record<string, { label: string; hint?: string; multiline?: bool
     hint: 'Dipakai sebagai meta description default & llms.txt',
   },
   footer_text: { label: 'Teks footer', multiline: true, group: 'Identitas' },
+  copyright: { label: 'Copyright', group: 'Identitas' },
   report_url: { label: 'URL tombol Lapor', hint: 'Link eksternal form laporan', group: 'Kontak' },
   contact_email: { label: 'Email kontak', group: 'Kontak' },
   contact_phone: { label: 'Telepon', group: 'Kontak' },
@@ -26,15 +30,12 @@ const fieldMeta: Record<string, { label: string; hint?: string; multiline?: bool
   organization_type: {
     label: 'Tipe organisasi schema',
     hint: 'EducationalOrganization / School / GovernmentOrganization',
-    group: 'Schema',
+    group: 'Schema & SEO',
   },
-  twitter_handle: { label: 'Twitter/X @handle', group: 'SEO verifikasi' },
-  google_site_verification: { label: 'Google site verification', group: 'SEO verifikasi' },
-  bing_site_verification: { label: 'Bing site verification', group: 'SEO verifikasi' },
-  copyright: { label: 'Copyright', group: 'Identitas' },
+  twitter_handle: { label: 'Twitter/X @handle', group: 'Schema & SEO' },
+  google_site_verification: { label: 'Google site verification', group: 'Schema & SEO' },
+  bing_site_verification: { label: 'Bing site verification', group: 'Schema & SEO' },
 }
-
-const fields = Object.keys(fieldMeta)
 
 export function SettingsAdminPage() {
   const qc = useQueryClient()
@@ -56,16 +57,24 @@ export function SettingsAdminPage() {
     },
   })
 
+  const grouped = useMemo(() => {
+    const map: Record<string, string[]> = {}
+    for (const key of Object.keys(fieldMeta)) {
+      const g = fieldMeta[key].group
+      if (!map[g]) map[g] = []
+      map[g].push(key)
+    }
+    return map
+  }, [])
+
   if (isLoading) {
     return (
-      <div className="max-w-2xl space-y-4" aria-busy="true" aria-label="Memuat pengaturan">
+      <div className="space-y-4" aria-busy="true">
         <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-4 w-72 max-w-full" />
-        <Skeleton className="h-14 w-full rounded-[14px]" />
-        <Skeleton className="h-14 w-full rounded-[14px]" />
-        <Skeleton className="h-28 w-full rounded-[14px]" />
-        <Skeleton className="h-40 w-full rounded-[16px]" />
-        <Skeleton className="h-40 w-full rounded-[16px]" />
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Skeleton className="h-64 w-full rounded-[16px]" />
+          <Skeleton className="h-64 w-full rounded-[16px]" />
+        </div>
       </div>
     )
   }
@@ -87,106 +96,154 @@ export function SettingsAdminPage() {
         }
       />
 
-      <div className="max-w-2xl space-y-4 rounded-[16px] border border-line bg-white p-5 shadow-[var(--shadow-card)] md:p-6">
-        <ImageUploadField
-          label="Logo situs"
-          value={form.site_logo || null}
-          onChange={(path) => setForm({ ...form, site_logo: path || '' })}
-          guide={{
-            key: 'logo',
-            label: 'Logo situs',
-            field: 'site_logo',
-            ratio: '3:1 — 4:1',
-            width: 400,
-            height: 120,
-            maxMb: 0.5,
-            format: 'PNG transparan / SVG / WebP',
-            where: 'Pengaturan',
-            tips: 'Logo horizontal lebih bagus di header. Tinggi efektif ~40–48px. Dioptimasi WebP otomatis.',
-          }}
-          previewClassName="aspect-[4/1] max-h-24"
-        />
-
-        <ImageUploadField
-          label="Default OG / social image"
-          value={form.default_og_image || null}
-          onChange={(path) => setForm({ ...form, default_og_image: path || '' })}
-          guide={{
-            key: 'og',
-            label: 'OG image default',
-            field: 'default_og_image',
-            ratio: '1.91:1',
-            width: 1200,
-            height: 630,
-            maxMb: 1,
-            format: 'JPG / WebP',
-            where: 'Pengaturan',
-            tips: 'Gambar fallback saat share di media sosial jika artikel belum punya cover.',
-          }}
-          previewClassName="aspect-[1.91/1] max-h-40"
-        />
-
-        {fields.map((key) => {
-          const meta = fieldMeta[key]
-          const prev = fields[fields.indexOf(key) - 1]
-          const showGroup = !prev || fieldMeta[prev]?.group !== meta.group
-          return (
-            <div key={key}>
-              {showGroup && meta.group && (
-                <h3 className="mb-3 mt-2 border-t border-line pt-4 text-xs font-bold uppercase tracking-wide text-brand">
-                  {meta.group}
-                </h3>
-              )}
-              <label className="mb-1.5 block text-sm font-medium text-ink" htmlFor={key}>
-                {meta.label}
-              </label>
-              {meta.multiline ? (
-                <textarea
-                  id={key}
-                  className="w-full rounded-[12px] border border-line bg-page px-3 py-2.5 text-sm outline-none focus:border-brand focus:bg-white"
-                  rows={3}
-                  value={form[key] || ''}
-                  onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-                />
-              ) : (
-                <input
-                  id={key}
-                  className="w-full rounded-[12px] border border-line bg-page px-3 py-2.5 text-sm outline-none focus:border-brand focus:bg-white"
-                  value={form[key] || ''}
-                  onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-                />
-              )}
-              {meta.hint && <p className="mt-1 text-xs text-subtle">{meta.hint}</p>}
+      <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-[1fr_1fr]">
+        {/* Kiri: brand media + identitas */}
+        <div className="space-y-5">
+          <section className="rounded-[16px] border border-line bg-white p-5 shadow-[var(--shadow-card)]">
+            <h2 className="mb-4 text-sm font-bold text-ink">Branding & media</h2>
+            <div className="space-y-4">
+              <ImageUploadField
+                label="Logo situs"
+                value={form.site_logo || null}
+                onChange={(path) => setForm({ ...form, site_logo: path || '' })}
+                guide={{
+                  key: 'logo',
+                  label: 'Logo situs',
+                  field: 'site_logo',
+                  ratio: '3:1 — 4:1',
+                  width: 400,
+                  height: 120,
+                  maxMb: 0.5,
+                  format: 'PNG transparan / SVG / WebP',
+                  where: 'Pengaturan',
+                  tips: 'Logo horizontal lebih bagus di header. Tinggi efektif ~40–48px.',
+                }}
+                previewClassName="aspect-[4/1] max-h-24"
+              />
+              <ImageUploadField
+                label="Default OG / social image"
+                value={form.default_og_image || null}
+                onChange={(path) => setForm({ ...form, default_og_image: path || '' })}
+                guide={{
+                  key: 'og',
+                  label: 'OG image default',
+                  field: 'default_og_image',
+                  ratio: '1.91:1',
+                  width: 1200,
+                  height: 630,
+                  maxMb: 1,
+                  format: 'JPG / WebP',
+                  where: 'Pengaturan',
+                  tips: 'Gambar fallback saat share di media sosial.',
+                }}
+                previewClassName="aspect-[1.91/1] max-h-40"
+              />
             </div>
-          )
-        })}
+          </section>
 
-        <div className="rounded-[12px] border border-line bg-peach p-3 text-xs leading-relaxed text-body">
-          <p className="font-semibold text-ink">Endpoint SEO otomatis</p>
-          <ul className="mt-1 list-disc pl-4">
-            <li>
-              <code>/sitemap.xml</code> — peta situs
-            </li>
-            <li>
-              <code>/robots.txt</code> — arahan crawler
-            </li>
-            <li>
-              <code>/llms.txt</code> — peta konten untuk AI (AEO/GEO)
-            </li>
-          </ul>
+          <section className="rounded-[16px] border border-line bg-white p-5 shadow-[var(--shadow-card)]">
+            <h2 className="mb-4 text-sm font-bold text-ink">Identitas</h2>
+            <div className="space-y-3">
+              {(grouped['Identitas'] || []).map((key) => (
+                <Field
+                  key={key}
+                  fieldKey={key}
+                  value={form[key] || ''}
+                  onChange={(v) => setForm({ ...form, [key]: v })}
+                />
+              ))}
+            </div>
+          </section>
+
+          <section className="rounded-[16px] border border-line bg-muted p-4 text-xs leading-relaxed text-body">
+            <p className="font-semibold text-ink">Endpoint SEO otomatis</p>
+            <ul className="mt-1 list-disc pl-4">
+              <li>
+                <code>/sitemap.xml</code>
+              </li>
+              <li>
+                <code>/robots.txt</code>
+              </li>
+              <li>
+                <code>/llms.txt</code>
+              </li>
+            </ul>
+          </section>
         </div>
 
-        {save.isSuccess && (
-          <p className="rounded-xl bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
-            Pengaturan tersimpan.
-          </p>
-        )}
-        {save.isError && (
-          <p className="rounded-xl bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700">
-            Gagal menyimpan. Coba lagi.
-          </p>
-        )}
+        {/* Kanan: kontak + GEO + SEO */}
+        <div className="space-y-5">
+          {(['Kontak', 'GEO lokal', 'Schema & SEO'] as const).map((group) => (
+            <section
+              key={group}
+              className="rounded-[16px] border border-line bg-white p-5 shadow-[var(--shadow-card)]"
+            >
+              <h2 className="mb-4 text-sm font-bold text-ink">{group}</h2>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {(grouped[group] || []).map((key) => (
+                  <div
+                    key={key}
+                    className={fieldMeta[key].multiline || key === 'contact_address' ? 'sm:col-span-2' : ''}
+                  >
+                    <Field
+                      fieldKey={key}
+                      value={form[key] || ''}
+                      onChange={(v) => setForm({ ...form, [key]: v })}
+                    />
+                  </div>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
       </div>
+
+      {save.isSuccess && (
+        <p className="mt-4 rounded-xl bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
+          Pengaturan tersimpan.
+        </p>
+      )}
+      {save.isError && (
+        <p className="mt-4 rounded-xl bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700">
+          Gagal menyimpan. Coba lagi.
+        </p>
+      )}
+    </div>
+  )
+}
+
+function Field({
+  fieldKey,
+  value,
+  onChange,
+}: {
+  fieldKey: string
+  value: string
+  onChange: (v: string) => void
+}) {
+  const meta = fieldMeta[fieldKey]
+  return (
+    <div>
+      <label className="mb-1.5 block text-sm font-medium text-ink" htmlFor={fieldKey}>
+        {meta.label}
+      </label>
+      {meta.multiline ? (
+        <textarea
+          id={fieldKey}
+          className="w-full rounded-[12px] border border-line bg-page px-3 py-2.5 text-sm outline-none focus:border-brand focus:bg-white"
+          rows={3}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      ) : (
+        <input
+          id={fieldKey}
+          className="w-full rounded-[12px] border border-line bg-page px-3 py-2.5 text-sm outline-none focus:border-brand focus:bg-white"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      )}
+      {meta.hint && <p className="mt-1 text-xs text-subtle">{meta.hint}</p>}
     </div>
   )
 }

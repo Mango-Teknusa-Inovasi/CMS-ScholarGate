@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\ArticleAdminController;
+use App\Http\Controllers\Api\Admin\BackupAdminController;
 use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\MediaAdminController;
 use App\Http\Controllers\Api\Admin\ResourceAdminController;
@@ -89,6 +90,15 @@ Route::prefix('v1')->group(function () {
             Route::put('/settings', [ResourceAdminController::class, 'updateSettings']);
             Route::get('/profile-page', [ResourceAdminController::class, 'profilePage']);
             Route::put('/profile-page', [ResourceAdminController::class, 'updateProfilePage']);
+
+            // Backup / restore konten
+            Route::get('/backups', [BackupAdminController::class, 'index']);
+            Route::post('/backups', [BackupAdminController::class, 'store']);
+            Route::get('/backups/{filename}/download', [BackupAdminController::class, 'download'])
+                ->where('filename', '.*');
+            Route::delete('/backups/{filename}', [BackupAdminController::class, 'destroy'])
+                ->where('filename', '.*');
+            Route::post('/backups/restore', [BackupAdminController::class, 'restore']);
 
             // Generic resources last
             Route::get('/{resource}', [ResourceAdminController::class, 'index']);
