@@ -9,8 +9,8 @@ import { Skeleton } from '../../components/ui/Skeleton'
 export function AdminLoginPage() {
   const navigate = useNavigate()
   const qc = useQueryClient()
-  const [email, setEmail] = useState('admin@scholargate.test')
-  const [password, setPassword] = useState('Scholargate!Admin2026')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [checking, setChecking] = useState(!!getAdminToken())
@@ -143,12 +143,7 @@ export function AdminLoginPage() {
             {loading ? 'Masuk…' : 'Masuk CMS'}
           </motion.button>
         </form>
-        <p className="mt-4 rounded-[12px] bg-peach-soft px-3 py-2 text-center text-[11px] leading-relaxed text-subtle">
-          Demo admin: <code className="font-semibold text-ink">admin@scholargate.test</code>
-          <br />
-          Password: <code className="font-semibold text-ink">Scholargate!Admin2026</code>
-        </p>
-        <p className="mt-4 text-center text-xs text-subtle">
+        <p className="mt-5 text-center text-xs text-subtle">
           Member portal?{' '}
           <Link to="/login" className="font-semibold text-teal-600 hover:underline">
             Login member

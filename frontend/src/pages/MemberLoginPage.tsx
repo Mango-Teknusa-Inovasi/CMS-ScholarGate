@@ -11,8 +11,8 @@ import { Skeleton } from '../components/ui/Skeleton'
 export function MemberLoginPage() {
   const navigate = useNavigate()
   const { isLoggedIn, loading: authLoading } = useMemberAuth()
-  const [email, setEmail] = useState('member@scholargate.test')
-  const [password, setPassword] = useState('Scholargate!Member2026')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -118,10 +118,6 @@ export function MemberLoginPage() {
           <Link to="/daftar" className="font-semibold text-teal-600 hover:underline">
             Daftar member
           </Link>
-        </p>
-        <p className="mt-3 text-center text-xs text-subtle">
-          Demo: <code className="rounded bg-muted px-1">member@scholargate.test</code> /{' '}
-          <code className="rounded bg-muted px-1">Scholargate!Member2026</code>
         </p>
         <p className="mt-3 text-center text-xs text-subtle">
           Admin CMS?{' '}

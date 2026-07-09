@@ -184,7 +184,7 @@ export function ArticlesAdminPage() {
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
               <thead>
-                <tr className="border-b border-line bg-peach-soft/60 text-left text-xs font-semibold uppercase tracking-wide text-subtle">
+                <tr className="border-b border-line bg-muted text-left text-xs font-semibold uppercase tracking-wide text-subtle">
                   <th className="px-4 py-3.5">
                     <input
                       type="checkbox"

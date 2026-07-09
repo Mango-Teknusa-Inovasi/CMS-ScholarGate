@@ -2,7 +2,7 @@
 
 Portal sekolah + Admin CMS — **Laravel 13 API + React SPA**.
 
-Desain peach-soft mengikuti referensi portal pendidikan. Siap **shared hosting** (satu document root) maupun VPS.
+Desain canvas **putih** (referensi portal) dengan aksen soft color pada kartu/tombol tertentu. Siap **shared hosting** (satu document root) maupun VPS.
 
 ## Shared hosting — perlu jalankan backend & frontend terpisah?
 
@@ -74,10 +74,18 @@ cd frontend && npm install && npm run build
 
 Lalu upload `backend/` dan set document root ke **`public/`**.
 
-## Akun admin (setelah install / seed)
+## Akun demo (setelah install / seed)
 
-- Default demo seed: `admin@scholargate.test` / `password`
-- Ganti segera di production
+Hanya untuk development — **jangan** pakai di production.
+
+| Role | Email | Password |
+|------|-------|----------|
+| Admin CMS | `admin@scholargate.test` | `Scholargate!Admin2026` |
+| Member portal | `member@scholargate.test` | `Scholargate!Member2026` |
+
+Login admin: `/admin/login` · Login member: `/login` · Daftar: `/daftar`
+
+Ubah via env `SEED_ADMIN_PASSWORD` / `SEED_MEMBER_PASSWORD` atau menu Users di admin.
 
 ## Halaman publik
 
