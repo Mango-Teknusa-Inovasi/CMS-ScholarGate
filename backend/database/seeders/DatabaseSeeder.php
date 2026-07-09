@@ -26,12 +26,26 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        // Password dari env (jangan pakai "password" di production)
+        $adminPassword = env('SEED_ADMIN_PASSWORD', 'Scholargate!Admin2026');
+        $memberPassword = env('SEED_MEMBER_PASSWORD', 'Scholargate!Member2026');
+
         $admin = User::query()->updateOrCreate(
-            ['email' => 'admin@scholargate.test'],
+            ['email' => env('SEED_ADMIN_EMAIL', 'admin@scholargate.test')],
             [
                 'name' => 'Admin Scholargate',
-                'password' => 'password',
+                'password' => $adminPassword,
                 'role' => 'admin',
+            ]
+        );
+
+        // Akun member area (portal) — avatar Gravatar dari email
+        User::query()->updateOrCreate(
+            ['email' => env('SEED_MEMBER_EMAIL', 'member@scholargate.test')],
+            [
+                'name' => 'Member Demo',
+                'password' => $memberPassword,
+                'role' => 'member',
             ]
         );
 

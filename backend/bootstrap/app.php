@@ -15,9 +15,16 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();
 
-        $middleware->validateCsrfTokens(except: [
-            // SPA uses cookie CSRF via /sanctum/csrf-cookie
+        $middleware->alias([
+            'admin' => \App\Http\Middleware\EnsureAdmin::class,
         ]);
+
+        $middleware->validateCsrfTokens(except: [
+            // SPA uses Bearer tokens; CSRF cookie optional
+        ]);
+
+        // Di belakang reverse proxy (nginx/caddy/cloudflare)
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

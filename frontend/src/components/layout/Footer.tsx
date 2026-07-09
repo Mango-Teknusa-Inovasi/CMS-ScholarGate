@@ -41,16 +41,28 @@ export function Footer() {
           </p>
           <div className="mt-5 flex gap-2">
             {[
-              { label: 'Facebook', href: settings?.social_facebook || '#' },
-              { label: 'Instagram', href: settings?.social_instagram || '#' },
-              { label: 'YouTube', href: settings?.social_youtube || '#' },
+              {
+                label: 'Facebook',
+                href: settings?.social_facebook || '#',
+                cls: 'bg-indigo-50 text-indigo-600 ring-indigo-200/80 hover:bg-indigo-100',
+              },
+              {
+                label: 'Instagram',
+                href: settings?.social_instagram || '#',
+                cls: 'bg-pink-50 text-pink-600 ring-pink-200/80 hover:bg-pink-100',
+              },
+              {
+                label: 'YouTube',
+                href: settings?.social_youtube || '#',
+                cls: 'bg-rose-50 text-rose-600 ring-rose-200/80 hover:bg-rose-100',
+              },
             ].map((s) => (
               <a
                 key={s.label}
                 href={s.href}
                 target="_blank"
                 rel="noreferrer"
-                className="flex h-9 min-w-9 items-center justify-center rounded-full border border-line bg-white px-2.5 text-[11px] font-semibold text-subtle hover:border-brand/40 hover:text-brand"
+                className={`flex h-9 min-w-9 items-center justify-center rounded-full px-2.5 text-[11px] font-semibold ring-1 ring-inset transition ${s.cls}`}
                 aria-label={s.label}
               >
                 {s.label.slice(0, 2)}
@@ -97,8 +109,8 @@ export function Footer() {
             )}
             {settings?.contact_phone && <li>{settings.contact_phone}</li>}
             <li>
-              <Link to="/admin/login" className="font-medium text-brand hover:text-brand-dark">
-                Login admin
+              <Link to="/login" className="font-medium text-teal-600 hover:text-teal-700">
+                Login member
               </Link>
             </li>
           </ul>

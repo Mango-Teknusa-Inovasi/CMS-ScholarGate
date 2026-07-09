@@ -52,7 +52,7 @@ export function SectionHeader({
       {actionLabel && actionTo && (
         <Link
           to={actionTo}
-          className="inline-flex items-center gap-1.5 self-start rounded-[12px] bg-brand-soft px-3.5 py-2 text-sm font-semibold text-brand-dark hover:bg-cyan-soft md:self-auto"
+          className="inline-flex items-center gap-1.5 self-start rounded-full bg-sky-50 px-4 py-2 text-sm font-semibold text-sky-700 ring-1 ring-inset ring-sky-200/80 transition hover:bg-sky-100 md:self-auto"
         >
           {actionLabel}
           <ArrowRight className="h-4 w-4" />

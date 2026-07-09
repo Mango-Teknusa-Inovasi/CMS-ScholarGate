@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
+import { motion } from 'motion/react'
 import {
   ArrowRight,
   Eye,
@@ -13,9 +14,10 @@ import {
 } from 'lucide-react'
 import { api } from '../../lib/api'
 import { formatDate } from '../../lib/utils'
+import { easeOutExpo, staggerContainer, staggerItem } from '../../lib/motion'
 import { AdminPageHeader } from '../../components/admin/AdminPageHeader'
 import { StatusBadge } from '../../components/admin/StatusBadge'
-import { Skeleton } from '../../components/ui/Skeleton'
+import { AdminDashboardSkeleton } from '../../components/ui/Skeleton'
 
 type Dashboard = {
   stats: {
@@ -71,17 +73,7 @@ export function DashboardPage() {
   })
 
   if (isLoading) {
-    return (
-      <div className="space-y-6" aria-busy="true">
-        <Skeleton className="h-10 w-64" />
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-28 rounded-[16px]" />
-          ))}
-        </div>
-        <Skeleton className="h-64 rounded-[16px]" />
-      </div>
-    )
+    return <AdminDashboardSkeleton />
   }
 
   if (isError || !data) {
@@ -92,7 +84,7 @@ export function DashboardPage() {
         <button
           type="button"
           onClick={() => refetch()}
-          className="mt-4 rounded-[12px] bg-brand px-4 py-2 text-sm font-semibold text-white"
+          className="mt-4 rounded-[12px] bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-600"
         >
           Muat ulang
         </button>
@@ -105,67 +97,78 @@ export function DashboardPage() {
       label: 'Artikel terbit',
       value: data.stats.articles_published,
       icon: FileText,
-      tone: 'bg-brand-soft text-brand-dark',
-      iconBg: 'bg-white/70 text-brand',
+      tone: 'bg-sky-50 text-sky-900 ring-1 ring-inset ring-sky-100',
+      iconBg: 'bg-sky-100 text-sky-600',
     },
     {
       label: 'Draft',
       value: data.stats.articles_draft,
       icon: PenLine,
-      tone: 'bg-peach text-ink',
-      iconBg: 'bg-white/80 text-amber-700',
+      tone: 'bg-amber-50 text-amber-950 ring-1 ring-inset ring-amber-100',
+      iconBg: 'bg-amber-100 text-amber-700',
     },
     {
       label: 'Total views',
       value: data.stats.total_views,
       icon: Eye,
-      tone: 'bg-white text-ink border border-line',
-      iconBg: 'bg-muted text-body',
+      tone: 'bg-violet-50 text-violet-950 ring-1 ring-inset ring-violet-100',
+      iconBg: 'bg-violet-100 text-violet-600',
     },
     {
       label: 'Kategori',
       value: data.stats.categories,
       icon: Tags,
-      tone: 'bg-white text-ink border border-line',
-      iconBg: 'bg-muted text-body',
+      tone: 'bg-teal-50 text-teal-950 ring-1 ring-inset ring-teal-100',
+      iconBg: 'bg-teal-100 text-teal-600',
     },
     {
       label: 'Banner aktif',
       value: data.stats.banners_active,
       icon: Image,
-      tone: 'bg-white text-ink border border-line',
-      iconBg: 'bg-muted text-body',
+      tone: 'bg-rose-50 text-rose-950 ring-1 ring-inset ring-rose-100',
+      iconBg: 'bg-rose-100 text-rose-500',
     },
     {
       label: 'File download',
       value: data.stats.downloads,
       icon: Download,
-      tone: 'bg-white text-ink border border-line',
-      iconBg: 'bg-muted text-body',
+      tone: 'bg-emerald-50 text-emerald-950 ring-1 ring-inset ring-emerald-100',
+      iconBg: 'bg-emerald-100 text-emerald-600',
     },
   ]
 
   return (
     <div>
-      <AdminPageHeader
-        title="Dashboard"
-        description="Ringkasan konten portal. Kelola artikel, tampilan, dan data sekolah dari menu kiri."
-        actions={
-          <Link
-            to="/admin/articles/new"
-            className="inline-flex items-center gap-2 rounded-[12px] bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(14_165_233/0.28)] hover:bg-brand-dark active:scale-[0.98]"
-          >
-            <PenLine className="h-4 w-4" />
-            Artikel baru
-          </Link>
-        }
-      />
+      <div data-layer data-parallax="2">
+        <AdminPageHeader
+          title="Dashboard"
+          description="Ringkasan konten portal. Kelola artikel, tampilan, dan data sekolah dari menu kiri."
+          actions={
+            <Link
+              to="/admin/articles/new"
+              className="inline-flex items-center gap-2 rounded-[12px] bg-violet-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(139_92_246/0.28)] transition hover:bg-violet-600 active:scale-[0.98]"
+            >
+              <PenLine className="h-4 w-4" />
+              Artikel baru
+            </Link>
+          }
+        />
+      </div>
 
-      {/* Stats */}
-      <div className="mb-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      {/* Stats — muncul satu-satu */}
+      <motion.div
+        data-layer
+        data-parallax="3"
+        className="mb-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
+        variants={staggerContainer}
+        initial="hidden"
+        animate="show"
+      >
         {cards.map((c) => (
-          <div
+          <motion.div
             key={c.label}
+            variants={staggerItem}
+            whileHover={{ y: -3, transition: { duration: 0.2, ease: easeOutExpo } }}
             className={`rounded-[16px] p-5 shadow-[var(--shadow-card)] ${c.tone}`}
           >
             <div className="flex items-start justify-between gap-3">
@@ -177,13 +180,19 @@ export function DashboardPage() {
                 <c.icon className="h-5 w-5" strokeWidth={1.75} />
               </div>
             </div>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
+      <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]" data-layer data-parallax="2">
         {/* Recent articles */}
-        <section className="overflow-hidden rounded-[16px] border border-line bg-white shadow-[var(--shadow-card)]">
+        <motion.section
+          data-stagger-child
+          className="overflow-hidden rounded-[16px] border border-line bg-white shadow-[var(--shadow-card)]"
+          initial={{ opacity: 0, y: 28, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0.2, ease: easeOutExpo }}
+        >
           <div className="flex items-center justify-between border-b border-line px-5 py-4">
             <div>
               <h2 className="font-bold text-ink">Artikel terbaru</h2>
@@ -236,10 +245,16 @@ export function DashboardPage() {
               ))}
             </ul>
           )}
-        </section>
+        </motion.section>
 
         {/* Quick actions */}
-        <section className="rounded-[16px] border border-line bg-white p-5 shadow-[var(--shadow-card)]">
+        <motion.section
+          data-stagger-child
+          className="rounded-[16px] border border-line bg-white p-5 shadow-[var(--shadow-card)]"
+          initial={{ opacity: 0, y: 32, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0.28, ease: easeOutExpo }}
+        >
           <h2 className="font-bold text-ink">Aksi cepat</h2>
           <p className="mt-1 text-xs text-subtle">Pintasan yang sering dipakai</p>
           <div className="mt-4 grid gap-2">
@@ -247,7 +262,7 @@ export function DashboardPage() {
               <Link
                 key={q.to}
                 to={q.to}
-                className="group flex items-center gap-3 rounded-[14px] border border-line bg-page px-3.5 py-3 transition hover:border-brand/25 hover:bg-brand-soft/40"
+                className="group flex items-center gap-3 rounded-[14px] border border-line bg-page px-3.5 py-3 transition hover:border-brand/25 hover:bg-brand-soft/40 active:scale-[0.99]"
               >
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-brand shadow-sm ring-1 ring-line">
                   <q.icon className="h-4.5 w-4.5 h-5 w-5" strokeWidth={1.75} />
@@ -270,7 +285,7 @@ export function DashboardPage() {
               navigasi dan sambutan bisa diubah kapan saja tanpa menyentuh kode.
             </p>
           </div>
-        </section>
+        </motion.section>
       </div>
     </div>
   )

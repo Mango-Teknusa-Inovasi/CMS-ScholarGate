@@ -48,9 +48,9 @@ class SeoService
             return $base.'/'.ltrim($path, '/');
         }
 
-        // media path like uploads/...
+        // media path — prefer R2 public URL
         if (! str_starts_with($path, '/')) {
-            return $base.'/storage/'.ltrim($path, '/');
+            return \App\Support\MediaStorage::url($path) ?: ($base.'/storage/'.ltrim($path, '/'));
         }
 
         return $base.$path;
@@ -65,7 +65,8 @@ class SeoService
             return $path;
         }
 
-        return $this->absoluteUrl('/storage/'.ltrim(str_replace('/storage/', '', $path), '/'));
+        return \App\Support\MediaStorage::url($path)
+            ?: $this->absoluteUrl('/storage/'.ltrim(str_replace('/storage/', '', $path), '/'));
     }
 
     /**

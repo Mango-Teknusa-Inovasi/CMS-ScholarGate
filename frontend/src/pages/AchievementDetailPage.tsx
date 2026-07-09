@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { api, type Achievement } from '../lib/api'
 import { cn, formatDate, softMediaClass } from '../lib/utils'
 import { Badge } from '../components/ui/Badge'
+import { PageSkeleton } from '../components/ui/Skeleton'
 
 export function AchievementDetailPage() {
   const { slug } = useParams()
@@ -12,7 +13,9 @@ export function AchievementDetailPage() {
     enabled: !!slug,
   })
 
-  if (isLoading) return <div className="container-page py-16 text-center text-subtle">Memuat...</div>
+  if (isLoading) {
+    return <PageSkeleton />
+  }
   if (isError || !data) {
     return (
       <div className="container-page py-16 text-center">

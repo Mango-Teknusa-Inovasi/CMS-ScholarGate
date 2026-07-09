@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { ImagePlus, Trash2, Loader2, CheckCircle2 } from 'lucide-react'
-import { api } from '../../lib/api'
 import { mediaUrl } from '../../lib/utils'
 import type { MediaGuide } from '../../lib/mediaGuide'
 import { sizeHintText } from '../../lib/mediaGuide'
+import { uploadOptimized } from '../../lib/upload'
 
 type Props = {
   label: string
@@ -46,21 +46,17 @@ export function ImageUploadField({
 
     setUploading(true)
     try {
-      const fd = new FormData()
-      fd.append('file', file)
-      // ImageOptimizer: WebP + resize ≤1920 + compress ~82 + strip EXIF
-      fd.append('max_width', '1920')
-      if (alt.trim()) {
-        fd.append('alt', alt.trim())
-      }
-      const { data } = await api.post('/admin/media', fd, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      // Path A: kompres lokal di server → baru upload R2 (wajib untuk banner/cover)
+      const data = await uploadOptimized(file, {
+        alt: alt.trim() || undefined,
+        maxWidth: 1920,
+        endpoint: '/admin/media',
       })
       onChange(data.path)
       if (data.optimized) {
-        setOptimizedNote('Gambar dioptimasi: WebP · resize · kompres · EXIF dibersihkan')
+        setOptimizedNote('Kompres lokal → R2: WebP · resize · strip EXIF')
       } else {
-        setOptimizedNote('File tersimpan (bukan gambar raster / tidak dioptimasi)')
+        setOptimizedNote('Tersimpan ke object storage')
       }
     } catch {
       setError('Gagal mengunggah. Coba lagi atau periksa koneksi API.')
@@ -144,7 +140,7 @@ export function ImageUploadField({
         />
       </label>
       <p className="mt-1.5 text-[11px] text-subtle">
-        Otomatis: resize max 1920px · konversi WebP · kompres · strip EXIF (SEO/AEO gambar)
+        Alur: proses & kompres di server (lokal) → upload R2. Bukan presign (agar kualitas terkontrol).
       </p>
 
       {optimizedNote && (

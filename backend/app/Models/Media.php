@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Support\MediaStorage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Storage;
 
 class Media extends Model
 {
@@ -34,11 +34,11 @@ class Media extends Model
 
     public function getUrlAttribute(): string
     {
-        return asset('storage/'.$this->path);
+        return MediaStorage::url($this->path) ?: '';
     }
 
     public function deleteFile(): void
     {
-        Storage::disk($this->disk ?: 'public')->delete($this->path);
+        MediaStorage::delete($this->path, $this->disk ?: MediaStorage::diskName());
     }
 }

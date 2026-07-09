@@ -6,7 +6,7 @@ import { api } from '../../lib/api'
 import { MEDIA_GUIDES } from '../../lib/mediaGuide'
 import { RichTextEditor } from '../../components/admin/RichTextEditor'
 import { ImageUploadField } from '../../components/admin/ImageUploadField'
-import { Skeleton } from '../../components/ui/Skeleton'
+import { AdminFormSkeleton } from '../../components/ui/Skeleton'
 
 type Category = { id: number; name: string }
 type Tag = { id: number; name: string; slug: string }
@@ -132,12 +132,7 @@ export function ArticleEditorPage() {
   })
 
   if (!isNew && isLoading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-10 w-72" />
-        <Skeleton className="h-[480px] w-full rounded-[16px]" />
-      </div>
-    )
+    return <AdminFormSkeleton />
   }
 
   return (
@@ -188,7 +183,7 @@ export function ArticleEditorPage() {
               save.mutate(true)
             }}
             disabled={save.isPending || !form.title}
-            className="inline-flex items-center gap-2 rounded-[12px] bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-[12px] bg-sky-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-600 disabled:opacity-50"
           >
             <Save className="h-4 w-4" />
             {form.status === 'published' ? 'Perbarui' : 'Terbitkan'}
@@ -476,7 +471,7 @@ export function ArticleEditorPage() {
                     save.mutate(true)
                   }}
                   disabled={save.isPending || !form.title}
-                  className="w-full rounded-[12px] bg-brand py-2.5 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-50"
+                  className="w-full rounded-[12px] bg-violet-500 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-600 disabled:opacity-50"
                 >
                   {form.status === 'published' ? 'Perbarui' : 'Terbitkan'}
                 </button>

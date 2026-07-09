@@ -110,7 +110,7 @@ export function UsersAdminPage() {
               type="button"
               disabled={save.isPending || !form.name || !form.email || form.password.length < 8}
               onClick={() => save.mutate()}
-              className="rounded-[12px] bg-brand px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+              className="rounded-[12px] bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-600 disabled:opacity-50"
             >
               {save.isPending ? 'Menyimpan…' : 'Tambah pengguna'}
             </button>
@@ -129,7 +129,7 @@ export function UsersAdminPage() {
           <button
             type="button"
             onClick={() => setMode('new')}
-            className="inline-flex items-center gap-2 rounded-[12px] bg-brand px-4 py-2.5 text-sm font-semibold text-white"
+            className="inline-flex items-center gap-2 rounded-[12px] bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-600"
           >
             <Plus className="h-4 w-4" />
             Tambah pengguna
@@ -139,9 +139,10 @@ export function UsersAdminPage() {
 
       <div className="overflow-hidden rounded-[16px] border border-line bg-white shadow-[var(--shadow-card)]">
         {isLoading ? (
-          <div className="space-y-3 p-5">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
+          <div className="space-y-3 p-5" aria-busy="true" aria-label="Memuat pengguna">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="h-12 w-full rounded-[10px]" />
+            ))}
           </div>
         ) : (
           <table className="min-w-full text-sm">

@@ -32,7 +32,7 @@ export function ResourceListPage({ config }: Props) {
         actions={
           <Link
             to={`${config.listPath}/new`}
-            className="inline-flex items-center gap-2 rounded-[12px] bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(14_165_233/0.25)] hover:bg-brand-dark"
+            className="inline-flex items-center gap-2 rounded-[12px] bg-teal-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(20_184_166/0.28)] transition hover:bg-teal-600 active:scale-[0.98]"
           >
             <Plus className="h-4 w-4" />
             Tambah {config.singular}
@@ -42,9 +42,10 @@ export function ResourceListPage({ config }: Props) {
 
       <div className="overflow-hidden rounded-[16px] border border-line bg-white shadow-[var(--shadow-card)]">
         {isLoading ? (
-          <div className="space-y-3 p-5">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
+          <div className="space-y-3 p-5" aria-busy="true" aria-label="Memuat data">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <Skeleton key={i} className="h-12 w-full rounded-[10px]" />
+            ))}
           </div>
         ) : rows.length === 0 ? (
           <div className="px-5 py-14 text-center">
@@ -52,7 +53,7 @@ export function ResourceListPage({ config }: Props) {
             <p className="mt-1 text-sm text-subtle">Buat {config.singular} pertama di halaman penuh.</p>
             <Link
               to={`${config.listPath}/new`}
-              className="mt-4 inline-flex rounded-[12px] bg-brand px-4 py-2 text-sm font-semibold text-white"
+              className="mt-4 inline-flex rounded-[12px] bg-teal-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-600"
             >
               + Tambah {config.singular}
             </Link>

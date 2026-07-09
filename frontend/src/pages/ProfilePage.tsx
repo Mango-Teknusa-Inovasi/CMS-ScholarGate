@@ -18,6 +18,8 @@ import {
 import { api, type ContactInfo, type QuickService, type WelcomeBlock } from '../lib/api'
 import { cn } from '../lib/utils'
 import { SeoHead } from '../components/seo/SeoHead'
+import { PageSkeleton } from '../components/ui/Skeleton'
+import { softTones, toneAt } from '../lib/buttonTones'
 
 const iconMap: Record<string, LucideIcon> = {
   'map-pin': MapPin,
@@ -52,7 +54,7 @@ export function ProfilePage() {
   const [tab, setTab] = useState(0)
 
   if (isLoading || !data) {
-    return <div className="container-page py-16 text-center text-subtle">Memuat profil...</div>
+    return <PageSkeleton />
   }
 
   const tabs = data.page?.tabs || []
@@ -61,7 +63,7 @@ export function ProfilePage() {
   return (
     <div>
       <SeoHead kind="page" page="profil" fallbackTitle="Profil | Scholargate" />
-      <section className="page-hero-band">
+      <section className="page-hero-band" data-layer data-parallax="3">
         <div className="container-page py-10">
           <p className="mb-2 text-sm text-subtle">Beranda / Profil</p>
           <div className="flex items-start gap-3">
@@ -121,14 +123,20 @@ export function ProfilePage() {
 
       <section id="kontak" className="container-page pb-10">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {data.contacts.map((c) => {
+          {data.contacts.map((c, i) => {
             const Icon = iconMap[c.icon || ''] || MapPin
+            const tone = softTones[toneAt(i)]
             return (
               <div
                 key={c.id}
                 className="rounded-[16px] border border-line bg-white p-4 shadow-sm"
               >
-                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-brand-soft text-brand">
+                <div
+                  className={cn(
+                    'mb-3 flex h-10 w-10 items-center justify-center rounded-xl',
+                    tone.chip,
+                  )}
+                >
                   <Icon className="h-5 w-5" />
                 </div>
                 <p className="text-xs font-bold uppercase tracking-wide text-subtle">{c.label}</p>
@@ -138,7 +146,10 @@ export function ProfilePage() {
                     href={c.link_url}
                     target="_blank"
                     rel="noreferrer"
-                    className="mt-3 inline-flex rounded-[12px] bg-brand px-3 py-1.5 text-xs font-semibold text-white"
+                    className={cn(
+                      'mt-3 inline-flex rounded-[12px] px-3 py-1.5 text-xs font-semibold transition active:scale-[0.98]',
+                      softTones.sky.solid,
+                    )}
                   >
                     Buka Google Maps
                   </a>
@@ -160,7 +171,7 @@ export function ProfilePage() {
                   className={cn(
                     'rounded-[12px] px-4 py-2 text-sm font-semibold transition',
                     i === tab
-                      ? 'bg-brand-soft text-brand-dark'
+                      ? softTones[toneAt(i)].soft
                       : 'text-subtle hover:bg-muted',
                   )}
                 >
@@ -184,8 +195,9 @@ export function ProfilePage() {
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-          {data.quick_services.map((item) => {
+          {data.quick_services.map((item, i) => {
             const Icon = iconMap[item.icon] || Sparkles
+            const tone = softTones[toneAt(i)]
             return (
               <a
                 key={item.id}
@@ -193,14 +205,26 @@ export function ProfilePage() {
                 className="rounded-[16px] border border-line bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
               >
                 <div
-                  className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl"
-                  style={{ backgroundColor: `${item.color}18`, color: item.color }}
+                  className={cn(
+                    'mb-3 flex h-12 w-12 items-center justify-center rounded-2xl',
+                    tone.chip,
+                  )}
+                  style={
+                    item.color
+                      ? { backgroundColor: `${item.color}18`, color: item.color }
+                      : undefined
+                  }
                 >
                   <Icon className="h-6 w-6" />
                 </div>
                 <h3 className="font-bold text-ink">{item.title}</h3>
                 <p className="mt-1 text-xs text-subtle">{item.description}</p>
-                <span className="mt-3 inline-block text-sm font-semibold text-brand">
+                <span
+                  className={cn(
+                    'mt-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold',
+                    tone.soft,
+                  )}
+                >
                   {item.link_label || 'Buka'} →
                 </span>
               </a>

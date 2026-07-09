@@ -28,6 +28,32 @@ Alur production:
 - Composer
 - Node.js 20+ **hanya untuk build frontend** (bukan runtime production)
 - Database kosong: PostgreSQL **atau** MySQL/MariaDB
+- **Object storage wajib (production): Cloudflare R2** (S3-compatible) — lihat env di bawah
+
+### Cloudflare R2 (wajib production)
+
+Pola env sama proyek **twibbon-moklet**:
+
+```env
+FILESYSTEM_DISK=r2
+R2_ENDPOINT=https://your-account-id.r2.cloudflarestorage.com
+R2_BUCKET_NAME=your-bucket-name
+R2_FOLDER_PATH=scholargate
+R2_PUBLIC_URL=https://your-public-cdn-url.com
+R2_ACCESS_KEY_ID=...
+R2_SECRET_ACCESS_KEY=...
+R2_REGION=auto
+R2_USE_PATH_STYLE_ENDPOINT=true
+```
+
+Frontend (saat `npm run build`) agar URL media benar:
+
+```env
+VITE_R2_PUBLIC_URL=https://your-public-cdn-url.com
+VITE_R2_FOLDER_PATH=scholargate
+```
+
+Semua upload CMS (banner, cover, media library, logo) disimpan ke R2 di folder `R2_FOLDER_PATH`.
 
 ---
 

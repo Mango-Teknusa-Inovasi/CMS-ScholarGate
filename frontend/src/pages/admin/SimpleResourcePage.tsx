@@ -86,7 +86,7 @@ export function SimpleResourcePage({ title, description, resource, fields }: Pro
           <button
             type="button"
             onClick={openCreate}
-            className="inline-flex items-center gap-2 rounded-[12px] bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(14_165_233/0.25)] hover:bg-brand-dark active:scale-[0.98]"
+            className="inline-flex items-center gap-2 rounded-[12px] bg-teal-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(20_184_166/0.28)] transition hover:bg-teal-600 active:scale-[0.98]"
           >
             <Plus className="h-4 w-4" />
             Tambah
@@ -107,7 +107,7 @@ export function SimpleResourcePage({ title, description, resource, fields }: Pro
             <button
               type="button"
               onClick={openCreate}
-              className="mt-4 rounded-[12px] bg-brand px-4 py-2 text-sm font-semibold text-white"
+              className="mt-4 rounded-[12px] bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-600"
             >
               + Tambah {title.toLowerCase()}
             </button>
@@ -277,7 +277,7 @@ export function SimpleResourcePage({ title, description, resource, fields }: Pro
                 type="button"
                 onClick={() => save.mutate()}
                 disabled={save.isPending}
-                className="rounded-[12px] bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-60"
+                className="rounded-[12px] bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(14_165_233/0.25)] transition hover:bg-sky-600 disabled:opacity-60"
               >
                 {save.isPending ? 'Menyimpan…' : 'Simpan'}
               </button>

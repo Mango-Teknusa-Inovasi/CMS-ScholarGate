@@ -26,6 +26,16 @@
   --color-cyan-soft: #eef9fc;
   --color-cyan-mid: #0891b2;
 
+  /* Soft colorful accents (referensi portal) */
+  --color-soft-sky: #e0f2fe;
+  --color-soft-teal: #ccfbf1;
+  --color-soft-mint: #d1fae5;
+  --color-soft-coral: #ffe4e6;
+  --color-soft-amber: #fef3c7;
+  --color-soft-violet: #ede9fe;
+  --color-soft-rose: #fce7f3;
+  --color-soft-peach-btn: #fdf1e7;
+
   --color-success: #047857;
   --color-footer: #f0e9e0;
 
@@ -56,7 +66,7 @@ body {
 }
 
 a {
-  color: inherit;
+  /* Jangan force color:inherit — bentrok dengan tombol di atas parent text-white */
   text-decoration: none;
 }
 
@@ -133,9 +143,43 @@ textarea {
   box-shadow: var(--shadow-card);
 }
 
+.card-surface-hover {
+  transition:
+    box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 .card-surface-hover:hover {
   box-shadow: var(--shadow-card-hover);
   transform: translateY(-2px);
+}
+
+a:hover .media-cover img,
+.group:hover .media-cover img {
+  transform: scale(1.04);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .card-surface-hover:hover {
+    transform: none;
+  }
+
+  a:hover .media-cover img,
+  .group:hover .media-cover img {
+    transform: none;
+  }
 }
 
 /* Media cover: foto real via seed, fallback peach */
@@ -150,6 +194,7 @@ textarea {
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .media-cover::after {

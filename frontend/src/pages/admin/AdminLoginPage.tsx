@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { api, setAuthToken } from '../../lib/api'
+import { motion } from 'motion/react'
+import { easeOutExpo } from '../../lib/motion'
+import { adminLogin } from '../../lib/auth'
 
 export function AdminLoginPage() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('admin@scholargate.test')
-  const [password, setPassword] = useState('password')
+  const [password, setPassword] = useState('Scholargate!Admin2026')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -14,11 +16,16 @@ export function AdminLoginPage() {
     setLoading(true)
     setError('')
     try {
-      const { data } = await api.post('/auth/login', { email, password })
-      setAuthToken(data.token)
+      await adminLogin(email, password)
       navigate('/admin')
-    } catch {
-      setError('Email atau password tidak valid.')
+    } catch (err: unknown) {
+      const msg =
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (err as any)?.response?.data?.errors?.email?.[0] ||
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (err as any)?.response?.data?.message ||
+        'Email atau password tidak valid / bukan admin.'
+      setError(String(msg))
     } finally {
       setLoading(false)
     }
@@ -26,13 +33,23 @@ export function AdminLoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-page px-4">
-      <div className="w-full max-w-md rounded-[20px] border border-line bg-white p-8 shadow-[var(--shadow-card-hover)]">
+      <motion.div
+        className="w-full max-w-md rounded-[20px] border border-line bg-white p-8 shadow-[var(--shadow-card-hover)]"
+        initial={{ opacity: 0, y: 20, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.5, ease: easeOutExpo }}
+      >
         <div className="mb-7 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand text-lg font-bold text-white shadow-[0_2px_10px_rgb(14_165_233/0.3)]">
+          <motion.div
+            className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-500 text-lg font-bold text-white shadow-[0_2px_10px_rgb(20_184_166/0.3)]"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.1, type: 'spring', stiffness: 360, damping: 22 }}
+          >
             S
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight text-ink">Login admin</h1>
-          <p className="mt-1 text-sm text-subtle">CMS Scholargate</p>
+          </motion.div>
+          <h1 className="text-2xl font-bold tracking-tight text-ink">Login Admin CMS</h1>
+          <p className="mt-1 text-sm text-subtle">Panel pengelolaan konten — bukan member portal</p>
         </div>
 
         <form onSubmit={onSubmit} className="space-y-4">
@@ -45,7 +62,7 @@ export function AdminLoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-[12px] border border-line bg-page px-3 py-2.5 text-sm outline-none focus:border-brand focus:bg-white"
+              className="w-full rounded-[12px] border border-line bg-page px-3 py-2.5 text-sm outline-none transition focus:border-brand focus:bg-white"
               required
               autoComplete="username"
             />
@@ -59,32 +76,38 @@ export function AdminLoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-[12px] border border-line bg-page px-3 py-2.5 text-sm outline-none focus:border-brand focus:bg-white"
+              className="w-full rounded-[12px] border border-line bg-page px-3 py-2.5 text-sm outline-none transition focus:border-brand focus:bg-white"
               required
               autoComplete="current-password"
             />
           </div>
           {error && (
-            <p className="rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700" role="alert">
+            <motion.p
+              className="rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700"
+              role="alert"
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
               {error}
-            </p>
+            </motion.p>
           )}
-          <button
+          <motion.button
             type="submit"
             disabled={loading}
-            className="w-full rounded-[12px] bg-brand py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(14_165_233/0.28)] hover:bg-brand-dark active:scale-[0.99] disabled:opacity-60"
+            className="w-full rounded-[12px] bg-violet-500 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(139_92_246/0.3)] transition hover:bg-violet-600 disabled:opacity-60"
+            whileHover={{ scale: loading ? 1 : 1.01 }}
+            whileTap={{ scale: loading ? 1 : 0.985 }}
           >
-            {loading ? 'Masuk…' : 'Masuk'}
-          </button>
+            {loading ? 'Masuk…' : 'Masuk CMS'}
+          </motion.button>
         </form>
-
-        <p className="mt-6 text-center text-xs text-subtle">
-          Demo: admin@scholargate.test / password
+        <p className="mt-5 text-center text-xs text-subtle">
+          Member portal?{' '}
+          <Link to="/login" className="font-semibold text-teal-600 hover:underline">
+            Login member
+          </Link>
         </p>
-        <Link to="/" className="mt-3 block text-center text-sm font-medium text-brand hover:text-brand-dark">
-          Kembali ke portal
-        </Link>
-      </div>
+      </motion.div>
     </div>
   )
 }

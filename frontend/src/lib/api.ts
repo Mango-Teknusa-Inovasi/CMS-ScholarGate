@@ -1,6 +1,5 @@
 import axios from 'axios'
-
-const TOKEN_KEY = 'scholargate_admin_token'
+import { ADMIN_TOKEN_KEY, MEMBER_TOKEN_KEY } from './auth'
 
 export const api = axios.create({
   baseURL: '/api/v1',
@@ -10,28 +9,50 @@ export const api = axios.create({
   },
 })
 
+/**
+ * Bearer token:
+ * - admin routes → admin token
+ * - else member token, fallback admin
+ * - explicit Authorization header wins
+ */
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem(TOKEN_KEY)
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+  if (config.headers.Authorization) {
+    return config
   }
+
+  const url = String(config.url || '')
+  const isAdminRoute =
+    url.includes('/admin') || url.includes('/auth/admin') || url.startsWith('admin')
+
+  const adminToken = localStorage.getItem(ADMIN_TOKEN_KEY)
+  const memberToken = localStorage.getItem(MEMBER_TOKEN_KEY)
+
+  if (isAdminRoute && adminToken) {
+    config.headers.Authorization = `Bearer ${adminToken}`
+  } else if (!isAdminRoute && memberToken) {
+    config.headers.Authorization = `Bearer ${memberToken}`
+  } else if (adminToken) {
+    config.headers.Authorization = `Bearer ${adminToken}`
+  } else if (memberToken) {
+    config.headers.Authorization = `Bearer ${memberToken}`
+  }
+
   return config
 })
 
 export function setAuthToken(token: string | null) {
-  if (token) localStorage.setItem(TOKEN_KEY, token)
-  else localStorage.removeItem(TOKEN_KEY)
+  if (token) localStorage.setItem(ADMIN_TOKEN_KEY, token)
+  else localStorage.removeItem(ADMIN_TOKEN_KEY)
 }
 
 export function getAuthToken() {
-  return localStorage.getItem(TOKEN_KEY)
+  return localStorage.getItem(ADMIN_TOKEN_KEY)
 }
 
-/** @deprecated kept for compatibility — token auth no longer needs CSRF */
+/** @deprecated */
 export async function ensureCsrf() {
   return Promise.resolve()
 }
-
 
 export type Settings = Record<string, string>
 

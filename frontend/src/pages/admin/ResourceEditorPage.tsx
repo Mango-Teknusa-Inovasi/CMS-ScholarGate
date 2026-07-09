@@ -105,7 +105,7 @@ export function ResourceEditorPage({ config }: Props) {
             type="button"
             onClick={() => save.mutate()}
             disabled={save.isPending}
-            className="inline-flex items-center gap-2 rounded-[12px] bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-[12px] bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(14_165_233/0.25)] transition hover:bg-sky-600 disabled:opacity-60"
           >
             <Save className="h-4 w-4" />
             {save.isPending ? 'Menyimpan…' : isNew ? 'Terbitkan' : 'Perbarui'}
@@ -190,7 +190,7 @@ export function ResourceEditorPage({ config }: Props) {
           type="button"
           onClick={() => save.mutate()}
           disabled={save.isPending}
-          className="rounded-[12px] bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-60"
+          className="rounded-[12px] bg-teal-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-600 disabled:opacity-60"
         >
           {save.isPending ? 'Menyimpan…' : 'Simpan'}
         </button>

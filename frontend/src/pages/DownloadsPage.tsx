@@ -3,6 +3,7 @@ import { Download as DownloadIcon, FileText } from 'lucide-react'
 import { api } from '../lib/api'
 import { formatDate } from '../lib/utils'
 import { SeoHead } from '../components/seo/SeoHead'
+import { ListRowsSkeleton } from '../components/ui/Skeleton'
 
 type DownloadItem = {
   id: number
@@ -23,7 +24,7 @@ export function DownloadsPage() {
   return (
     <div>
       <SeoHead kind="page" page="download" fallbackTitle="Download | Scholargate" />
-      <section className="page-hero-band">
+      <section className="page-hero-band" data-layer data-parallax="3">
         <div className="container-page py-10">
           <p className="mb-2 text-sm text-subtle">Beranda / Download</p>
           <h1 className="text-3xl font-bold text-ink">Pusat Download</h1>
@@ -32,9 +33,9 @@ export function DownloadsPage() {
       </section>
       <div className="container-page py-10">
         {isLoading ? (
-          <p className="text-center text-subtle">Memuat...</p>
+          <ListRowsSkeleton count={5} />
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3" data-layer data-parallax="3">
             {data.map((item) => (
               <div
                 key={item.id}
@@ -52,7 +53,7 @@ export function DownloadsPage() {
                     </p>
                   </div>
                 </div>
-                <button className="inline-flex items-center justify-center gap-2 rounded-[12px] bg-brand px-4 py-2 text-sm font-semibold text-white">
+                <button className="inline-flex items-center justify-center gap-2 rounded-[12px] bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(16_185_129/0.25)] transition hover:bg-emerald-600 active:scale-[0.98]">
                   <DownloadIcon className="h-4 w-4" />
                   Download
                 </button>

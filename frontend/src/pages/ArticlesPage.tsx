@@ -53,7 +53,7 @@ export function ArticlesPage() {
   return (
     <div>
       <SeoHead kind="page" page="artikel" fallbackTitle="Artikel | Scholargate" />
-      <section className="page-hero-band">
+      <section className="page-hero-band" data-layer data-parallax="3">
         <div className="container-page py-10">
           <p className="mb-2 text-sm text-subtle">Beranda / Artikel</p>
           <h1 className="text-3xl font-bold text-ink">Publikasi & Artikel</h1>
@@ -64,7 +64,11 @@ export function ArticlesPage() {
       </section>
 
       <div className="container-page py-8">
-        <div className="mb-6 flex flex-col gap-3 rounded-[16px] border border-line bg-white p-4 shadow-sm md:flex-row md:items-center">
+        <div
+          className="mb-6 flex flex-col gap-3 rounded-[16px] border border-line bg-white p-4 shadow-sm md:flex-row md:items-center"
+          data-layer
+          data-parallax="2"
+        >
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-subtle" />
             <input
@@ -99,7 +103,7 @@ export function ArticlesPage() {
             </select>
             <button
               onClick={() => applyFilter({ q })}
-              className="inline-flex items-center gap-2 rounded-[12px] bg-brand px-4 py-2.5 text-sm font-semibold text-white"
+              className="inline-flex items-center gap-2 rounded-[12px] bg-violet-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(139_92_246/0.25)] transition hover:bg-violet-600 active:scale-[0.98]"
             >
               <Filter className="h-4 w-4" />
               Terapkan
@@ -108,13 +112,20 @@ export function ArticlesPage() {
         </div>
 
         {isLoading || !data ? (
-          <div className="space-y-4" aria-busy="true">
-            <Skeleton className="h-48 w-full rounded-[16px]" />
-            <Skeleton className="h-28 w-full rounded-[16px]" />
-            <Skeleton className="h-28 w-full rounded-[16px]" />
+          <div className="grid gap-8 lg:grid-cols-[1fr_320px]" aria-busy="true" aria-label="Memuat artikel">
+            <div className="space-y-4">
+              <Skeleton className="aspect-[21/9] w-full rounded-[16px]" />
+              <Skeleton className="h-28 w-full rounded-[16px]" />
+              <Skeleton className="h-28 w-full rounded-[16px]" />
+              <Skeleton className="h-28 w-full rounded-[16px]" />
+            </div>
+            <div className="space-y-4">
+              <Skeleton className="h-40 w-full rounded-[16px]" />
+              <Skeleton className="h-56 w-full rounded-[16px]" />
+            </div>
           </div>
         ) : (
-          <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
+          <div className="grid gap-8 lg:grid-cols-[1fr_320px]" data-layer data-parallax="3">
             <div className="space-y-6">
               {data.featured && (
                 <Link
@@ -190,10 +201,10 @@ export function ArticlesPage() {
                     <button
                       key={p}
                       onClick={() => applyFilter({ page: p })}
-                      className={`h-9 min-w-9 rounded-[12px] px-3 text-sm font-semibold ${
+                      className={`h-9 min-w-9 rounded-[12px] px-3 text-sm font-semibold transition ${
                         p === data.articles.current_page
-                          ? 'bg-brand text-white'
-                          : 'border border-line bg-white text-body hover:bg-muted'
+                          ? 'bg-sky-500 text-white shadow-sm'
+                          : 'border border-line bg-white text-body hover:bg-sky-50 hover:text-sky-700'
                       }`}
                     >
                       {p}
@@ -207,17 +218,17 @@ export function ArticlesPage() {
               <div className="rounded-[16px] border border-line bg-white p-5 shadow-sm">
                 <h3 className="mb-3 font-bold text-ink">Ringkasan</h3>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-xl bg-peach p-3 text-center">
-                    <div className="text-2xl font-bold text-ink">
+                  <div className="rounded-xl bg-sky-50 p-3 text-center ring-1 ring-inset ring-sky-100">
+                    <div className="text-2xl font-bold text-sky-700">
                       {data.sidebar.summary.total_articles}
                     </div>
-                    <div className="text-xs text-subtle">Artikel</div>
+                    <div className="text-xs text-sky-600/80">Artikel</div>
                   </div>
-                  <div className="rounded-xl bg-peach-soft p-3 text-center border border-line">
-                    <div className="text-2xl font-bold text-ink">
+                  <div className="rounded-xl bg-violet-50 p-3 text-center ring-1 ring-inset ring-violet-100">
+                    <div className="text-2xl font-bold text-violet-700">
                       {data.sidebar.summary.total_categories}
                     </div>
-                    <div className="text-xs text-subtle">Kategori</div>
+                    <div className="text-xs text-violet-600/80">Kategori</div>
                   </div>
                 </div>
               </div>
@@ -260,7 +271,7 @@ export function ArticlesPage() {
                 </p>
                 <Link
                   to="/admin/login"
-                  className="mt-4 inline-flex rounded-[12px] bg-brand px-4 py-2 text-sm font-semibold text-white"
+                  className="mt-4 inline-flex rounded-[12px] bg-teal-500 px-4 py-2 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(20_184_166/0.25)] transition hover:bg-teal-600"
                 >
                   Masuk Admin
                 </Link>

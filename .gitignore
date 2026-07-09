@@ -75,3 +75,8 @@ screenshot-*.png
 # Optional local tooling
 .agents/skills/*/node_modules/
 skills-lock.json
+
+# Database backups
+backups/
+*.sql
+*.sql.gz

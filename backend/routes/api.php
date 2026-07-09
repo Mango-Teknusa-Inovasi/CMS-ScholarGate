@@ -30,13 +30,20 @@ Route::prefix('v1')->group(function () {
     Route::get('/seo/page/{page}', [\App\Http\Controllers\SeoController::class, 'metaPage']);
     Route::get('/seo/article/{slug}', [\App\Http\Controllers\SeoController::class, 'metaArticle']);
 
-    // Auth
-    Route::post('/auth/login', [AuthController::class, 'login']);
+    // Auth — member (portal) & admin (CMS) terpisah + rate limit
+    Route::middleware('throttle:10,1')->group(function () {
+        Route::post('/auth/login', [AuthController::class, 'login']); // legacy → admin
+        Route::post('/auth/member/login', [AuthController::class, 'loginMember']);
+        Route::post('/auth/member/register', [AuthController::class, 'registerMember']);
+        Route::post('/auth/admin/login', [AuthController::class, 'loginAdmin']);
+    });
+
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::get('/auth/me', [AuthController::class, 'me']);
 
-        Route::prefix('admin')->group(function () {
+        // CMS admin only (member token → 403)
+        Route::middleware('admin')->prefix('admin')->group(function () {
             Route::get('/dashboard', DashboardController::class);
 
             // Articles (WordPress-like)
@@ -56,13 +63,17 @@ Route::prefix('v1')->group(function () {
             Route::delete('/tags/{tag}', [TagAdminController::class, 'destroy']);
 
             // Media library
+            // Path A: multipart → kompres lokal → R2 (gambar raster)
             Route::get('/media-library', [MediaAdminController::class, 'index']);
             Route::post('/media-library', [MediaAdminController::class, 'store']);
+            // Path B: presign → client PUT R2 → confirm (PDF/DOC/SVG/file tanpa kompres)
+            Route::post('/media-library/presign', [MediaAdminController::class, 'presign']);
+            Route::post('/media-library/confirm', [MediaAdminController::class, 'confirm']);
             Route::post('/media-library/bulk-delete', [MediaAdminController::class, 'bulkDestroy']);
             Route::put('/media-library/{medium}', [MediaAdminController::class, 'update']);
             Route::delete('/media-library/{medium}', [MediaAdminController::class, 'destroy']);
 
-            // Legacy upload alias (still records to media library)
+            // Legacy upload alias (optimize path)
             Route::post('/media', [ResourceAdminController::class, 'upload']);
 
             // Users

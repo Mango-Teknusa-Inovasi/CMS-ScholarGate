@@ -5,6 +5,7 @@ import { api, type Article, type Category } from '../lib/api'
 import { coverSrc, formatDate } from '../lib/utils'
 import { Badge } from '../components/ui/Badge'
 import { SeoHead } from '../components/seo/SeoHead'
+import { ArticleDetailSkeleton } from '../components/ui/Skeleton'
 
 type DetailResponse = {
   article: Article
@@ -24,7 +25,7 @@ export function ArticleDetailPage() {
   })
 
   if (isLoading) {
-    return <div className="container-page py-16 text-center text-subtle">Memuat artikel...</div>
+    return <ArticleDetailSkeleton />
   }
 
   if (isError || !data) {
@@ -43,7 +44,7 @@ export function ArticleDetailPage() {
   return (
     <div>
       <SeoHead kind="article" articleSlug={slug} fallbackTitle={article.title} />
-      <section className="page-hero-band">
+      <section className="page-hero-band" data-layer data-parallax="3">
         <div className="container-page py-8">
           <nav aria-label="Breadcrumb" className="mb-3 text-sm text-subtle">
             <Link to="/" className="hover:text-brand">Beranda</Link>
@@ -77,7 +78,7 @@ export function ArticleDetailPage() {
         </div>
       </section>
 
-      <div className="container-page grid gap-8 py-8 lg:grid-cols-[1fr_320px]">
+      <div className="container-page grid gap-8 py-8 lg:grid-cols-[1fr_320px]" data-layer data-parallax="2">
         <article>
           <div className="media-cover mb-8 aspect-[16/9] overflow-hidden rounded-[16px] border border-line">
             <img

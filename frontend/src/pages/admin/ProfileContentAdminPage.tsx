@@ -74,9 +74,12 @@ export function ProfileContentAdminPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <Skeleton className="h-10 w-56" />
-        <Skeleton className="h-48 w-full rounded-[16px]" />
+      <div className="space-y-4" aria-busy="true" aria-label="Memuat konten profil">
+        <Skeleton className="h-8 w-56" />
+        <Skeleton className="h-4 w-72 max-w-full" />
+        <Skeleton className="h-12 w-full rounded-[12px]" />
+        <Skeleton className="h-10 w-full max-w-md rounded-[12px]" />
+        <Skeleton className="h-64 w-full rounded-[16px]" />
       </div>
     )
   }
@@ -93,7 +96,7 @@ export function ProfileContentAdminPage() {
             type="button"
             onClick={() => save.mutate()}
             disabled={save.isPending}
-            className="rounded-[12px] bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-60"
+            className="rounded-[12px] bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(14_165_233/0.25)] transition hover:bg-sky-600 disabled:opacity-60"
           >
             {save.isPending ? 'Menyimpan…' : 'Simpan'}
           </button>

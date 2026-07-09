@@ -3,7 +3,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, Copy, ImagePlus, Loader2, Trash2 } from 'lucide-react'
 import { api } from '../../lib/api'
 import { AdminPageHeader } from '../../components/admin/AdminPageHeader'
-import { Skeleton } from '../../components/ui/Skeleton'
+import { MediaGridSkeleton } from '../../components/ui/Skeleton'
+import { uploadSmart } from '../../lib/upload'
 import { cn } from '../../lib/utils'
 
 type MediaItem = {
@@ -52,12 +53,10 @@ export function MediaLibraryPage() {
     setUploading(true)
     try {
       for (const file of Array.from(files)) {
-        const fd = new FormData()
-        fd.append('file', file)
-        // auto-alt from filename (SEO); can edit after upload
-        fd.append('alt', file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' '))
-        fd.append('max_width', '1920')
-        await api.post('/admin/media-library', fd)
+        const alt = file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ')
+        // Gambar raster → kompres lokal → R2
+        // PDF/DOC/SVG → presign langsung ke R2
+        await uploadSmart(file, { alt, maxWidth: 1920 })
       }
       qc.invalidateQueries({ queryKey: ['admin-media'] })
     } finally {
@@ -99,11 +98,11 @@ export function MediaLibraryPage() {
     <div>
       <AdminPageHeader
         title="Perpustakaan media"
-        description="Upload otomatis WebP + resize + strip EXIF. Isi alt text untuk SEO gambar."
+        description="Gambar: kompres lokal → R2. PDF/dokumen: presign langsung ke R2 (lebih cepat)."
         actions={
-          <label className="inline-flex cursor-pointer items-center gap-2 rounded-[12px] bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark">
+          <label className="inline-flex cursor-pointer items-center gap-2 rounded-[12px] bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(14_165_233/0.28)] transition hover:bg-sky-600">
             {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
-            {uploading ? 'Mengoptimasi…' : 'Tambah file'}
+            {uploading ? 'Mengunggah…' : 'Tambah file'}
             <input
               type="file"
               accept="image/*,.pdf"
@@ -141,11 +140,7 @@ export function MediaLibraryPage() {
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-6">
-          {Array.from({ length: 12 }).map((_, i) => (
-            <Skeleton key={i} className="aspect-square rounded-[14px]" />
-          ))}
-        </div>
+        <MediaGridSkeleton count={12} />
       ) : items.length === 0 ? (
         <div className="rounded-[16px] border border-line bg-white px-5 py-14 text-center shadow-[var(--shadow-card)]">
           <p className="font-semibold text-ink">Belum ada media</p>

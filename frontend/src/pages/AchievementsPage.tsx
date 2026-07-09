@@ -5,6 +5,7 @@ import { api, type Achievement } from '../lib/api'
 import { cn, formatDate, softMediaClass } from '../lib/utils'
 import { Badge } from '../components/ui/Badge'
 import { SeoHead } from '../components/seo/SeoHead'
+import { CardGridSkeleton } from '../components/ui/Skeleton'
 
 export function AchievementsPage() {
   const { data, isLoading } = useQuery({
@@ -16,7 +17,7 @@ export function AchievementsPage() {
   return (
     <div>
       <SeoHead kind="page" page="prestasi" fallbackTitle="Prestasi | Scholargate" />
-      <section className="page-hero-band">
+      <section className="page-hero-band" data-layer data-parallax="3">
         <div className="container-page py-10">
           <p className="mb-2 text-sm text-subtle">Beranda / Prestasi</p>
           <div className="flex items-center gap-3">
@@ -31,9 +32,9 @@ export function AchievementsPage() {
 
       <div className="container-page py-10">
         {isLoading ? (
-          <p className="text-center text-subtle">Memuat...</p>
+          <CardGridSkeleton count={6} />
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" data-layer data-parallax="4">
             {(data?.data || []).map((item, i) => (
               <Link
                 key={item.id}

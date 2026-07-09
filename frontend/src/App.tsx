@@ -9,6 +9,8 @@ import { AchievementsPage } from './pages/AchievementsPage'
 import { AchievementDetailPage } from './pages/AchievementDetailPage'
 import { ExtracurricularPage } from './pages/ExtracurricularPage'
 import { DownloadsPage } from './pages/DownloadsPage'
+import { MemberLoginPage } from './pages/MemberLoginPage'
+import { MemberAccountPage } from './pages/MemberAccountPage'
 import { AdminLoginPage } from './pages/admin/AdminLoginPage'
 import { AdminLayout } from './pages/admin/AdminLayout'
 import { DashboardPage } from './pages/admin/DashboardPage'
@@ -59,8 +61,11 @@ export default function App() {
             <Route path="ekstrakurikuler" element={<ExtracurricularPage />} />
             <Route path="aplikasi" element={<Navigate to="/ekstrakurikuler" replace />} />
             <Route path="download" element={<DownloadsPage />} />
+            <Route path="akun" element={<MemberAccountPage />} />
           </Route>
 
+          <Route path="/login" element={<MemberLoginPage />} />
+          <Route path="/member/login" element={<Navigate to="/login" replace />} />
           <Route path="/admin/login" element={<AdminLoginPage />} />
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<DashboardPage />} />

@@ -50,9 +50,13 @@ export function WelcomeAdminPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <Skeleton className="h-10 w-48" />
-        <Skeleton className="h-64 w-full rounded-[16px]" />
+      <div className="space-y-4" aria-busy="true" aria-label="Memuat sambutan">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-4 w-80 max-w-full" />
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Skeleton className="h-64 w-full rounded-[16px]" />
+          <Skeleton className="h-64 w-full rounded-[16px]" />
+        </div>
       </div>
     )
   }
@@ -187,7 +191,7 @@ export function WelcomeAdminPage() {
                 type="button"
                 onClick={() => save.mutate(forms[block.id])}
                 disabled={save.isPending}
-                className="mt-4 rounded-[12px] bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-60"
+                className="mt-4 rounded-[12px] bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(14_165_233/0.25)] transition hover:bg-sky-600 disabled:opacity-60"
               >
                 {save.isPending ? 'Menyimpan…' : `Simpan ${label}`}
               </button>

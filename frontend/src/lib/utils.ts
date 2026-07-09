@@ -14,10 +14,30 @@ export function formatDate(value?: string | null) {
   })
 }
 
+/**
+ * Media URL — Cloudflare R2 CDN (wajib production) + fallback /storage lokal.
+ * VITE_R2_PUBLIC_URL + VITE_R2_FOLDER_PATH harus selaras backend .env
+ */
 export function mediaUrl(path?: string | null) {
   if (!path) return null
-  if (path.startsWith('http') || path.startsWith('data:')) return path
-  return `/storage/${path.replace(/^\/?storage\//, '')}`
+  if (path.startsWith('http') || path.startsWith('data:') || path.startsWith('//')) return path
+
+  const publicBase = (import.meta.env.VITE_R2_PUBLIC_URL as string | undefined)?.replace(/\/$/, '')
+  const folder = ((import.meta.env.VITE_R2_FOLDER_PATH as string | undefined) || 'scholargate').replace(
+    /^\/|\/$/g,
+    '',
+  )
+  const rel = path.replace(/^\/?storage\//, '').replace(/^\//, '')
+
+  if (publicBase) {
+    if (folder && !rel.startsWith(`${folder}/`)) {
+      return `${publicBase}/${folder}/${rel}`
+    }
+    return `${publicBase}/${rel}`
+  }
+
+  if (path.startsWith('/storage/')) return path
+  return `/storage/${rel}`
 }
 
 /** Soft peach solid class — fallback jika tanpa foto */

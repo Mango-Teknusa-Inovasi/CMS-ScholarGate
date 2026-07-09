@@ -21,12 +21,12 @@ export function WelcomeSection({ welcome }: { welcome: WelcomeBlock | null }) {
             />
           </div>
           {welcome.badge_left && (
-            <span className="absolute left-3 top-4 z-20 rounded-full bg-white/95 px-3 py-1 text-[11px] font-bold tracking-wide text-brand shadow-sm">
+            <span className="absolute left-3 top-4 z-20 rounded-full bg-teal-50 px-3 py-1 text-[11px] font-bold tracking-wide text-teal-700 shadow-sm ring-1 ring-teal-200/80">
               {welcome.badge_left}
             </span>
           )}
           {welcome.badge_right && (
-            <span className="absolute bottom-4 right-3 z-20 rounded-full bg-brand px-3 py-1 text-[11px] font-bold tracking-wide text-white shadow-sm">
+            <span className="absolute bottom-4 right-3 z-20 rounded-full bg-sky-500 px-3 py-1 text-[11px] font-bold tracking-wide text-white shadow-[0_2px_8px_rgb(14_165_233/0.35)]">
               {welcome.badge_right}
             </span>
           )}

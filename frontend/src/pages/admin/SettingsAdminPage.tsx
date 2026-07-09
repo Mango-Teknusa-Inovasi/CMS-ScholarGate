@@ -58,9 +58,14 @@ export function SettingsAdminPage() {
 
   if (isLoading) {
     return (
-      <div className="max-w-2xl space-y-3">
-        <Skeleton className="h-10 w-48" />
-        <Skeleton className="h-64 w-full rounded-[16px]" />
+      <div className="max-w-2xl space-y-4" aria-busy="true" aria-label="Memuat pengaturan">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-4 w-72 max-w-full" />
+        <Skeleton className="h-14 w-full rounded-[14px]" />
+        <Skeleton className="h-14 w-full rounded-[14px]" />
+        <Skeleton className="h-28 w-full rounded-[14px]" />
+        <Skeleton className="h-40 w-full rounded-[16px]" />
+        <Skeleton className="h-40 w-full rounded-[16px]" />
       </div>
     )
   }
@@ -75,7 +80,7 @@ export function SettingsAdminPage() {
             type="button"
             onClick={() => save.mutate()}
             disabled={save.isPending}
-            className="rounded-[12px] bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-60"
+            className="rounded-[12px] bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(14_165_233/0.25)] transition hover:bg-sky-600 disabled:opacity-60"
           >
             {save.isPending ? 'Menyimpan…' : 'Simpan'}
           </button>

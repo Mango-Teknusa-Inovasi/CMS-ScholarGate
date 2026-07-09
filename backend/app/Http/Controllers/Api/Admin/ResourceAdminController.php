@@ -152,7 +152,7 @@ class ResourceAdminController extends Controller
             'path' => $result['path'],
             'filename' => $result['filename'],
             'original_filename' => $originalName,
-            'disk' => 'public',
+            'disk' => $result['disk'] ?? \App\Support\MediaStorage::diskName(),
             'mime' => $result['mime'],
             'size' => $result['size'],
             'alt' => $request->string('alt')->toString() ?: pathinfo($originalName, PATHINFO_FILENAME),
@@ -163,9 +163,10 @@ class ResourceAdminController extends Controller
 
         return response()->json([
             'path' => $result['path'],
-            'url' => asset('storage/'.$result['path']),
+            'url' => $result['url'] ?? $media->url,
             'media' => $media,
             'optimized' => $result['optimized'],
+            'disk' => $media->disk,
         ]);
     }
 
