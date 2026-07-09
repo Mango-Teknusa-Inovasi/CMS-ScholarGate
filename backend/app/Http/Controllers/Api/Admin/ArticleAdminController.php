@@ -124,6 +124,24 @@ class ArticleAdminController extends Controller
         return response()->json(['message' => 'Selesai', 'count' => $count]);
     }
 
+    /**
+     * Generate secret preview URL for draft / unpublished article.
+     */
+    public function previewToken(Article $article): JsonResponse
+    {
+        $token = $article->issuePreviewToken(14);
+        $appUrl = rtrim((string) config('app.url'), '/');
+        $path = '/preview/artikel/'.$token;
+
+        return response()->json([
+            'token' => $token,
+            'expires_at' => $article->preview_token_expires_at?->toIso8601String(),
+            'path' => $path,
+            'url' => $appUrl.$path,
+            'message' => 'Link pratinjau dibuat (berlaku 14 hari). Jangan bagikan ke publik umum.',
+        ]);
+    }
+
     private function validated(Request $request, ?int $id = null): array
     {
         return $request->validate([

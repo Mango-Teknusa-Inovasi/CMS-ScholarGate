@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  backend:
+    name: Backend (PHP)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo, pgsql, sqlite, gd, fileinfo, curl
+          coverage: none
+
+      - name: Get Composer cache
+        uses: actions/cache@v4
+        with:
+          path: backend/vendor
+          key: composer-${{ hashFiles('backend/composer.lock') }}
+
+      - name: Install Composer deps
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: PHP syntax check
+        run: |
+          find app routes config database -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Prepare app
+        run: |
+          cp .env.example .env
+          # CI: sqlite + local disk (tanpa R2)
+          php -r '
+            $e = file_get_contents(".env");
+            $e = preg_replace("/^DB_CONNECTION=.*/m", "DB_CONNECTION=sqlite", $e);
+            $e = preg_replace("/^FILESYSTEM_DISK=.*/m", "FILESYSTEM_DISK=public", $e);
+            $e = preg_replace("/^APP_ENV=.*/m", "APP_ENV=local", $e);
+            file_put_contents(".env", $e);
+          '
+          touch database/ci.sqlite
+          echo "DB_DATABASE=${{ github.workspace }}/backend/database/ci.sqlite" >> .env
+          php artisan key:generate --force
+          php artisan config:clear
+          php artisan migrate --force --no-interaction
+      - name: Feature smoke (routes)
+        run: php artisan route:list --json > /dev/null
+
+  frontend:
+    name: Frontend (build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck & build
+        env:
+          VITE_R2_PUBLIC_URL: https://example.com
+          VITE_R2_FOLDER_PATH: scholargate
+        run: npm run build
+
+      - name: Check SPA output
+        run: test -f ../backend/public/spa/index.html

@@ -47,6 +47,21 @@ class SpaController extends Controller
     {
         $path = $path === '' ? '/' : $path;
 
+        // Preview draf — noindex
+        if (str_starts_with($path, '/preview/')) {
+            $base = $this->seo->pageMeta('/');
+
+            return [
+                'title' => 'Pratinjau draf | Scholargate',
+                'description' => 'Pratinjau konten tidak dipublikasikan.',
+                'canonical' => $this->seo->absoluteUrl($path),
+                'og_type' => 'article',
+                'og_image' => $base['og_image'] ?? null,
+                'robots' => 'noindex,nofollow',
+                'json_ld' => null,
+            ];
+        }
+
         // Admin & auth pages — noindex
         if (str_starts_with($path, '/admin') || in_array($path, ['/login', '/daftar', '/register', '/akun'], true)) {
             $base = $this->seo->pageMeta('/');

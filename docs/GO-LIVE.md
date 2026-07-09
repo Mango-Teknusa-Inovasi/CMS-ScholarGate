@@ -92,9 +92,16 @@ Jadwalkan cron harian di server.
 7. `/sitemap.xml`, `/robots.txt`, `/llms.txt`  
 8. View-source beranda/artikel: meta OG + JSON-LD sudah di HTML server (bot)
 
-## 8. Fitur lanjutan (setelah prioritas sedang)
+## 8. Fitur lanjutan
 
-- Preview draft artikel (token)
-- Revisi konten
-- CI GitHub Actions (test + build)
-- Migrasi file `/storage` lama → R2
+| Fitur | Status |
+|-------|--------|
+| Preview draft (token 14 hari) | ✅ Editor → **Pratinjau** → `/preview/artikel/{token}` |
+| CI GitHub Actions | ✅ `.github/workflows/ci.yml` |
+| Revisi konten (history) | Belum |
+| Migrasi `/storage` → R2 | Manual / script belakangan |
+
+### Pratinjau draf
+1. Simpan artikel (boleh status draft)
+2. Klik **Pratinjau** di editor
+3. Tab baru: `/preview/artikel/{token}` (noindex, 14 hari)

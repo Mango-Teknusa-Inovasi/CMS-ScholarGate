@@ -46,6 +46,7 @@ export function ArticleEditorPage() {
   const qc = useQueryClient()
   const [form, setForm] = useState(emptyForm)
   const [savedMsg, setSavedMsg] = useState('')
+  const [previewBusy, setPreviewBusy] = useState(false)
 
   const { data: categories = [] } = useQuery({
     queryKey: ['admin-categories'],
@@ -167,6 +168,35 @@ export function ArticleEditorPage() {
               Lihat
               <ExternalLink className="h-3.5 w-3.5 opacity-60" />
             </Link>
+          )}
+          {!isNew && (
+            <button
+              type="button"
+              disabled={previewBusy || save.isPending}
+              onClick={async () => {
+                setPreviewBusy(true)
+                try {
+                  // Simpan dulu agar pratinjau isi terbaru
+                  await save.mutateAsync(false)
+                  const { data } = await api.post<{ path: string; url: string }>(
+                    `/admin/articles/${id}/preview-token`,
+                  )
+                  const path = data.path || `/preview/artikel/${(data as { token?: string }).token}`
+                  window.open(path, '_blank', 'noopener,noreferrer')
+                } catch {
+                  setSavedMsg('Gagal buat link pratinjau.')
+                  setTimeout(() => setSavedMsg(''), 3000)
+                } finally {
+                  setPreviewBusy(false)
+                }
+              }}
+              className="inline-flex items-center gap-1.5 rounded-[12px] border border-violet-200 bg-violet-50 px-3 py-2 text-sm font-semibold text-violet-700 hover:bg-violet-100 disabled:opacity-50"
+              title="Buka pratinjau rahasia (berlaku 14 hari)"
+            >
+              <Eye className="h-4 w-4" />
+              {previewBusy ? 'Menyiapkan…' : 'Pratinjau'}
+              <ExternalLink className="h-3.5 w-3.5 opacity-60" />
+            </button>
           )}
           <button
             type="button"

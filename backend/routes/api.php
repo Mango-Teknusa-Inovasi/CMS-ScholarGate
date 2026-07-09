@@ -18,6 +18,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/home', HomeController::class);
     Route::get('/profile', ProfileController::class);
     Route::get('/articles', [ArticleController::class, 'index']);
+    Route::get('/articles/preview/{token}', [ArticleController::class, 'preview']);
     Route::get('/articles/{slug}', [ArticleController::class, 'show']);
     Route::get('/categories', [PublicDataController::class, 'categories']);
     Route::get('/achievements', [PublicDataController::class, 'achievements']);
@@ -53,6 +54,7 @@ Route::prefix('v1')->group(function () {
             Route::post('/articles/{id}/restore', [ArticleAdminController::class, 'restore']);
             Route::delete('/articles/{id}/force', [ArticleAdminController::class, 'forceDestroy']);
             Route::get('/articles/{article}', [ArticleAdminController::class, 'show']);
+            Route::post('/articles/{article}/preview-token', [ArticleAdminController::class, 'previewToken']);
             Route::put('/articles/{article}', [ArticleAdminController::class, 'update']);
             Route::delete('/articles/{article}', [ArticleAdminController::class, 'destroy']);
 

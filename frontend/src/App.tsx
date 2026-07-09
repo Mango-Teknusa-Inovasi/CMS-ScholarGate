@@ -5,6 +5,7 @@ import { HomePage } from './pages/HomePage'
 import { ProfilePage } from './pages/ProfilePage'
 import { ArticlesPage } from './pages/ArticlesPage'
 import { ArticleDetailPage } from './pages/ArticleDetailPage'
+import { ArticlePreviewPage } from './pages/ArticlePreviewPage'
 import { AchievementsPage } from './pages/AchievementsPage'
 import { AchievementDetailPage } from './pages/AchievementDetailPage'
 import { ExtracurricularPage } from './pages/ExtracurricularPage'
@@ -57,6 +58,7 @@ export default function App() {
             <Route path="profil" element={<ProfilePage />} />
             <Route path="artikel" element={<ArticlesPage />} />
             <Route path="artikel/:slug" element={<ArticleDetailPage />} />
+            <Route path="preview/artikel/:token" element={<ArticlePreviewPage />} />
             <Route path="prestasi" element={<AchievementsPage />} />
             <Route path="prestasi/:slug" element={<AchievementDetailPage />} />
             <Route path="ekstrakurikuler" element={<ExtracurricularPage />} />

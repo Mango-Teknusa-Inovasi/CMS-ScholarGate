@@ -64,6 +64,31 @@ class ArticleController extends Controller
         ]);
     }
 
+    /**
+     * Pratinjau draf lewat secret token (noindex, tidak naikkan views).
+     */
+    public function preview(string $token): JsonResponse
+    {
+        $article = Article::query()
+            ->with(['category:id,name,slug,color', 'tags:id,name,slug', 'author:id,name'])
+            ->where('preview_token', $token)
+            ->firstOrFail();
+
+        if (! $article->isPreviewTokenValid($token)) {
+            abort(410, 'Link pratinjau kedaluwarsa atau tidak valid.');
+        }
+
+        return response()->json([
+            'article' => $article,
+            'preview' => true,
+            'related' => [],
+            'sidebar' => [
+                'categories' => [],
+                'popular' => [],
+            ],
+        ]);
+    }
+
     public function show(string $slug): JsonResponse
     {
         $article = Article::published()
