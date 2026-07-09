@@ -99,18 +99,27 @@ Ubah via env `SEED_ADMIN_PASSWORD` / `SEED_MEMBER_PASSWORD` atau menu Users di a
 | `/download` | Unduhan |
 | `/admin` | Panel CMS |
 
-## Struktur repo
+## Struktur repo (siap deploy)
 
 ```
 cms-scholargate/
-├── backend/          # Laravel (API + serve SPA production)
-│   └── public/       # ← document root hosting
-│       └── spa/      # hasil build React
-├── frontend/         # Source React (dev + build)
-├── INSTALL.md        # Panduan install & deploy
-├── plan.md
+├── backend/                 # ← UPLOAD INI ke server
+│   ├── app/ config/ ...
+│   └── public/              # document root
+│       └── spa/             # hasil build React
+├── frontend/                # source only — build, jangan runtime server
+├── docs/
+│   ├── DEPLOY.md            # apa yang di-upload
+│   ├── GO-LIVE.md           # checklist production
+│   ├── STORAGE-R2.md
+│   └── SEO-AEO-GEO.md
+├── scripts/backup-db.sh
+├── package.json             # helper: npm run build, dev:api, dev:web
+├── INSTALL.md
 └── README.md
 ```
+
+Detail deploy: [docs/DEPLOY.md](./docs/DEPLOY.md) · Go-live: [docs/GO-LIVE.md](./docs/GO-LIVE.md)
 
 ## Design tokens
 

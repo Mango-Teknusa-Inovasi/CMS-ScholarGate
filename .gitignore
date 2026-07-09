@@ -4,13 +4,15 @@ Thumbs.db
 .AppleDouble
 .LSOverride
 
-# IDE / agents local
+# IDE / local AI tooling (bukan produk)
 .idea/
 .vscode/
 *.swp
 *.swo
 .cursor/
 .grok/
+.agents/
+skills-lock.json
 
 # Env & secrets
 .env
@@ -43,6 +45,8 @@ backend/storage/app/public/*
 !backend/storage/app/public/.gitignore
 backend/storage/app/private/*
 !backend/storage/app/private/.gitignore
+backend/storage/app/backups/
+backend/storage/app/installed
 backend/bootstrap/cache/*.php
 !backend/bootstrap/cache/.gitignore
 backend/public/storage
@@ -56,7 +60,7 @@ Homestead.json
 Homestead.yaml
 auth.json
 
-# Frontend
+# Frontend (source-only di repo; dist lokal diabaikan)
 frontend/node_modules/
 frontend/dist/
 frontend/coverage/
@@ -69,16 +73,12 @@ yarn-error.log*
 .cache/
 .turbo/
 
-# Reference dumps (not product assets)
+# Local dumps / screenshots (bukan aset produk)
 screenshot-*.png
 *.local.md
-
-# Optional local tooling
-.agents/skills/*/node_modules/
-skills-lock.json
-
-# Database backups
+plan.md
 backups/
-backend/storage/app/backups/
 *.sql
 *.sql.gz
+*.zip
+!backend/public/spa/**

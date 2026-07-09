@@ -1,5 +1,7 @@
 # Go-live checklist — prioritas tinggi
 
+Struktur folder & apa yang di-upload: [DEPLOY.md](./DEPLOY.md)
+
 ## 1. Environment production
 
 Di `backend/.env` server:
