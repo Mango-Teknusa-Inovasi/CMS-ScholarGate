@@ -551,8 +551,8 @@ export function AdminLayout() {
                 {initials}
               </div>
               <div className="hidden min-w-0 sm:block">
-                <p className="truncate text-sm font-semibold text-ink">{data.user.name}</p>
-                <p className="truncate text-[11px] text-subtle">{data.user.email}</p>
+                <p className="truncate text-sm font-semibold text-ink">{user.name}</p>
+                <p className="truncate text-[11px] text-subtle">{user.email}</p>
               </div>
             </div>
           </div>
