@@ -22,14 +22,12 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        if (! Auth::attempt($credentials)) {
+        $user = User::query()->where('email', $credentials['email'])->first();
+        if (! $user || ! Hash::check($credentials['password'], $user->getRawOriginal('password') ?: '')) {
             throw ValidationException::withMessages([
                 'email' => ['Email atau password tidak valid.'],
             ]);
         }
-
-        /** @var User $user */
-        $user = Auth::user();
 
         $user->tokens()->where('name', 'member-spa')->delete();
         $token = $user->createToken('member-spa')->plainTextToken;
@@ -51,19 +49,17 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        if (! Auth::attempt($credentials)) {
+        // Auth::attempt + Hash (tanpa bergantung session SPA)
+        $user = User::query()->where('email', $credentials['email'])->first();
+        if (! $user || ! Hash::check($credentials['password'], $user->getRawOriginal('password') ?: $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['Email atau password tidak valid.'],
             ]);
         }
 
-        /** @var User $user */
-        $user = Auth::user();
-
         if (! $user->isAdmin()) {
-            Auth::logout();
             throw ValidationException::withMessages([
-                'email' => ['Akun ini tidak punya akses admin CMS.'],
+                'email' => ['Akun ini tidak punya akses admin CMS. Gunakan /login untuk member.'],
             ]);
         }
 

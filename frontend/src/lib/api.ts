@@ -9,27 +9,35 @@ export const api = axios.create({
   },
 })
 
+function isAdminContext(url: string): boolean {
+  const path = String(url || '')
+  // API admin
+  if (path.includes('/admin') || path.includes('/auth/admin')) return true
+  // Saat di SPA admin, /auth/me & logout harus pakai token admin
+  if (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')) {
+    return true
+  }
+  return false
+}
+
 /**
  * Bearer token:
- * - admin routes → admin token
- * - else member token, fallback admin
- * - explicit Authorization header wins
+ * - Konteks admin (path /admin atau API admin) → admin token
+ * - Portal → member token, fallback admin
+ * - Header Authorization eksplisit menang
  */
 api.interceptors.request.use((config) => {
-  if (config.headers.Authorization) {
+  if (config.headers?.Authorization) {
     return config
   }
 
   const url = String(config.url || '')
-  const isAdminRoute =
-    url.includes('/admin') || url.includes('/auth/admin') || url.startsWith('admin')
-
   const adminToken = localStorage.getItem(ADMIN_TOKEN_KEY)
   const memberToken = localStorage.getItem(MEMBER_TOKEN_KEY)
 
-  if (isAdminRoute && adminToken) {
+  if (isAdminContext(url) && adminToken) {
     config.headers.Authorization = `Bearer ${adminToken}`
-  } else if (!isAdminRoute && memberToken) {
+  } else if (!isAdminContext(url) && memberToken) {
     config.headers.Authorization = `Bearer ${memberToken}`
   } else if (adminToken) {
     config.headers.Authorization = `Bearer ${adminToken}`

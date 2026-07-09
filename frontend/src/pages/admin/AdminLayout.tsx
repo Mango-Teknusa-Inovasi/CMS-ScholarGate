@@ -29,6 +29,7 @@ import {
   UserCog,
 } from 'lucide-react'
 import { api, setAuthToken } from '../../lib/api'
+import { getAdminToken } from '../../lib/auth'
 import { cn } from '../../lib/utils'
 import {
   accordionPanel,
@@ -376,10 +377,20 @@ export function AdminLayout() {
   const location = useLocation()
   const [mobileOpen, setMobileOpen] = useState(false)
   const reduce = useReducedMotion()
+  const adminToken = getAdminToken()
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['auth-me'],
-    queryFn: async () => (await api.get('/auth/me')).data,
+    // Terpisah dari auth member agar cache tidak bentrok
+    queryKey: ['auth-me-admin', adminToken],
+    enabled: !!adminToken,
+    queryFn: async () => {
+      const token = getAdminToken()
+      if (!token) throw new Error('no admin token')
+      const { data } = await api.get('/auth/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      return data as { user: { id: number; name: string; email: string; role?: string; is_admin?: boolean } }
+    },
     retry: false,
   })
 
@@ -389,7 +400,12 @@ export function AdminLayout() {
 
   const logout = async () => {
     try {
-      await api.post('/auth/logout')
+      const token = getAdminToken()
+      if (token) {
+        await api.post('/auth/logout', null, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+      }
     } catch {
       // ignore
     }
@@ -397,7 +413,24 @@ export function AdminLayout() {
     navigate('/admin/login')
   }
 
-  if (isLoading) {
+  const user = data?.user
+  const canAccessAdmin =
+    !!user && (user.is_admin === true || user.role === 'admin' || user.role === 'editor')
+
+  // Belum token / gagal auth / bukan admin → ke login (efek, bukan side-effect di render)
+  useEffect(() => {
+    if (!adminToken) {
+      navigate('/admin/login', { replace: true })
+      return
+    }
+    if (isLoading) return
+    if (isError || !user || !canAccessAdmin) {
+      setAuthToken(null)
+      navigate('/admin/login', { replace: true })
+    }
+  }, [adminToken, isLoading, isError, user, canAccessAdmin, navigate])
+
+  if (!adminToken || isLoading || isError || !user || !canAccessAdmin) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-page">
         <motion.div
@@ -414,13 +447,8 @@ export function AdminLayout() {
     )
   }
 
-  if (isError || !data?.user) {
-    navigate('/admin/login')
-    return null
-  }
-
   const pageTitle = resolvePageTitle(location.pathname)
-  const initials = data.user.name
+  const initials = user.name
     .split(' ')
     .map((p: string) => p[0])
     .join('')
@@ -429,8 +457,8 @@ export function AdminLayout() {
 
   const chromeProps = {
     pathname: location.pathname,
-    userName: data.user.name as string,
-    userEmail: data.user.email as string,
+    userName: user.name,
+    userEmail: user.email,
     userInitials: initials,
     onLogout: logout,
   }

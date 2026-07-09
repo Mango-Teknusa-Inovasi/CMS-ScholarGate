@@ -1,12 +1,9 @@
 {
   "index.html": {
-    "file": "assets/index-DygRNO54.js",
+    "file": "assets/index-0S-574Q6.js",
     "name": "index",
     "src": "index.html",
     "isEntry": true,
-    "dynamicImports": [
-      "index.html"
-    ],
     "css": [
       "assets/index-D6vI_ihU.css"
     ]
