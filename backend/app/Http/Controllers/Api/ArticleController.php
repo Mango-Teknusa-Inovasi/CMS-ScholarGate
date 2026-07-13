@@ -7,6 +7,7 @@ use App\Models\Article;
 use App\Models\Category;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class ArticleController extends Controller
 {
@@ -89,14 +90,18 @@ class ArticleController extends Controller
         ]);
     }
 
-    public function show(string $slug): JsonResponse
+    public function show(Request $request, string $slug): JsonResponse
     {
         $article = Article::published()
             ->with(['category:id,name,slug,color', 'tags:id,name,slug', 'author:id,name'])
             ->where('slug', $slug)
             ->firstOrFail();
 
-        $article->increment('views');
+        // Anti view-inflate: max 1 hit per IP per artikel per jam
+        $viewKey = 'article_view:'.$article->id.':'.$request->ip();
+        if (Cache::add($viewKey, 1, now()->addHour())) {
+            $article->increment('views');
+        }
 
         $related = Article::published()
             ->with('category:id,name,slug,color')

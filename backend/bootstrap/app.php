@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();
 
+        // Default throttle grup api/* (RateLimiter "api" = 120/mnt)
+        $middleware->throttleApi('api');
+
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureAdmin::class,
             'super_admin' => \App\Http\Middleware\EnsureSuperAdmin::class,

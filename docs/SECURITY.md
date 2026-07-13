@@ -41,3 +41,18 @@
 - **looksInstalled()**: jika DB sudah ada users/settings/migrations, installer tetap ditolak meski lock file dihapus (kecuali `ALLOW_INSTALL=true` + konfirmasi re-install).
 - Rate limit: GET 10/mnt, POST 5/jam.
 - CLI re-install: `php artisan scholargate:install --force` (konfirmasi hapus data).
+
+## Rate limiting (API publik)
+
+| Limiter | Batas | Endpoint |
+|---------|-------|----------|
+| `api` | 120/mnt | Semua `/api/*` (default grup) |
+| `public` | 90/mnt | home, profile, menus, settings, dll. |
+| `public-search` | 30/mnt | `GET /articles` (list/search) |
+| `public-read` | 60/mnt | `GET /articles/{slug}` |
+| `preview` | 20/mnt + 100/jam | preview token |
+| `auth-login` | 10/mnt IP, 5/mnt email+IP | login member/admin |
+| `auth-register` | 3/mnt + 10/jam | register member |
+| `seo` | 60/mnt | meta SEO API |
+
+Views artikel: **1 increment / IP / artikel / jam** (cache), bukan tiap request.

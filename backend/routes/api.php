@@ -15,29 +15,57 @@ use App\Http\Controllers\Api\PublicDataController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
-    // Public
-    Route::get('/home', HomeController::class);
-    Route::get('/profile', ProfileController::class);
-    Route::get('/articles', [ArticleController::class, 'index']);
-    Route::get('/articles/preview/{token}', [ArticleController::class, 'preview']);
-    Route::get('/articles/{slug}', [ArticleController::class, 'show']);
-    Route::get('/categories', [PublicDataController::class, 'categories']);
-    Route::get('/achievements', [PublicDataController::class, 'achievements']);
-    Route::get('/achievements/{slug}', [PublicDataController::class, 'achievementShow']);
-    Route::get('/downloads', [PublicDataController::class, 'downloads']);
-    Route::get('/ekstrakurikuler', [PublicDataController::class, 'extracurriculars']);
-    Route::get('/settings/public', [PublicDataController::class, 'settings']);
-    Route::get('/menus', [PublicDataController::class, 'menus']);
-    Route::get('/seo/home', [\App\Http\Controllers\SeoController::class, 'metaHome']);
-    Route::get('/seo/page/{page}', [\App\Http\Controllers\SeoController::class, 'metaPage']);
-    Route::get('/seo/article/{slug}', [\App\Http\Controllers\SeoController::class, 'metaArticle']);
+    /*
+    |--------------------------------------------------------------------------
+    | Public — rate limited (lihat AppServiceProvider RateLimiter)
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware('throttle:public')->group(function () {
+        Route::get('/home', HomeController::class);
+        Route::get('/profile', ProfileController::class);
+        Route::get('/categories', [PublicDataController::class, 'categories']);
+        Route::get('/achievements', [PublicDataController::class, 'achievements']);
+        Route::get('/achievements/{slug}', [PublicDataController::class, 'achievementShow']);
+        Route::get('/downloads', [PublicDataController::class, 'downloads']);
+        Route::get('/ekstrakurikuler', [PublicDataController::class, 'extracurriculars']);
+        Route::get('/settings/public', [PublicDataController::class, 'settings']);
+        Route::get('/menus', [PublicDataController::class, 'menus']);
+    });
 
-    // Auth — member (portal) & admin (CMS) terpisah + rate limit
-    Route::middleware('throttle:10,1')->group(function () {
+    // List + search artikel (lebih ketat)
+    Route::middleware('throttle:public-search')->group(function () {
+        Route::get('/articles', [ArticleController::class, 'index']);
+    });
+
+    // Detail artikel (views) + anti-inflate di controller
+    Route::middleware('throttle:public-read')->group(function () {
+        Route::get('/articles/{slug}', [ArticleController::class, 'show']);
+    });
+
+    // Preview draf — cegah tebak token
+    Route::middleware('throttle:preview')->group(function () {
+        Route::get('/articles/preview/{token}', [ArticleController::class, 'preview']);
+    });
+
+    Route::middleware('throttle:seo')->group(function () {
+        Route::get('/seo/home', [\App\Http\Controllers\SeoController::class, 'metaHome']);
+        Route::get('/seo/page/{page}', [\App\Http\Controllers\SeoController::class, 'metaPage']);
+        Route::get('/seo/article/{slug}', [\App\Http\Controllers\SeoController::class, 'metaArticle']);
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Auth — login vs register terpisah
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware('throttle:auth-login')->group(function () {
         Route::post('/auth/login', [AuthController::class, 'login']); // legacy → admin
         Route::post('/auth/member/login', [AuthController::class, 'loginMember']);
-        Route::post('/auth/member/register', [AuthController::class, 'registerMember']);
         Route::post('/auth/admin/login', [AuthController::class, 'loginAdmin']);
+    });
+
+    Route::middleware('throttle:auth-register')->group(function () {
+        Route::post('/auth/member/register', [AuthController::class, 'registerMember']);
     });
 
     Route::middleware('auth:sanctum')->group(function () {
