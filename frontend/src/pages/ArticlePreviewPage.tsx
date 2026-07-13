@@ -6,6 +6,7 @@ import { api, type Article } from '../lib/api'
 import { coverSrc, formatDate } from '../lib/utils'
 import { Badge } from '../components/ui/Badge'
 import { ArticleDetailSkeleton } from '../components/ui/Skeleton'
+import { SafeHtml } from '../components/ui/SafeHtml'
 
 type PreviewResponse = {
   article: Article
@@ -87,10 +88,7 @@ export function ArticlePreviewPage() {
               className="h-full w-full object-cover"
             />
           </div>
-          <div
-            className="prose-article"
-            dangerouslySetInnerHTML={{ __html: article.body || '' }}
-          />
+          <SafeHtml className="prose-article" html={article.body} />
         </article>
       </div>
     </div>

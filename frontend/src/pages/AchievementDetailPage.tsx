@@ -4,6 +4,7 @@ import { api, type Achievement } from '../lib/api'
 import { cn, formatDate, softMediaClass } from '../lib/utils'
 import { Badge } from '../components/ui/Badge'
 import { PageSkeleton } from '../components/ui/Skeleton'
+import { SafeHtml } from '../components/ui/SafeHtml'
 
 export function AchievementDetailPage() {
   const { slug } = useParams()
@@ -35,9 +36,9 @@ export function AchievementDetailPage() {
       <p className="mt-2 text-sm text-subtle">{formatDate(data.achieved_at)}</p>
       <div className={cn('my-8 aspect-[16/9] max-w-4xl rounded-[16px]', softMediaClass(2))} />
       <p className="max-w-3xl text-lg text-body">{data.excerpt}</p>
-      <div
+      <SafeHtml
         className="prose-article mt-6 max-w-3xl"
-        dangerouslySetInnerHTML={{ __html: (data as Achievement & { body?: string }).body || '' }}
+        html={(data as Achievement & { body?: string }).body}
       />
     </div>
   )

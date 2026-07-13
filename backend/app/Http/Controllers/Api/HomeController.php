@@ -31,7 +31,7 @@ class HomeController extends Controller
             ->get();
 
         return response()->json([
-            'settings' => Setting::allAsArray(),
+            'settings' => \App\Support\PublicSettings::filterPublic(Setting::allAsArray()),
             'banners' => Banner::query()->where('is_active', true)->orderBy('sort_order')->get(),
             'welcome' => WelcomeBlock::query()->where('key', 'home')->where('is_active', true)->first(),
             'services' => ServiceItem::query()->where('is_active', true)->orderBy('sort_order')->get(),

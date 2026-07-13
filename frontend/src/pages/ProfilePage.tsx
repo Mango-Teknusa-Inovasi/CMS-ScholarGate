@@ -20,6 +20,8 @@ import { cn } from '../lib/utils'
 import { SeoHead } from '../components/seo/SeoHead'
 import { PageSkeleton } from '../components/ui/Skeleton'
 import { softTones, toneAt } from '../lib/buttonTones'
+import { SafeHtml } from '../components/ui/SafeHtml'
+import { safeHref } from '../lib/sanitize'
 
 const iconMap: Record<string, LucideIcon> = {
   'map-pin': MapPin,
@@ -108,13 +110,10 @@ export function ProfilePage() {
             <div className="rounded-[16px] bg-peach p-6 md:p-8">
               <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-brand">Sambutan</p>
               <h2 className="text-balance text-2xl font-bold tracking-tight text-ink">{data.welcome.title}</h2>
-              <div
+              <SafeHtml
                 className="prose-article mt-4 leading-relaxed text-body"
-                dangerouslySetInnerHTML={{
-                  __html: (data.welcome.body || '').includes('<')
-                    ? data.welcome.body || ''
-                    : (data.welcome.body || '').replace(/\n/g, '<br/>'),
-                }}
+                html={data.welcome.body}
+                plainFallback
               />
             </div>
           </div>
@@ -141,11 +140,11 @@ export function ProfilePage() {
                 </div>
                 <p className="text-xs font-bold uppercase tracking-wide text-subtle">{c.label}</p>
                 <p className="mt-1 whitespace-pre-line text-sm font-medium text-ink">{c.value}</p>
-                {c.link_url && (
+                {safeHref(c.link_url) && (
                   <a
-                    href={c.link_url}
+                    href={safeHref(c.link_url)}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className={cn(
                       'mt-3 inline-flex rounded-[12px] px-3 py-1.5 text-xs font-semibold transition active:scale-[0.98]',
                       softTones.sky.solid,
@@ -179,10 +178,7 @@ export function ProfilePage() {
                 </button>
               ))}
             </div>
-            <div
-              className="prose-article p-6 md:p-8"
-              dangerouslySetInnerHTML={{ __html: active?.content_html || '' }}
-            />
+            <SafeHtml className="prose-article p-6 md:p-8" html={active?.content_html} />
           </div>
         </section>
       )}
@@ -198,10 +194,14 @@ export function ProfilePage() {
           {data.quick_services.map((item, i) => {
             const Icon = iconMap[item.icon] || Sparkles
             const tone = softTones[toneAt(i)]
+            const href = safeHref(item.link_url) || '#'
             return (
               <a
                 key={item.id}
-                href={item.link_url || '#'}
+                href={href}
+                {...(href.startsWith('http')
+                  ? { target: '_blank', rel: 'noopener noreferrer' }
+                  : {})}
                 className="rounded-[16px] border border-line bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
               >
                 <div

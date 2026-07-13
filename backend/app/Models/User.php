@@ -33,9 +33,16 @@ class User extends Authenticatable
         return $this->hasMany(Article::class);
     }
 
+    /** CMS staff (admin atau editor) */
     public function isAdmin(): bool
     {
         return in_array($this->role, ['admin', 'editor'], true);
+    }
+
+    /** Super admin — users, backup/restore, ops sensitif */
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'admin';
     }
 
     public function isMember(): bool

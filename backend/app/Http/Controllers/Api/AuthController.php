@@ -101,10 +101,11 @@ class AuthController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:6', 'confirmed'],
+            'password' => ['required', 'string', 'min:8', 'max:255', 'confirmed'],
         ]);
 
         // password cast 'hashed' di model — jangan Hash::make lagi (double-hash)
+        // role selalu member — tidak bisa mass-assign admin via register
         $user = User::query()->create([
             'name' => $data['name'],
             'email' => $data['email'],
@@ -134,6 +135,7 @@ class AuthController extends Controller
             'role' => $user->role,
             'gravatar_url' => $user->gravatar_url,
             'is_admin' => $user->isAdmin(),
+            'is_super_admin' => $user->isSuperAdmin(),
         ];
     }
 }

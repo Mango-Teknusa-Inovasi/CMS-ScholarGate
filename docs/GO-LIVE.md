@@ -1,6 +1,6 @@
 # Go-live checklist — prioritas tinggi
 
-Struktur folder & apa yang di-upload: [DEPLOY.md](./DEPLOY.md)
+Struktur folder & apa yang di-upload: [DEPLOY.md](./DEPLOY.md) · Keamanan: [SECURITY.md](./SECURITY.md)
 
 ## 1. Environment production
 

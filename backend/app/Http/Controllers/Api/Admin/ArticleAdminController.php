@@ -151,7 +151,7 @@ class ArticleAdminController extends Controller
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string', 'max:500'],
             'focus_keyword' => ['nullable', 'string', 'max:120'],
-            'canonical_url' => ['nullable', 'string', 'max:500'],
+            'canonical_url' => ['nullable', 'string', 'max:500', 'regex:/^(https?:\/\/|\/)/i'],
             'og_image' => ['nullable', 'string', 'max:500'],
             'noindex' => ['nullable', 'boolean'],
             'faq_items' => ['nullable', 'array'],

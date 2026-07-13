@@ -79,26 +79,28 @@ Route::prefix('v1')->group(function () {
             Route::put('/media-library/{medium}', [MediaAdminController::class, 'update']);
             Route::delete('/media-library/{medium}', [MediaAdminController::class, 'destroy']);
 
-            // Users
-            Route::get('/users', [UserAdminController::class, 'index']);
-            Route::post('/users', [UserAdminController::class, 'store']);
-            Route::put('/users/{user}', [UserAdminController::class, 'update']);
-            Route::delete('/users/{user}', [UserAdminController::class, 'destroy']);
+            // Users — super admin only
+            Route::middleware('super_admin')->group(function () {
+                Route::get('/users', [UserAdminController::class, 'index']);
+                Route::post('/users', [UserAdminController::class, 'store']);
+                Route::put('/users/{user}', [UserAdminController::class, 'update']);
+                Route::delete('/users/{user}', [UserAdminController::class, 'destroy']);
+
+                // Backup / restore konten — super admin only
+                Route::get('/backups', [BackupAdminController::class, 'index']);
+                Route::post('/backups', [BackupAdminController::class, 'store']);
+                Route::get('/backups/{filename}/download', [BackupAdminController::class, 'download'])
+                    ->where('filename', '^[A-Za-z0-9._-]+$');
+                Route::delete('/backups/{filename}', [BackupAdminController::class, 'destroy'])
+                    ->where('filename', '^[A-Za-z0-9._-]+$');
+                Route::post('/backups/restore', [BackupAdminController::class, 'restore']);
+            });
 
             // Settings & profile
             Route::get('/settings', [ResourceAdminController::class, 'settings']);
             Route::put('/settings', [ResourceAdminController::class, 'updateSettings']);
             Route::get('/profile-page', [ResourceAdminController::class, 'profilePage']);
             Route::put('/profile-page', [ResourceAdminController::class, 'updateProfilePage']);
-
-            // Backup / restore konten
-            Route::get('/backups', [BackupAdminController::class, 'index']);
-            Route::post('/backups', [BackupAdminController::class, 'store']);
-            Route::get('/backups/{filename}/download', [BackupAdminController::class, 'download'])
-                ->where('filename', '.*');
-            Route::delete('/backups/{filename}', [BackupAdminController::class, 'destroy'])
-                ->where('filename', '.*');
-            Route::post('/backups/restore', [BackupAdminController::class, 'restore']);
 
             // Generic resources last
             Route::get('/{resource}', [ResourceAdminController::class, 'index']);

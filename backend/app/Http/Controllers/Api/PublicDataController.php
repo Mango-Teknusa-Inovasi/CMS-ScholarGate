@@ -9,6 +9,7 @@ use App\Models\MenuItem;
 use App\Models\Category;
 use App\Models\Download;
 use App\Models\Setting;
+use App\Support\PublicSettings;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -16,7 +17,7 @@ class PublicDataController extends Controller
 {
     public function settings(): JsonResponse
     {
-        return response()->json(Setting::allAsArray());
+        return response()->json(PublicSettings::filterPublic(Setting::allAsArray()));
     }
 
     public function menus(): JsonResponse

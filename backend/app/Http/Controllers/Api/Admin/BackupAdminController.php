@@ -46,26 +46,29 @@ class BackupAdminController extends Controller
     public function restore(Request $request): JsonResponse
     {
         $request->validate([
-            'file' => ['required', 'file', 'max:51200', 'mimes:json,zip,txt'],
+            'file' => ['required', 'file', 'max:40960', 'mimes:json,zip,txt'],
             'mode' => ['nullable', 'in:merge,replace'],
+            // Restore tabel users (password) — default false demi keamanan
+            'include_users' => ['nullable', 'boolean'],
         ]);
 
         $file = $request->file('file');
         $mode = $request->string('mode', 'merge')->toString() ?: 'merge';
+        $includeUsers = $request->boolean('include_users');
 
         try {
             $json = $this->backups->extractJsonFromUpload(
-                $file->getRealPath(),
+                $file->getRealPath() ?: '',
                 $file->getClientOriginalName()
             );
-            $result = $this->backups->restoreFromJson($json, $mode);
+            $result = $this->backups->restoreFromJson($json, $mode, $includeUsers);
         } catch (\InvalidArgumentException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         } catch (\Throwable $e) {
             report($e);
 
             return response()->json([
-                'message' => 'Restore gagal: '.$e->getMessage(),
+                'message' => 'Restore gagal. Periksa log server.',
             ], 500);
         }
 
@@ -73,7 +76,9 @@ class BackupAdminController extends Controller
             'message' => 'Restore berhasil',
             'tables' => $result['tables'],
             'rows' => $result['rows'],
+            'skipped' => $result['skipped'] ?? [],
             'mode' => $mode,
+            'include_users' => $includeUsers,
         ]);
     }
 }

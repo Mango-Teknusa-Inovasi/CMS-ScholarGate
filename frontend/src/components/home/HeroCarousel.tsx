@@ -4,6 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import type { Banner } from '../../lib/api'
 import { cn, coverSrc } from '../../lib/utils'
 import { easeOutExpo } from '../../lib/motion'
+import { safeHref } from '../../lib/sanitize'
 
 export function HeroCarousel({ banners }: { banners: Banner[] }) {
   const [index, setIndex] = useState(0)
@@ -81,23 +82,29 @@ export function HeroCarousel({ banners }: { banners: Banner[] }) {
                     transition={{ duration: 0.4, delay: 0.2, ease: easeOutExpo }}
                   >
                     {/* Solid soft teal — jangan putih: global a{color:inherit} + parent text-white = label hilang */}
-                    {current.cta_url?.startsWith('/') ? (
-                      <Link
-                        to={current.cta_url || '/artikel'}
-                        className="inline-flex items-center rounded-[12px] bg-teal-500 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_2px_12px_rgb(20_184_166/0.4)] transition hover:bg-teal-600 active:scale-[0.98]"
-                        style={{ color: '#ffffff' }}
-                      >
-                        {current.cta_label || 'Selengkapnya'}
-                      </Link>
-                    ) : (
-                      <a
-                        href={current.cta_url || '/artikel'}
-                        className="inline-flex items-center rounded-[12px] bg-teal-500 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_2px_12px_rgb(20_184_166/0.4)] transition hover:bg-teal-600 active:scale-[0.98]"
-                        style={{ color: '#ffffff' }}
-                      >
-                        {current.cta_label || 'Selengkapnya'}
-                      </a>
-                    )}
+                    {(() => {
+                      const href = safeHref(current.cta_url) || '/artikel'
+                      const cls =
+                        'inline-flex items-center rounded-[12px] bg-teal-500 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_2px_12px_rgb(20_184_166/0.4)] transition hover:bg-teal-600 active:scale-[0.98]'
+                      if (href.startsWith('/')) {
+                        return (
+                          <Link to={href} className={cls} style={{ color: '#ffffff' }}>
+                            {current.cta_label || 'Selengkapnya'}
+                          </Link>
+                        )
+                      }
+                      return (
+                        <a
+                          href={href}
+                          className={cls}
+                          style={{ color: '#ffffff' }}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {current.cta_label || 'Selengkapnya'}
+                        </a>
+                      )
+                    })()}
                   </motion.div>
                 )}
               </div>

@@ -1,5 +1,6 @@
 import type { Partner } from '../../lib/api'
 import { mediaUrl } from '../../lib/utils'
+import { safeHref } from '../../lib/sanitize'
 
 export function PartnersSection({ partners }: { partners: Partner[] }) {
   if (!partners.length) return null
@@ -11,12 +12,14 @@ export function PartnersSection({ partners }: { partners: Partner[] }) {
           Mitra & kolaborator
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4">
-          {partners.map((p) => (
+          {partners.map((p) => {
+            const href = p.url && p.url !== '#' ? safeHref(p.url) : undefined
+            return (
             <a
               key={p.id}
-              href={p.url && p.url !== '#' ? p.url : undefined}
-              target={p.url && p.url !== '#' ? '_blank' : undefined}
-              rel="noreferrer"
+              href={href}
+              target={href ? '_blank' : undefined}
+              rel={href ? 'noopener noreferrer' : undefined}
               className="flex h-[68px] min-w-[112px] items-center justify-center rounded-2xl border border-line bg-page px-4 text-center shadow-sm transition hover:border-brand/30 hover:bg-white"
               title={p.name}
             >
@@ -31,7 +34,8 @@ export function PartnersSection({ partners }: { partners: Partner[] }) {
                 <span className="text-xs font-semibold leading-snug text-subtle">{p.name}</span>
               )}
             </a>
-          ))}
+            )
+          })}
         </div>
       </div>
     </section>

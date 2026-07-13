@@ -17,7 +17,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureAdmin::class,
+            'super_admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
         ]);
+
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
 
         $middleware->validateCsrfTokens(except: [
             // SPA uses Bearer tokens; CSRF cookie optional

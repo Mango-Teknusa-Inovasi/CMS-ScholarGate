@@ -7,6 +7,7 @@ import { Badge } from '../components/ui/Badge'
 import { SeoHead } from '../components/seo/SeoHead'
 import { ArticleDetailSkeleton } from '../components/ui/Skeleton'
 import { ShareButton } from '../components/ShareButton'
+import { SafeHtml } from '../components/ui/SafeHtml'
 
 type DetailResponse = {
   article: Article
@@ -88,10 +89,7 @@ export function ArticleDetailPage() {
           {article.excerpt && (
             <p className="mb-6 text-lg leading-relaxed text-body">{article.excerpt}</p>
           )}
-          <div
-            className="prose-article"
-            dangerouslySetInnerHTML={{ __html: article.body || '' }}
-          />
+          <SafeHtml className="prose-article" html={article.body} />
 
           {article.tags && article.tags.length > 0 && (
             <div className="mt-8 flex flex-wrap gap-2">

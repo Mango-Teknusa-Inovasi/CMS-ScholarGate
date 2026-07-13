@@ -205,24 +205,38 @@ function NavItemLink({
 function SidebarNav({
   pathname,
   onNavigate,
+  isSuperAdmin,
 }: {
   pathname: string
   onNavigate?: () => void
+  isSuperAdmin?: boolean
 }) {
   const reduce = useReducedMotion()
+  const visibleGroups = navGroups
+    .map((g) => ({
+      ...g,
+      items: g.items.filter((item) => {
+        if (item.to === '/admin/users' || item.to === '/admin/backups') {
+          return !!isSuperAdmin
+        }
+        return true
+      }),
+    }))
+    .filter((g) => g.items.length > 0)
+
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(navGroups.map((g) => [g.id, false])),
+    Object.fromEntries(visibleGroups.map((g) => [g.id, false])),
   )
 
   useEffect(() => {
-    const activeIds = navGroups.filter((g) => groupHasActive(pathname, g)).map((g) => g.id)
+    const activeIds = visibleGroups.filter((g) => groupHasActive(pathname, g)).map((g) => g.id)
     if (activeIds.length === 0) return
     setOpenGroups((prev) => {
       const next = { ...prev }
       for (const id of activeIds) next[id] = true
       return next
     })
-  }, [pathname])
+  }, [pathname, isSuperAdmin])
 
   const toggleGroup = (id: string) => {
     setOpenGroups((prev) => ({ ...prev, [id]: !prev[id] }))
@@ -236,7 +250,7 @@ function SidebarNav({
         ))}
       </div>
 
-      {navGroups.map((group) => {
+      {visibleGroups.map((group) => {
         const open = !!openGroups[group.id]
         const hasActive = groupHasActive(pathname, group)
 
@@ -307,6 +321,7 @@ function SidebarChrome({
   onNavigate,
   showClose,
   onClose,
+  isSuperAdmin,
 }: {
   pathname: string
   userName: string
@@ -316,6 +331,7 @@ function SidebarChrome({
   onNavigate?: () => void
   showClose?: boolean
   onClose?: () => void
+  isSuperAdmin?: boolean
 }) {
   return (
     <>
@@ -337,7 +353,7 @@ function SidebarChrome({
       </div>
 
       <div className="flex-1 overflow-y-auto overscroll-contain">
-        <SidebarNav pathname={pathname} onNavigate={onNavigate} />
+        <SidebarNav pathname={pathname} onNavigate={onNavigate} isSuperAdmin={isSuperAdmin} />
       </div>
 
       <div className="border-t border-line bg-peach-soft/40 p-2.5">
@@ -392,14 +408,37 @@ export function AdminLayout() {
       const { data } = await api.get('/auth/me', {
         headers: { Authorization: `Bearer ${token}` },
       })
-      return data as { user: { id: number; name: string; email: string; role?: string; is_admin?: boolean } }
+      return data as {
+        user: {
+          id: number
+          name: string
+          email: string
+          role?: string
+          is_admin?: boolean
+          is_super_admin?: boolean
+        }
+      }
     },
     retry: false,
   })
 
+  const isSuperAdmin =
+    data?.user?.is_super_admin === true || data?.user?.role === 'admin'
+
   useEffect(() => {
     setMobileOpen(false)
   }, [location.pathname])
+
+  // Editor tidak boleh buka users / backups
+  useEffect(() => {
+    if (!data?.user) return
+    const path = location.pathname
+    const needsSuper =
+      path.startsWith('/admin/users') || path.startsWith('/admin/backups')
+    if (needsSuper && !isSuperAdmin) {
+      navigate('/admin', { replace: true })
+    }
+  }, [data?.user, isSuperAdmin, location.pathname, navigate])
 
   const logout = async () => {
     try {
@@ -464,6 +503,7 @@ export function AdminLayout() {
     userEmail: user.email,
     userInitials: initials,
     onLogout: logout,
+    isSuperAdmin,
   }
 
   return (

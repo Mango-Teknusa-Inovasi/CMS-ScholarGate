@@ -11,6 +11,8 @@ export type AuthUser = {
   role: string
   gravatar_url: string
   is_admin?: boolean
+  /** role === 'admin' only (bukan editor) */
+  is_super_admin?: boolean
 }
 
 export function getMemberToken() {

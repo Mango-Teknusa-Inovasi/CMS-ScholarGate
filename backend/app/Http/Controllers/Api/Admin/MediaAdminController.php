@@ -35,7 +35,8 @@ class MediaAdminController extends Controller
     public function store(Request $request, ImageOptimizer $optimizer): JsonResponse
     {
         $request->validate([
-            'file' => ['required', 'file', 'max:12288', 'mimes:jpg,jpeg,png,gif,webp,bmp,pdf,doc,docx,svg'],
+            // SVG dilarang (XSS vector jika di-serve inline)
+            'file' => ['required', 'file', 'max:12288', 'mimes:jpg,jpeg,png,gif,webp,bmp,pdf,doc,docx'],
             'alt' => ['nullable', 'string', 'max:255'],
             'max_width' => ['nullable', 'integer', 'min:400', 'max:3840'],
             // force=optimize|auto (default auto: compress images, raw otherwise)
@@ -95,6 +96,15 @@ class MediaAdminController extends Controller
         ]);
 
         $mime = strtolower($data['content_type']);
+        $ext = strtolower(pathinfo($data['filename'], PATHINFO_EXTENSION));
+
+        // Tolak SVG & tipe berbahaya
+        if (
+            str_contains($mime, 'svg')
+            || in_array($ext, ['svg', 'svgz', 'html', 'htm', 'js', 'php', 'exe'], true)
+        ) {
+            return response()->json(['message' => 'Tipe file tidak diizinkan (keamanan).'], 422);
+        }
 
         // Tolak raster yang seharusnya dikompres app
         if (ImageOptimizer::needsAppCompression($mime)) {
@@ -138,6 +148,23 @@ class MediaAdminController extends Controller
 
         $disk = $data['disk'] ?? MediaStorage::diskName();
         $path = ltrim($data['path'], '/');
+
+        // Path traversal & prefix wajib di bawah uploads/
+        if (
+            $path === ''
+            || str_contains($path, '..')
+            || str_contains($path, "\0")
+            || ! preg_match('#^uploads/[A-Za-z0-9_./-]+$#', $path)
+        ) {
+            return response()->json([
+                'message' => 'Path media tidak valid. Harus di bawah uploads/.',
+            ], 422);
+        }
+
+        $mime = strtolower($data['mime']);
+        if (str_contains($mime, 'svg') || str_contains($mime, 'html') || str_contains($mime, 'javascript')) {
+            return response()->json(['message' => 'MIME type tidak diizinkan.'], 422);
+        }
 
         // Pastikan object ada di R2 (best-effort)
         if (in_array($disk, ['r2', 's3'], true)) {

@@ -1,6 +1,7 @@
 import { MessageCircle } from 'lucide-react'
 import type { WelcomeBlock } from '../../lib/api'
 import { coverSrc, mediaUrl } from '../../lib/utils'
+import { SafeHtml } from '../ui/SafeHtml'
 
 export function WelcomeSection({ welcome }: { welcome: WelcomeBlock | null }) {
   if (!welcome) return null
@@ -45,13 +46,10 @@ export function WelcomeSection({ welcome }: { welcome: WelcomeBlock | null }) {
           <h2 className="text-balance text-2xl font-bold leading-snug tracking-tight text-ink md:text-[28px]">
             {welcome.title}
           </h2>
-          <div
+          <SafeHtml
             className="prose-article mt-4 max-w-none text-[15px] leading-relaxed text-body"
-            dangerouslySetInnerHTML={{
-              __html: (welcome.body || '').includes('<')
-                ? welcome.body || ''
-                : (welcome.body || '').replace(/\n/g, '<br/>'),
-            }}
+            html={welcome.body}
+            plainFallback
           />
         </div>
       </div>

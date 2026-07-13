@@ -17,6 +17,7 @@ import { easeOutExpo } from '../../lib/motion'
 import { Logo } from '../ui/Logo'
 import { Gravatar } from '../ui/Gravatar'
 import { useMemberAuth } from '../../hooks/useMemberAuth'
+import { safeHref } from '../../lib/sanitize'
 
 type MenuChild = {
   id: number
@@ -51,7 +52,8 @@ const fallbackNav: MenuItem[] = [
 ]
 
 function isInternal(url: string) {
-  return url.startsWith('/') && !url.startsWith('//')
+  const safe = safeHref(url)
+  return Boolean(safe && safe.startsWith('/') && !safe.startsWith('//'))
 }
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
@@ -78,7 +80,7 @@ export function Header() {
   })
 
   const siteName = settings?.site_name || 'Scholargate'
-  const reportUrl = settings?.report_url || '#'
+  const reportUrl = safeHref(settings?.report_url) || '#'
   const siteLogo = settings?.site_logo
   const nav = menus?.header?.length ? menus.header : fallbackNav
 
@@ -117,39 +119,58 @@ export function Header() {
                     isInternal(child.url) ? (
                       <Link
                         key={child.id}
-                        to={child.url}
+                        to={safeHref(child.url) || '/'}
                         className="block rounded-xl px-3 py-2.5 text-sm text-body hover:bg-muted hover:text-ink"
                       >
                         {child.label}
                       </Link>
-                    ) : (
+                    ) : safeHref(child.url) ? (
                       <a
                         key={child.id}
-                        href={child.url}
+                        href={safeHref(child.url)}
                         target={child.open_in_new_tab ? '_blank' : undefined}
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                         className="block rounded-xl px-3 py-2.5 text-sm text-body hover:bg-muted"
                       >
                         {child.label}
                       </a>
+                    ) : (
+                      <span
+                        key={child.id}
+                        className="block rounded-xl px-3 py-2.5 text-sm text-subtle"
+                      >
+                        {child.label}
+                      </span>
                     ),
                   )}
                 </div>
               </div>
             ) : isInternal(item.url) ? (
-              <NavLink key={item.id} to={item.url} className={navClass} end={item.url === '/'}>
+              <NavLink
+                key={item.id}
+                to={safeHref(item.url) || '/'}
+                className={navClass}
+                end={(safeHref(item.url) || '/') === '/'}
+              >
                 {item.label}
               </NavLink>
-            ) : (
+            ) : safeHref(item.url) ? (
               <a
                 key={item.id}
-                href={item.url}
+                href={safeHref(item.url)}
                 target={item.open_in_new_tab ? '_blank' : undefined}
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 className="rounded-[12px] px-3 py-2 text-sm font-medium text-body hover:bg-muted"
               >
                 {item.label}
               </a>
+            ) : (
+              <span
+                key={item.id}
+                className="rounded-[12px] px-3 py-2 text-sm font-medium text-subtle"
+              >
+                {item.label}
+              </span>
             ),
           )}
         </nav>

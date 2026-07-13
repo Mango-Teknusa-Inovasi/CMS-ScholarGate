@@ -50,7 +50,8 @@ return [
     |
     */
 
-    'expiration' => null,
+    // Token API kedaluwarsa (menit). null = tidak pernah. 14 hari = 20160.
+    'expiration' => (int) env('SANCTUM_TOKEN_EXPIRATION', 20160) ?: null,
 
     /*
     |--------------------------------------------------------------------------

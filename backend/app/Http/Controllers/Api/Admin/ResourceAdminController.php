@@ -17,6 +17,8 @@ use App\Models\ServiceItem;
 use App\Models\Setting;
 use App\Models\MenuItem;
 use App\Models\WelcomeBlock;
+use App\Support\PublicSettings;
+use App\Support\SafeUrl;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -51,6 +53,7 @@ class ResourceAdminController extends Controller
     {
         $model = $this->model($resource);
         $data = $this->normalize($request->all());
+        $this->assertSafeUrls($data);
         $this->prepareSlug($resource, $data);
         $item = $model::create($data);
 
@@ -63,6 +66,7 @@ class ResourceAdminController extends Controller
         /** @var Model $item */
         $item = $model::query()->findOrFail($id);
         $data = $this->normalize($request->all());
+        $this->assertSafeUrls($data);
         $this->prepareSlug($resource, $data, $id);
         $item->update($data);
 
@@ -75,6 +79,9 @@ class ResourceAdminController extends Controller
      */
     private function normalize(array $data): array
     {
+        // Jangan izinkan field meta mass-assignment
+        unset($data['id'], $data['created_at'], $data['updated_at'], $data['deleted_at']);
+
         foreach ($data as $key => $value) {
             if ($value === '' || $value === 'null') {
                 $data[$key] = null;
@@ -85,9 +92,28 @@ class ResourceAdminController extends Controller
             if (in_array($key, ['sort_order', 'parent_id', 'download_count'], true) && $data[$key] !== null) {
                 $data[$key] = (int) $data[$key];
             }
+            // URL fields (bukan file_path storage) — strip javascript: dll.
+            if (in_array($key, ['url', 'cta_url', 'link_url'], true) && is_string($data[$key] ?? null)) {
+                $data[$key] = SafeUrl::normalize($data[$key]);
+            }
         }
 
         return $data;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function assertSafeUrls(array $data): void
+    {
+        foreach (['url', 'cta_url', 'link_url'] as $key) {
+            if (! array_key_exists($key, $data) || $data[$key] === null || $data[$key] === '') {
+                continue;
+            }
+            if (! is_string($data[$key]) || ! SafeUrl::isAllowed($data[$key])) {
+                abort(422, "Field {$key} berisi URL tidak aman.");
+            }
+        }
     }
 
     public function destroy(string $resource, int $id): JsonResponse
@@ -101,19 +127,26 @@ class ResourceAdminController extends Controller
 
     public function settings(): JsonResponse
     {
-        return response()->json(Setting::allAsArray());
+        return response()->json(PublicSettings::filterPublic(Setting::allAsArray()));
     }
 
     public function updateSettings(Request $request): JsonResponse
     {
         foreach ($request->all() as $key => $value) {
+            if (! is_string($key) || ! PublicSettings::isAllowed($key)) {
+                continue;
+            }
             if (is_array($value)) {
                 $value = json_encode($value);
+            }
+            // URL-like settings
+            if (in_array($key, ['report_url'], true) && is_string($value) && $value !== '') {
+                $value = SafeUrl::normalize($value) ?? '';
             }
             Setting::setValue($key, is_bool($value) ? ($value ? '1' : '0') : (string) $value);
         }
 
-        return response()->json(Setting::allAsArray());
+        return response()->json(PublicSettings::filterPublic(Setting::allAsArray()));
     }
 
     public function profilePage(): JsonResponse
@@ -133,7 +166,7 @@ class ResourceAdminController extends Controller
     public function upload(Request $request, \App\Services\ImageOptimizer $optimizer): JsonResponse
     {
         $request->validate([
-            'file' => ['required', 'file', 'max:12288', 'mimes:jpg,jpeg,png,gif,webp,pdf,doc,docx,svg'],
+            'file' => ['required', 'file', 'max:12288', 'mimes:jpg,jpeg,png,gif,webp,pdf,doc,docx'],
             'alt' => ['nullable', 'string', 'max:255'],
             'max_width' => ['nullable', 'integer', 'min:400', 'max:3840'],
         ]);

@@ -17,6 +17,7 @@ import { SeoHead } from '../components/seo/SeoHead'
 import { CardGridSkeleton } from '../components/ui/Skeleton'
 import { softTones, toneAt } from '../lib/buttonTones'
 import { cn, mediaUrl } from '../lib/utils'
+import { safeHref } from '../lib/sanitize'
 
 type Extracurricular = {
   id: number
@@ -130,13 +131,14 @@ export function ExtracurricularPage() {
               const className =
                 'rounded-[16px] border border-line bg-surface p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md'
 
-              if (item.url) {
+              const safeUrl = item.url ? safeHref(item.url) : undefined
+              if (safeUrl) {
                 return (
                   <a
                     key={item.id}
-                    href={item.url}
+                    href={safeUrl}
                     target={item.open_in_new_tab ? '_blank' : undefined}
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className={className}
                   >
                     {CardInner}
