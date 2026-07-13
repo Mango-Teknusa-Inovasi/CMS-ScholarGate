@@ -5,14 +5,19 @@ namespace App\Http\Controllers;
 use App\Support\Installer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 class InstallController extends Controller
 {
-    public function show(): View|RedirectResponse
+    public function show(): View|RedirectResponse|Response
     {
         if (Installer::isInstalled()) {
             return redirect('/');
+        }
+
+        if (! Installer::canInstallViaWeb()) {
+            return $this->lockedResponse();
         }
 
         $requirements = Installer::checkRequirements();
@@ -35,13 +40,18 @@ class InstallController extends Controller
                 'admin_email' => 'admin@scholargate.test',
                 'admin_name' => 'Admin Scholargate',
             ],
+            'forceWarning' => Installer::looksInstalled() && Installer::allowInstallFlag(),
         ]);
     }
 
-    public function store(Request $request): RedirectResponse|View
+    public function store(Request $request): RedirectResponse|View|Response
     {
         if (Installer::isInstalled()) {
             return redirect('/');
+        }
+
+        if (! Installer::canInstallViaWeb()) {
+            return $this->lockedResponse();
         }
 
         $data = $request->validate([
@@ -56,13 +66,23 @@ class InstallController extends Controller
             'admin_email' => ['required', 'email', 'max:255'],
             'admin_password' => ['required', 'string', 'min:8', 'max:255'],
             'seed' => ['nullable', 'boolean'],
+            // Konfirmasi eksplisit jika re-install (DB sudah berisi)
+            'confirm_reinstall' => ['nullable', 'accepted'],
         ]);
+
+        if (Installer::looksInstalled() && ! $request->boolean('confirm_reinstall')) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'install' => 'Database sudah berisi data. Centang konfirmasi re-install (migrate:fresh akan menghapus data) atau batalkan.',
+                ]);
+        }
 
         // checkbox + hidden: "1" = seed demo, "0" = skip
         $data['seed'] = (string) $request->input('seed', '1') === '1';
         $data['app_name'] = 'Scholargate';
 
-        $result = Installer::run($data);
+        $result = Installer::run($data, viaWeb: true);
 
         if (! $result['ok']) {
             return back()
@@ -72,6 +92,14 @@ class InstallController extends Controller
         }
 
         return redirect('/admin/login')
-            ->with('status', 'Instalasi berhasil. Silakan login.');
+            ->with('status', 'Instalasi berhasil. Installer web telah dikunci (ALLOW_INSTALL=false). Silakan login.');
+    }
+
+    private function lockedResponse(): Response
+    {
+        return response()
+            ->view('install-locked', [
+                'reason' => Installer::installBlockedReason(),
+            ], 403);
     }
 }

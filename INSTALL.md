@@ -63,15 +63,20 @@ Semua upload CMS (banner, cover, media library, logo) disimpan ke R2 di folder `
 
 1. Pastikan SPA sudah di-build dan di-upload (`public/spa`).
 2. Buat database di panel hosting.
-3. Buka: `https://domain-anda/install`
-4. Pilih:
+3. Di `.env` set **`ALLOW_INSTALL=true`** (wajib di production / staging).
+4. Buka: `https://domain-anda/install`
+5. Pilih:
    - **PostgreSQL (default)**, atau
    - **MySQL / MariaDB**
-5. Isi host, port, nama DB, user, password, URL situs, akun admin.
-6. Centang seed demo jika ingin data contoh.
-7. Klik **Install sekarang**.
+6. Isi host, port, nama DB, user, password, URL situs, akun admin.
+7. Centang seed demo jika ingin data contoh.
+8. Klik **Install sekarang**.
 
-Installer menulis `.env`, migrate, seed, membuat admin, dan mengunci instalasi (`storage/app/installed`).
+Installer menulis `.env`, migrate, seed, membuat admin, lalu **mengunci** instalasi:
+- file `storage/app/installed`
+- `ALLOW_INSTALL=false` di `.env`
+
+Setelah itu `/install` mengembalikan **403**. Meski file lock dihapus, installer tetap terkunci jika database sudah berisi data (kecuali Anda set lagi `ALLOW_INSTALL=true` dengan sadar).
 
 ### Opsi B — CLI (VPS / lokal)
 

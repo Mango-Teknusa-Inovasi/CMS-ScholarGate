@@ -55,6 +55,19 @@ php artisan storage:link   # opsional (legacy lokal)
 
 Document root = `backend/public`.
 
+## 3b. Kunci installer
+
+Pastikan setelah setup:
+
+```env
+ALLOW_INSTALL=false
+APP_DEBUG=false
+APP_ENV=production
+```
+
+Cek: `https://domain-anda/install` → harus **403** (Installer terkunci).  
+Jangan biarkan `ALLOW_INSTALL=true` di production.
+
 ## 4. Password
 
 Default seed (dev):

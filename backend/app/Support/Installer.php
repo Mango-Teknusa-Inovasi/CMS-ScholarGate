@@ -38,6 +38,109 @@ class Installer
         return File::exists(storage_path('app/'.self::LOCK_PATH));
     }
 
+    /**
+     * ALLOW_INSTALL=true di .env → izinkan web install (sementara).
+     * Setelah sukses installer menulis ALLOW_INSTALL=false.
+     */
+    public static function allowInstallFlag(): bool
+    {
+        $raw = env('ALLOW_INSTALL', null);
+        if ($raw === null || $raw === '') {
+            return false;
+        }
+
+        return filter_var($raw, FILTER_VALIDATE_BOOLEAN);
+    }
+
+    /**
+     * Indikasi aplikasi sudah pernah di-setup (meski file lock hilang).
+     * Cegah re-install / migrate:fresh lewat web.
+     */
+    public static function looksInstalled(): bool
+    {
+        if (self::isInstalled()) {
+            return true;
+        }
+
+        try {
+            if (! File::exists(base_path('.env'))) {
+                return false;
+            }
+
+            // Tabel users + ada admin → hampir pasti sudah live
+            if (\Illuminate\Support\Facades\Schema::hasTable('users')) {
+                if (User::query()->whereIn('role', ['admin', 'editor'])->exists()) {
+                    return true;
+                }
+                if (User::query()->exists()) {
+                    return true;
+                }
+            }
+
+            if (\Illuminate\Support\Facades\Schema::hasTable('settings')
+                && \Illuminate\Support\Facades\Schema::hasTable('migrations')) {
+                return true;
+            }
+        } catch (Throwable) {
+            // DB belum dikonfigurasi / tidak connect → anggap belum installed
+        }
+
+        return false;
+    }
+
+    /**
+     * Apakah endpoint web /install boleh dibuka & di-POST.
+     *
+     * Aturan:
+     * - Sudah lock file → tidak
+     * - looksInstalled tanpa ALLOW_INSTALL=true → tidak (lock file terhapus pun aman)
+     * - Production: butuh ALLOW_INSTALL=true (kecuali fresh total: belum looksInstalled & flag default install-first)
+     * - local/testing: boleh jika belum installed
+     */
+    public static function canInstallViaWeb(): bool
+    {
+        if (self::isInstalled()) {
+            return false;
+        }
+
+        // Override eksplisit operator
+        if (self::allowInstallFlag()) {
+            return true;
+        }
+
+        // Sudah ada jejak instalasi di DB → wajib ALLOW_INSTALL=true
+        if (self::looksInstalled()) {
+            return false;
+        }
+
+        // Dev lokal: boleh install pertama
+        if (app()->environment(['local', 'testing'])) {
+            return true;
+        }
+
+        // Production / staging fresh (belum ada jejak):
+        // wajib ALLOW_INSTALL=true di .env agar tidak terbuka permanen
+        return false;
+    }
+
+    /**
+     * Pesan singkat kenapa install ditolak (untuk UI / log).
+     */
+    public static function installBlockedReason(): string
+    {
+        if (self::isInstalled()) {
+            return 'Aplikasi sudah terpasang (lock file).';
+        }
+        if (self::looksInstalled()) {
+            return 'Database sudah berisi data aplikasi. Set ALLOW_INSTALL=true di .env hanya jika Anda yakin ingin re-install (berbahaya).';
+        }
+        if (app()->environment('production') || app()->environment('staging')) {
+            return 'Installer web terkunci. Set ALLOW_INSTALL=true di .env, buka /install sekali, lalu pastikan flag kembali false.';
+        }
+
+        return 'Installer tidak tersedia.';
+    }
+
     public static function markInstalled(): void
     {
         File::ensureDirectoryExists(storage_path('app'));
@@ -48,6 +151,21 @@ class Installer
                 'app' => 'Scholargate CMS',
             ], JSON_PRETTY_PRINT)
         );
+
+        // Kunci web installer setelah sukses
+        try {
+            self::writeEnv(['ALLOW_INSTALL' => 'false']);
+        } catch (Throwable) {
+            // .env mungkin read-only di beberapa host; lock file tetap utama
+        }
+    }
+
+    public static function removeLockFile(): void
+    {
+        $path = storage_path('app/'.self::LOCK_PATH);
+        if (File::exists($path)) {
+            File::delete($path);
+        }
     }
 
     /**
@@ -96,12 +214,29 @@ class Installer
      *   admin_password?: string|null,
      *   seed?: bool
      * }  $input
+     * @param  bool  $viaWeb  true = enforce canInstallViaWeb / block reinstall
      * @return array{ok: bool, message: string, errors?: list<string>}
      */
-    public static function run(array $input): array
+    public static function run(array $input, bool $viaWeb = false): array
     {
         if (self::isInstalled()) {
             return ['ok' => false, 'message' => 'Aplikasi sudah terpasang.'];
+        }
+
+        if ($viaWeb && ! self::canInstallViaWeb()) {
+            return [
+                'ok' => false,
+                'message' => self::installBlockedReason(),
+            ];
+        }
+
+        // Web: tolak jika DB sudah berisi (meski flag true) kecuali ALLOW_INSTALL + belum looks? 
+        // Dengan flag true, superuser boleh force — tetap warning di controller.
+        if ($viaWeb && self::looksInstalled() && ! self::allowInstallFlag()) {
+            return [
+                'ok' => false,
+                'message' => self::installBlockedReason(),
+            ];
         }
 
         $req = self::checkRequirements();
@@ -142,6 +277,8 @@ class Installer
                 'CACHE_STORE' => 'database',
                 'QUEUE_CONNECTION' => 'database',
                 'FILESYSTEM_DISK' => 'public',
+                // Kunci installer web segera di .env (markInstalled juga set ulang)
+                'ALLOW_INSTALL' => 'false',
             ]);
 
             if (function_exists('opcache_reset')) {

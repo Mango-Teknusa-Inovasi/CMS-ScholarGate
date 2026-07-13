@@ -199,6 +199,20 @@
                 <label for="seed" style="margin:0;font-weight:500">Isi data demo (artikel, banner, ekstrakurikuler)</label>
             </div>
 
+            @if(!empty($forceWarning))
+                <div class="alert" style="margin-top:1rem">
+                    <strong>Re-install terdeteksi</strong>
+                    Database sudah berisi data. Melanjutkan akan menjalankan
+                    <code>migrate:fresh</code> (semua data terhapus).
+                </div>
+                <div class="checkbox" style="margin-top: .75rem">
+                    <input type="checkbox" name="confirm_reinstall" id="confirm_reinstall" value="1" required>
+                    <label for="confirm_reinstall" style="margin:0;font-weight:600;color:var(--danger)">
+                        Saya paham dan setuju menghapus semua data database
+                    </label>
+                </div>
+            @endif
+
             <div class="actions">
                 <button type="submit" id="submit-btn" @disabled(! $requirements['ok'])>
                     Install sekarang

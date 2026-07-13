@@ -19,7 +19,8 @@ class SpaController extends Controller
      */
     public function __invoke(Request $request): Response|RedirectResponse
     {
-        if (! Installer::isInstalled()) {
+        // Hanya redirect ke installer jika benar-benar diizinkan (bukan sekadar lock hilang)
+        if (! Installer::isInstalled() && Installer::canInstallViaWeb()) {
             return redirect()->route('install.show');
         }
 

@@ -34,3 +34,10 @@
 
 ## Headers
 - Middleware `SecurityHeaders`: nosniff, frame SAMEORIGIN, Referrer-Policy, Permissions-Policy, HSTS (HTTPS), CSP dasar.
+
+## Installer web (`/install`)
+- **Lock file** `storage/app/installed` setelah sukses.
+- **ALLOW_INSTALL** di `.env`: production butuh `true` untuk buka installer; sukses → otomatis `false`.
+- **looksInstalled()**: jika DB sudah ada users/settings/migrations, installer tetap ditolak meski lock file dihapus (kecuali `ALLOW_INSTALL=true` + konfirmasi re-install).
+- Rate limit: GET 10/mnt, POST 5/jam.
+- CLI re-install: `php artisan scholargate:install --force` (konfirmasi hapus data).

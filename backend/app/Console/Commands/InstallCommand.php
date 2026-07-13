@@ -27,14 +27,22 @@ class InstallCommand extends Command
     {
         $this->components->info('Scholargate CMS — Installer');
 
-        if (Installer::isInstalled() && ! $this->option('force')) {
-            $this->components->warn('Sudah terpasang. Gunakan --force untuk mengulang (hati-hati: migrate tidak drop otomatis).');
+        if ((Installer::isInstalled() || Installer::looksInstalled()) && ! $this->option('force')) {
+            $this->components->warn('Sudah terpasang (lock file atau data DB terdeteksi).');
+            $this->line('  Gunakan --force untuk mengulang (hati-hati: migrate:fresh menghapus data).');
 
             return self::FAILURE;
         }
 
-        if ($this->option('force') && Installer::isInstalled()) {
-            @unlink(storage_path('app/'.Installer::LOCK_PATH));
+        if ($this->option('force')) {
+            if (Installer::looksInstalled() || Installer::isInstalled()) {
+                if (! $this->confirm('PERINGATAN: re-install akan migrate:fresh (hapus semua tabel). Lanjutkan?', false)) {
+                    $this->components->warn('Dibatalkan.');
+
+                    return self::FAILURE;
+                }
+            }
+            Installer::removeLockFile();
         }
 
         $req = Installer::checkRequirements();
@@ -131,6 +139,7 @@ class InstallCommand extends Command
         $this->components->info('Instalasi selesai.');
         $this->line('  Admin login : '.$adminEmail);
         $this->line('  Panel admin : '.rtrim($url, '/').'/admin/login');
+        $this->line('  Installer web dikunci (ALLOW_INSTALL=false + storage/app/installed)');
         $this->line('  Pastikan SPA sudah di-build: npm run build (di folder frontend)');
 
         if (! Installer::spaExists()) {

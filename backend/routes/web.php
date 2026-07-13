@@ -19,12 +19,17 @@ Route::get('/robots.txt', [SeoController::class, 'robots']);
 Route::get('/sitemap.xml', [SeoController::class, 'sitemap']);
 Route::get('/llms.txt', [SeoController::class, 'llms']);
 
-Route::get('/install', [InstallController::class, 'show'])->name('install.show');
-Route::post('/install', [InstallController::class, 'store'])->name('install.store');
+// Installer web — rate limit ketat; logic kunci di InstallController / Installer
+Route::middleware('throttle:10,1')->group(function () {
+    Route::get('/install', [InstallController::class, 'show'])->name('install.show');
+});
+Route::middleware('throttle:5,60')->group(function () {
+    Route::post('/install', [InstallController::class, 'store'])->name('install.store');
+});
 
-// Redirect root ke installer jika belum terpasang
+// Redirect root ke installer HANYA jika web install diizinkan
 Route::get('/', function () {
-    if (! Installer::isInstalled()) {
+    if (! Installer::isInstalled() && Installer::canInstallViaWeb()) {
         return redirect()->route('install.show');
     }
 
