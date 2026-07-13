@@ -5,7 +5,10 @@
 - Form web `/install`: `@csrf`.
 
 ## XSS
-- Semua HTML konten di-render lewat `SafeHtml` + **DOMPurify**.
+- Semua HTML konten di-render lewat `SafeHtml` + **DOMPurify** (client).
+- **Server:** `HtmlSanitizer` (HTMLPurifier) pada model save — artikel, sambutan, prestasi, profil tabs/FAQ.
+- Restore backup juga di-sanitize (bypass model events).
+- Re-clean data lama: `php artisan scholargate:sanitize-html` (`--dry-run` opsional).
 - `safeHref()` memblokir `javascript:`, `data:`, `vbscript:`.
 - Upload **SVG dilarang**.
 

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\HtmlSanitizer;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -64,6 +65,22 @@ class Article extends Model
         static::creating(function (Article $article) {
             if (empty($article->slug)) {
                 $article->slug = Str::slug($article->title).'-'.Str::random(5);
+            }
+        });
+
+        static::saving(function (Article $article) {
+            /** @var HtmlSanitizer $sanitizer */
+            $sanitizer = app(HtmlSanitizer::class);
+
+            if ($article->isDirty('body') && is_string($article->body)) {
+                $article->body = $sanitizer->clean($article->body);
+            }
+            if ($article->isDirty('excerpt') && is_string($article->excerpt)) {
+                $article->excerpt = $sanitizer->plain($article->excerpt, 2000);
+            }
+            if ($article->isDirty('faq_items')) {
+                $faq = $article->faq_items;
+                $article->faq_items = is_array($faq) ? $sanitizer->cleanFaq($faq) : $faq;
             }
         });
     }

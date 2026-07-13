@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use ZipArchive;
 
+// HtmlSanitizer di-resolve via app() saat restore
+
 /**
  * Backup / restore konten CMS (JSON export semua tabel domain).
  * Aman untuk shared hosting tanpa akses shell pg_dump.
@@ -228,6 +230,8 @@ class BackupService
                         if ($row === []) {
                             continue;
                         }
+                        // Sanitize HTML meski lewat query builder (bypass model events)
+                        $row = $this->sanitizeRestoredRow($table, $row);
                         DB::table($table)->updateOrInsert(
                             $this->primaryKeyFilter($table, $row),
                             $row
@@ -319,6 +323,57 @@ class BackupService
         }
 
         return array_intersect_key($row, array_flip($columns));
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     * @return array<string, mixed>
+     */
+    private function sanitizeRestoredRow(string $table, array $row): array
+    {
+        try {
+            /** @var HtmlSanitizer $sanitizer */
+            $sanitizer = app(HtmlSanitizer::class);
+        } catch (\Throwable) {
+            return $row;
+        }
+
+        if ($table === 'articles') {
+            if (isset($row['body']) && is_string($row['body'])) {
+                $row['body'] = $sanitizer->clean($row['body']);
+            }
+            if (isset($row['excerpt']) && is_string($row['excerpt'])) {
+                $row['excerpt'] = $sanitizer->plain($row['excerpt'], 2000);
+            }
+            if (isset($row['faq_items'])) {
+                $faq = is_string($row['faq_items'])
+                    ? json_decode($row['faq_items'], true)
+                    : $row['faq_items'];
+                if (is_array($faq)) {
+                    $clean = $sanitizer->cleanFaq($faq);
+                    $row['faq_items'] = is_string($row['faq_items'] ?? null)
+                        ? json_encode($clean, JSON_UNESCAPED_UNICODE)
+                        : $clean;
+                }
+            }
+        }
+
+        if (in_array($table, ['welcome_blocks', 'achievements'], true)
+            && isset($row['body']) && is_string($row['body'])) {
+            $row['body'] = $sanitizer->clean($row['body']);
+        }
+
+        if ($table === 'profile_pages' && isset($row['tabs'])) {
+            $tabs = is_string($row['tabs']) ? json_decode($row['tabs'], true) : $row['tabs'];
+            if (is_array($tabs)) {
+                $clean = $sanitizer->cleanTabs($tabs);
+                $row['tabs'] = is_string($row['tabs'] ?? null)
+                    ? json_encode($clean, JSON_UNESCAPED_UNICODE)
+                    : $clean;
+            }
+        }
+
+        return $row;
     }
 
     /**

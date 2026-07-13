@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\HtmlSanitizer;
 use Illuminate\Database\Eloquent\Model;
 
 class WelcomeBlock extends Model
@@ -14,5 +15,20 @@ class WelcomeBlock extends Model
     protected function casts(): array
     {
         return ['is_active' => 'boolean'];
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (WelcomeBlock $block) {
+            /** @var HtmlSanitizer $sanitizer */
+            $sanitizer = app(HtmlSanitizer::class);
+            if ($block->isDirty('body') && is_string($block->body)) {
+                // Boleh plain atau HTML — purify aman untuk keduanya
+                $block->body = $sanitizer->clean($block->body);
+            }
+            if ($block->isDirty('title') && is_string($block->title)) {
+                $block->title = $sanitizer->plain($block->title, 255);
+            }
+        });
     }
 }

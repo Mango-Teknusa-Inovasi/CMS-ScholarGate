@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\HtmlSanitizer;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -27,6 +28,17 @@ class Achievement extends Model
         static::creating(function (Achievement $item) {
             if (empty($item->slug)) {
                 $item->slug = Str::slug($item->title).'-'.Str::random(5);
+            }
+        });
+
+        static::saving(function (Achievement $item) {
+            /** @var HtmlSanitizer $sanitizer */
+            $sanitizer = app(HtmlSanitizer::class);
+            if ($item->isDirty('body') && is_string($item->body)) {
+                $item->body = $sanitizer->clean($item->body);
+            }
+            if ($item->isDirty('excerpt') && is_string($item->excerpt)) {
+                $item->excerpt = $sanitizer->plain($item->excerpt, 2000);
             }
         });
     }

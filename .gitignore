@@ -47,6 +47,7 @@ backend/storage/app/private/*
 !backend/storage/app/private/.gitignore
 backend/storage/app/backups/
 backend/storage/app/installed
+backend/storage/app/htmlpurifier/
 backend/bootstrap/cache/*.php
 !backend/bootstrap/cache/.gitignore
 backend/public/storage
