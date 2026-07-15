@@ -2,19 +2,24 @@
 
 namespace App\Services;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use ZipArchive;
 
-// HtmlSanitizer di-resolve via app() saat restore
-
 /**
- * Backup / restore konten CMS (JSON export semua tabel domain).
- * Aman untuk shared hosting tanpa akses shell pg_dump.
+ * Backup / restore konten CMS (JSON portable).
+ *
+ * - Aman shared hosting (tanpa pg_dump / mysqldump)
+ * - Format portable: MySQL/MariaDB ↔ PostgreSQL (disarankan target: pgsql)
+ * - users hanya di-export metadata; restore password butuh include_users
  */
 class BackupService
 {
+    /** Format backup portable (naik versi jika skema berubah). */
+    public const FORMAT_VERSION = 2;
+
     /** @var list<string> Urutan restore (konten). users TIDAK di-restore default. */
     private array $tables = [
         'settings',
@@ -37,9 +42,54 @@ class BackupService
         'media',
     ];
 
-    /** Tabel sensitif — hanya di-export; restore butuh flag eksplisit + super admin. */
+    /** Tabel sensitif — export tanpa password; restore butuh flag + super admin. */
     private array $sensitiveTables = [
         'users',
+    ];
+
+    /** Kolom JSON (disimpan sebagai struktur di JSON backup). */
+    private array $jsonColumns = [
+        'articles' => ['faq_items'],
+        'profile_pages' => ['tabs'],
+    ];
+
+    /** Kolom boolean (normalisasi 0/1 ↔ true/false). */
+    private array $boolColumns = [
+        'articles' => ['is_featured', 'noindex'],
+        'achievements' => ['is_featured'],
+        'banners' => ['is_active'],
+        'welcome_blocks' => ['is_active'],
+        'service_items' => ['is_active'],
+        'gallery_items' => ['is_active'],
+        'partners' => ['is_active'],
+        'contact_infos' => ['is_active'],
+        'quick_services' => ['is_active'],
+        'downloads' => ['is_active'],
+        'menu_items' => ['is_active', 'open_in_new_tab'],
+        'extracurriculars' => ['is_active', 'open_in_new_tab'],
+        'media' => ['optimized'],
+    ];
+
+    /** Kolom tanggal/waktu. */
+    private array $dateColumns = [
+        'articles' => ['published_at', 'created_at', 'updated_at', 'deleted_at', 'preview_token_expires_at'],
+        'achievements' => ['achieved_at', 'created_at', 'updated_at'],
+        'users' => ['email_verified_at', 'created_at', 'updated_at'],
+        'media' => ['created_at', 'updated_at'],
+        'settings' => ['created_at', 'updated_at'],
+        'categories' => ['created_at', 'updated_at'],
+        'tags' => ['created_at', 'updated_at'],
+        'banners' => ['created_at', 'updated_at'],
+        'welcome_blocks' => ['created_at', 'updated_at'],
+        'service_items' => ['created_at', 'updated_at'],
+        'gallery_items' => ['created_at', 'updated_at'],
+        'partners' => ['created_at', 'updated_at'],
+        'contact_infos' => ['created_at', 'updated_at'],
+        'quick_services' => ['created_at', 'updated_at'],
+        'downloads' => ['published_at', 'created_at', 'updated_at'],
+        'menu_items' => ['created_at', 'updated_at'],
+        'profile_pages' => ['created_at', 'updated_at'],
+        'extracurriculars' => ['created_at', 'updated_at'],
     ];
 
     private const MAX_JSON_BYTES = 40 * 1024 * 1024; // 40MB
@@ -57,12 +107,19 @@ class BackupService
      */
     public function create(): array
     {
+        $driver = $this->driverName();
         $payload = [
             'app' => 'scholargate',
-            'version' => 1,
+            'version' => self::FORMAT_VERSION,
+            'portable' => true,
             'created_at' => now()->toIso8601String(),
-            'connection' => config('database.default'),
+            'source_connection' => $driver,
+            'recommended_target' => 'pgsql',
             'tables' => [],
+            'meta' => [
+                'note' => 'JSON portable: restore ke MySQL/MariaDB atau PostgreSQL. Disarankan PostgreSQL.',
+                'charset' => 'utf-8',
+            ],
         ];
 
         $exportTables = array_merge($this->tables, $this->sensitiveTables);
@@ -70,14 +127,13 @@ class BackupService
             if (! Schema::hasTable($table)) {
                 continue;
             }
-            $rows = DB::table($table)->get()->map(function ($row) use ($table) {
+            $rows = DB::table($table)->orderBy('id')->get()->map(function ($row) use ($table) {
                 $arr = (array) $row;
-                // Jangan bawa password hash ke file backup (mitigasi credential dump)
                 if ($table === 'users') {
                     unset($arr['password'], $arr['remember_token']);
                 }
 
-                return $arr;
+                return $this->exportRow($table, $arr);
             })->all();
             $payload['tables'][$table] = $rows;
         }
@@ -87,7 +143,6 @@ class BackupService
         $jsonPath = $this->backupDir().'/'.$jsonName;
         File::put($jsonPath, json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 
-        // Zip optional
         $zipName = "scholargate_content_{$stamp}.zip";
         $zipPath = $this->backupDir().'/'.$zipName;
         if (class_exists(ZipArchive::class)) {
@@ -112,6 +167,8 @@ class BackupService
             'path' => $final,
             'size' => (int) File::size($final),
             'created_at' => now()->toIso8601String(),
+            'source_connection' => $driver,
+            'portable' => true,
         ];
     }
 
@@ -155,11 +212,9 @@ class BackupService
     }
 
     /**
-     * Restore dari JSON content backup.
-     * Mode: merge (default) | replace (truncate then insert)
-     * users TIDAK di-restore kecuali $includeUsers = true (super admin).
+     * Restore portable JSON → DB aktif (pgsql / mysql / mariadb).
      *
-     * @return array{tables: int, rows: int, skipped: list<string>}
+     * @return array{tables: int, rows: int, skipped: list<string>, source: ?string, target: string}
      */
     public function restoreFromJson(string $json, string $mode = 'merge', bool $includeUsers = false): array
     {
@@ -172,6 +227,8 @@ class BackupService
             throw new \InvalidArgumentException('Format backup tidak valid.');
         }
 
+        $source = $data['source_connection'] ?? $data['connection'] ?? null;
+        $target = $this->driverName();
         $tablesRestored = 0;
         $rows = 0;
         $skipped = [];
@@ -183,15 +240,13 @@ class BackupService
             $skipped[] = 'users (abaikan demi keamanan — set include_users=true jika super admin)';
         }
 
+        if ($source && $source !== $target) {
+            $skipped[] = "cross-db: sumber={$source} → target={$target} (format portable v".($data['version'] ?? 1).')';
+        }
+
         DB::connection()->getPdo()->beginTransaction();
         try {
-            // Disable FK checks when possible
-            $driver = DB::getDriverName();
-            if ($driver === 'mysql') {
-                DB::statement('SET FOREIGN_KEY_CHECKS=0');
-            } elseif ($driver === 'pgsql') {
-                DB::statement('SET session_replication_role = replica');
-            }
+            $this->disableForeignKeys();
 
             foreach ($restoreList as $table) {
                 if (! Schema::hasTable($table) || empty($data['tables'][$table])) {
@@ -211,27 +266,30 @@ class BackupService
                         if (! is_array($row)) {
                             continue;
                         }
-                        // users: jangan overwrite password hash kosong; strip password jika kosong
+
                         if ($table === 'users') {
                             if (empty($row['password'])) {
                                 unset($row['password']);
-                                // tanpa password: hanya update meta, skip baris baru
                                 if (! isset($row['id']) || ! DB::table('users')->where('id', $row['id'])->exists()) {
                                     continue;
                                 }
                             }
-                            // role hanya admin|editor|member
                             if (isset($row['role']) && ! in_array($row['role'], ['admin', 'editor', 'member'], true)) {
                                 $row['role'] = 'member';
                             }
                         }
-                        // whitelist kolom yang ada di schema
+
                         $row = $this->filterColumns($table, $row);
                         if ($row === []) {
                             continue;
                         }
-                        // Sanitize HTML meski lewat query builder (bypass model events)
+
+                        $row = $this->importRow($table, $row);
                         $row = $this->sanitizeRestoredRow($table, $row);
+
+                        // Setelah sanitize, encode ulang JSON jika masih array
+                        $row = $this->encodeJsonForDriver($table, $row);
+
                         DB::table($table)->updateOrInsert(
                             $this->primaryKeyFilter($table, $row),
                             $row
@@ -242,11 +300,8 @@ class BackupService
                 $tablesRestored++;
             }
 
-            if ($driver === 'mysql') {
-                DB::statement('SET FOREIGN_KEY_CHECKS=1');
-            } elseif ($driver === 'pgsql') {
-                DB::statement('SET session_replication_role = DEFAULT');
-            }
+            $this->enableForeignKeys();
+            $this->resetPostgresSequences();
 
             DB::connection()->getPdo()->commit();
         } catch (\Throwable $e) {
@@ -254,7 +309,13 @@ class BackupService
             throw $e;
         }
 
-        return ['tables' => $tablesRestored, 'rows' => $rows, 'skipped' => $skipped];
+        return [
+            'tables' => $tablesRestored,
+            'rows' => $rows,
+            'skipped' => $skipped,
+            'source' => is_string($source) ? $source : null,
+            'target' => $target,
+        ];
     }
 
     public function extractJsonFromUpload(string $path, string $originalName): string
@@ -264,7 +325,6 @@ class BackupService
             if ($zip->open($path) !== true) {
                 throw new \InvalidArgumentException('Gagal membuka file ZIP.');
             }
-            // Zip bomb / path traversal guard
             if ($zip->numFiles > 20) {
                 $zip->close();
                 throw new \InvalidArgumentException('ZIP terlalu banyak entri.');
@@ -305,6 +365,198 @@ class BackupService
         }
 
         return $json;
+    }
+
+    private function driverName(): string
+    {
+        $d = DB::getDriverName();
+
+        // normalisasi
+        return match ($d) {
+            'mariadb' => 'mariadb',
+            'mysql' => 'mysql',
+            'pgsql' => 'pgsql',
+            'sqlite' => 'sqlite',
+            default => $d,
+        };
+    }
+
+    private function isMysqlFamily(): bool
+    {
+        return in_array($this->driverName(), ['mysql', 'mariadb'], true);
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     * @return array<string, mixed>
+     */
+    private function exportRow(string $table, array $row): array
+    {
+        foreach ($row as $key => $value) {
+            if ($value instanceof \DateTimeInterface) {
+                $row[$key] = Carbon::instance(\DateTimeImmutable::createFromInterface($value))->toIso8601String();
+                continue;
+            }
+
+            if ($this->columnIs($table, $key, $this->jsonColumns)) {
+                if (is_string($value) && $value !== '') {
+                    $decoded = json_decode($value, true);
+                    $row[$key] = json_last_error() === JSON_ERROR_NONE ? $decoded : $value;
+                } elseif (is_object($value)) {
+                    $row[$key] = json_decode(json_encode($value), true);
+                }
+                // array stays array
+                continue;
+            }
+
+            if ($this->columnIs($table, $key, $this->boolColumns)) {
+                if (is_bool($value)) {
+                    $row[$key] = $value;
+                } elseif (is_int($value) || is_string($value)) {
+                    $row[$key] = in_array($value, [1, '1', 't', 'true', true], true);
+                }
+                continue;
+            }
+
+            if ($this->columnIs($table, $key, $this->dateColumns) && is_string($value) && $value !== '') {
+                try {
+                    $row[$key] = Carbon::parse($value)->toIso8601String();
+                } catch (\Throwable) {
+                    // keep as-is
+                }
+            }
+        }
+
+        return $row;
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     * @return array<string, mixed>
+     */
+    private function importRow(string $table, array $row): array
+    {
+        foreach ($row as $key => $value) {
+            if ($value === '' && $this->columnIs($table, $key, $this->dateColumns)) {
+                $row[$key] = null;
+                continue;
+            }
+
+            if ($this->columnIs($table, $key, $this->boolColumns)) {
+                $bool = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                if ($bool === null) {
+                    $bool = in_array($value, [1, '1', 't', 'true', true], true);
+                }
+                // MySQL/MariaDB: tinyint; PG: boolean — PDO ok dengan bool
+                $row[$key] = $this->isMysqlFamily() ? ($bool ? 1 : 0) : (bool) $bool;
+                continue;
+            }
+
+            if ($this->columnIs($table, $key, $this->dateColumns) && is_string($value) && $value !== '') {
+                try {
+                    // Format SQL universal Y-m-d H:i:s (aman MySQL + PG)
+                    $row[$key] = Carbon::parse($value)->format('Y-m-d H:i:s');
+                } catch (\Throwable) {
+                    $row[$key] = null;
+                }
+                continue;
+            }
+
+            if ($this->columnIs($table, $key, $this->jsonColumns)) {
+                if (is_string($value) && $value !== '') {
+                    $decoded = json_decode($value, true);
+                    if (json_last_error() === JSON_ERROR_NONE) {
+                        $row[$key] = $decoded;
+                    }
+                }
+            }
+        }
+
+        return $row;
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     * @return array<string, mixed>
+     */
+    private function encodeJsonForDriver(string $table, array $row): array
+    {
+        foreach ($this->jsonColumns[$table] ?? [] as $col) {
+            if (! array_key_exists($col, $row)) {
+                continue;
+            }
+            $v = $row[$col];
+            if (is_array($v) || is_object($v)) {
+                $row[$col] = json_encode($v, JSON_UNESCAPED_UNICODE);
+            }
+        }
+
+        return $row;
+    }
+
+    /**
+     * @param  array<string, list<string>>  $map
+     */
+    private function columnIs(string $table, string $column, array $map): bool
+    {
+        return in_array($column, $map[$table] ?? [], true);
+    }
+
+    private function disableForeignKeys(): void
+    {
+        $driver = $this->driverName();
+        if ($this->isMysqlFamily()) {
+            DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        } elseif ($driver === 'pgsql') {
+            DB::statement('SET session_replication_role = replica');
+        } elseif ($driver === 'sqlite') {
+            DB::statement('PRAGMA foreign_keys = OFF');
+        }
+    }
+
+    private function enableForeignKeys(): void
+    {
+        $driver = $this->driverName();
+        if ($this->isMysqlFamily()) {
+            DB::statement('SET FOREIGN_KEY_CHECKS=1');
+        } elseif ($driver === 'pgsql') {
+            DB::statement('SET session_replication_role = DEFAULT');
+        } elseif ($driver === 'sqlite') {
+            DB::statement('PRAGMA foreign_keys = ON');
+        }
+    }
+
+    /**
+     * Setelah insert ID eksplisit di PostgreSQL, set ulang sequence.
+     */
+    private function resetPostgresSequences(): void
+    {
+        if ($this->driverName() !== 'pgsql') {
+            return;
+        }
+
+        $all = array_merge($this->tables, $this->sensitiveTables);
+        foreach ($all as $table) {
+            if (! Schema::hasTable($table) || ! Schema::hasColumn($table, 'id')) {
+                continue;
+            }
+            // Nama tabel hanya dari whitelist internal
+            // Hanya nama tabel whitelist (a-z + underscore)
+            if (! preg_match('/^[a-z_]+$/', $table)) {
+                continue;
+            }
+            try {
+                DB::statement(
+                    "SELECT setval(
+                        pg_get_serial_sequence('{$table}', 'id'),
+                        COALESCE((SELECT MAX(id) FROM {$table}), 1),
+                        true
+                    )"
+                );
+            } catch (\Throwable) {
+                // tabel tanpa serial / sequence custom — abaikan
+            }
+        }
     }
 
     /**
@@ -350,10 +602,7 @@ class BackupService
                     ? json_decode($row['faq_items'], true)
                     : $row['faq_items'];
                 if (is_array($faq)) {
-                    $clean = $sanitizer->cleanFaq($faq);
-                    $row['faq_items'] = is_string($row['faq_items'] ?? null)
-                        ? json_encode($clean, JSON_UNESCAPED_UNICODE)
-                        : $clean;
+                    $row['faq_items'] = $sanitizer->cleanFaq($faq);
                 }
             }
         }
@@ -366,10 +615,7 @@ class BackupService
         if ($table === 'profile_pages' && isset($row['tabs'])) {
             $tabs = is_string($row['tabs']) ? json_decode($row['tabs'], true) : $row['tabs'];
             if (is_array($tabs)) {
-                $clean = $sanitizer->cleanTabs($tabs);
-                $row['tabs'] = is_string($row['tabs'] ?? null)
-                    ? json_encode($clean, JSON_UNESCAPED_UNICODE)
-                    : $clean;
+                $row['tabs'] = $sanitizer->cleanTabs($tabs);
             }
         }
 
@@ -385,7 +631,6 @@ class BackupService
         if (isset($row['id'])) {
             return ['id' => $row['id']];
         }
-        // pivot
         if ($table === 'article_tag' && isset($row['article_id'], $row['tag_id'])) {
             return ['article_id' => $row['article_id'], 'tag_id' => $row['tag_id']];
         }

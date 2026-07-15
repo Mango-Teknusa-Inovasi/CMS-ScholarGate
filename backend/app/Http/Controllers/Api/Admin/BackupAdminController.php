@@ -79,6 +79,9 @@ class BackupAdminController extends Controller
             'skipped' => $result['skipped'] ?? [],
             'mode' => $mode,
             'include_users' => $includeUsers,
+            'source' => $result['source'] ?? null,
+            'target' => $result['target'] ?? config('database.default'),
+            'portable' => true,
         ]);
     }
 }

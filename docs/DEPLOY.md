@@ -45,6 +45,11 @@ php artisan route:cache
 # install pertama: /install atau php artisan scholargate:install
 ```
 
+## Database
+
+- Install: **PostgreSQL (disarankan)**, MySQL, atau MariaDB — lihat [DATABASE.md](./DATABASE.md)
+- Backup JSON **portable** (MySQL ↔ PostgreSQL). Restore lewat Admin → Backup.
+
 ## Easy update (`/update`)
 
 Setelah **replace file** di hosting:

@@ -142,13 +142,16 @@
                     <label for="db_connection">Jenis database</label>
                     <select name="db_connection" id="db_connection" required>
                         <option value="pgsql" @selected(old('db_connection', $defaults['db_connection']) === 'pgsql')>
-                            PostgreSQL (default)
+                            PostgreSQL (disarankan)
                         </option>
                         <option value="mysql" @selected(old('db_connection') === 'mysql')>
-                            MySQL / MariaDB
+                            MySQL
+                        </option>
+                        <option value="mariadb" @selected(old('db_connection') === 'mariadb')>
+                            MariaDB
                         </option>
                     </select>
-                    <div class="hint">Default: PostgreSQL. Pilih MySQL jika hosting hanya menyediakan MySQL/MariaDB.</div>
+                    <div class="hint">Disarankan PostgreSQL. Migrasi & backup JSON portable ke/dari MySQL/MariaDB.</div>
                 </div>
                 <div class="field">
                     <label for="db_host">Host</label>
@@ -229,6 +232,7 @@
     const defaults = {
         pgsql: { port: '5432', user: 'postgres' },
         mysql: { port: '3306', user: 'root' },
+        mariadb: { port: '3306', user: 'root' },
     };
     driver.addEventListener('change', () => {
         const d = defaults[driver.value] || defaults.pgsql;

@@ -21,14 +21,22 @@ class Installer
     {
         return [
             'pgsql' => [
-                'label' => 'PostgreSQL (default)',
+                'label' => 'PostgreSQL (disarankan)',
                 'default_port' => 5432,
                 'extension' => 'pdo_pgsql',
+                'default_user' => 'postgres',
             ],
             'mysql' => [
-                'label' => 'MySQL / MariaDB',
+                'label' => 'MySQL',
                 'default_port' => 3306,
                 'extension' => 'pdo_mysql',
+                'default_user' => 'root',
+            ],
+            'mariadb' => [
+                'label' => 'MariaDB',
+                'default_port' => 3306,
+                'extension' => 'pdo_mysql',
+                'default_user' => 'root',
             ],
         ];
     }
@@ -271,7 +279,7 @@ class Installer
                 'DB_HOST' => $input['db_host'] ?? '127.0.0.1',
                 'DB_PORT' => (string) ($input['db_port'] ?? $drivers[$driver]['default_port']),
                 'DB_DATABASE' => $input['db_database'] ?? 'scholargate',
-                'DB_USERNAME' => $input['db_username'] ?? ($driver === 'pgsql' ? 'postgres' : 'root'),
+                'DB_USERNAME' => $input['db_username'] ?? ($drivers[$driver]['default_user'] ?? 'root'),
                 'DB_PASSWORD' => (string) ($input['db_password'] ?? ''),
                 'SESSION_DRIVER' => 'database',
                 'CACHE_STORE' => 'database',

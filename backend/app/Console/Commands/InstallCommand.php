@@ -69,13 +69,13 @@ class InstallCommand extends Command
         }
 
         if (! isset($drivers[$driver])) {
-            $this->components->error('Driver tidak valid. Gunakan: pgsql | mysql');
+            $this->components->error('Driver tidak valid. Gunakan: pgsql | mysql | mariadb');
 
             return self::FAILURE;
         }
 
         $defaultPort = (string) $drivers[$driver]['default_port'];
-        $defaultUser = $driver === 'pgsql' ? 'postgres' : 'root';
+        $defaultUser = $drivers[$driver]['default_user'] ?? ($driver === 'pgsql' ? 'postgres' : 'root');
 
         $host = $this->option('host') ?: $this->ask('Database host', '127.0.0.1');
         $port = $this->option('port') ?: $this->ask('Database port', $defaultPort);

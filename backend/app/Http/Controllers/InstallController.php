@@ -55,7 +55,7 @@ class InstallController extends Controller
         }
 
         $data = $request->validate([
-            'db_connection' => ['required', 'in:pgsql,mysql'],
+            'db_connection' => ['required', 'in:pgsql,mysql,mariadb'],
             'db_host' => ['required', 'string', 'max:255'],
             'db_port' => ['required', 'integer', 'min:1', 'max:65535'],
             'db_database' => ['required', 'string', 'max:255'],

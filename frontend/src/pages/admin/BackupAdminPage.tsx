@@ -56,8 +56,22 @@ export function BackupAdminPage() {
     },
     onSuccess: (res) => {
       setErr('')
+      const d = res.data as {
+        tables?: number
+        rows?: number
+        mode?: string
+        source?: string | null
+        target?: string
+        skipped?: string[]
+      }
+      const cross =
+        d.source && d.target && d.source !== d.target
+          ? ` · pindah DB ${d.source} → ${d.target}`
+          : d.target
+            ? ` · DB ${d.target}`
+            : ''
       setMsg(
-        `Restore OK · ${res.data.tables} tabel · ${res.data.rows} baris (${res.data.mode})`,
+        `Restore OK · ${d.tables ?? 0} tabel · ${d.rows ?? 0} baris (${d.mode})${cross}`,
       )
       qc.invalidateQueries()
     },
@@ -92,7 +106,7 @@ export function BackupAdminPage() {
     <div>
       <AdminPageHeader
         title="Backup & restore"
-        description="Ekspor/impor konten CMS (JSON/ZIP). Cocok shared hosting tanpa akses shell database."
+        description="JSON portable: MySQL/MariaDB ↔ PostgreSQL (disarankan PG). Konten DB saja, bukan file media R2."
         actions={
           <button
             type="button"
