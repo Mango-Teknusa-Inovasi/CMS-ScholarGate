@@ -87,61 +87,68 @@ export function HomeBento({
             <HeroCarousel banners={banners} embedded />
           </BentoTile>
 
-          {/* Welcome — large soft peach */}
+          {/* Sambutan singkat — foto pejabat (4:5) + teks, pola sama halaman Profil */}
           {welcome && (
-            <BentoTile
-              tone="peach"
-              spanMd={4}
-              spanLg={4}
-              spanXl={5}
-              rowSpan={2}
-              padding="lg"
-              className="flex flex-col justify-between"
-            >
-              <div>
-                <BentoEyebrow>Sambutan</BentoEyebrow>
-                <div className="mb-4 flex items-start gap-4">
-                  {mediaUrl(welcome.image_path) && (
-                    <div className="relative hidden shrink-0 sm:block">
-                      <div className="h-24 w-20 overflow-hidden rounded-2xl border border-white/80 shadow-sm md:h-28 md:w-24">
-                        <img
-                          src={coverSrc(welcome.image_path, welcome.key, 240, 300)}
-                          alt=""
-                          className="h-full w-full object-cover"
-                          loading="lazy"
-                        />
-                      </div>
-                      {welcome.badge_left && (
-                        <span className="absolute -left-1 -top-1 rounded-full bg-teal-50 px-2 py-0.5 text-[10px] font-bold text-teal-700 ring-1 ring-teal-200">
-                          {welcome.badge_left}
-                        </span>
-                      )}
-                    </div>
+            <>
+              <BentoTile
+                tone="white"
+                spanMd={2}
+                spanLg={2}
+                spanXl={4}
+                rowSpan={2}
+                padding="none"
+                className="!p-0"
+              >
+                <div className="relative h-full min-h-[260px] w-full md:min-h-[320px]">
+                  <img
+                    src={coverSrc(welcome.image_path, welcome.key || 'home-welcome', 640, 800)}
+                    alt={welcome.title || 'Foto pejabat'}
+                    className="absolute inset-0 h-full w-full object-cover object-top"
+                    loading="lazy"
+                    width={640}
+                    height={800}
+                  />
+                  {welcome.badge_left && (
+                    <span className="absolute left-3 top-4 z-10 rounded-full bg-white/95 px-3 py-1 text-[11px] font-bold text-teal-700 shadow ring-1 ring-teal-100">
+                      {welcome.badge_left}
+                    </span>
                   )}
-                  <div className="min-w-0">
-                    <h2 className="text-balance text-xl font-bold leading-snug tracking-tight text-ink md:text-2xl">
-                      {welcome.title}
-                    </h2>
-                    {welcome.badge_right && (
-                      <span className="mt-2 inline-flex rounded-full bg-sky-500 px-2.5 py-0.5 text-[10px] font-bold text-white">
-                        {welcome.badge_right}
-                      </span>
-                    )}
+                  {welcome.badge_right && (
+                    <span className="absolute bottom-4 right-3 z-10 rounded-full bg-sky-500 px-3 py-1 text-[11px] font-bold text-white shadow">
+                      {welcome.badge_right}
+                    </span>
+                  )}
+                </div>
+              </BentoTile>
+
+              <BentoTile
+                tone="peach"
+                spanMd={2}
+                spanLg={2}
+                spanXl={4}
+                rowSpan={2}
+                padding="lg"
+                className="flex flex-col justify-between"
+              >
+                <div>
+                  <BentoEyebrow>Sambutan</BentoEyebrow>
+                  <h2 className="text-balance text-xl font-bold leading-snug tracking-tight text-ink md:text-2xl">
+                    {welcome.title}
+                  </h2>
+                  <SafeHtml
+                    className="prose-article mt-3 line-clamp-8 max-w-none text-sm leading-relaxed text-body md:mt-4 md:text-[15px]"
+                    html={welcome.body}
+                    plainFallback
+                  />
+                </div>
+                {welcome.chat_label && (
+                  <div className="mt-4 inline-flex w-fit items-center gap-2 rounded-full border border-white/80 bg-white/90 px-3 py-1.5 text-xs font-semibold text-body shadow-sm">
+                    <MessageCircle className="h-3.5 w-3.5 text-brand" />
+                    {welcome.chat_label}
                   </div>
-                </div>
-                <SafeHtml
-                  className="prose-article line-clamp-6 max-w-none text-sm leading-relaxed text-body md:text-[15px]"
-                  html={welcome.body}
-                  plainFallback
-                />
-              </div>
-              {welcome.chat_label && (
-                <div className="mt-4 inline-flex w-fit items-center gap-2 rounded-full border border-white/80 bg-white/90 px-3 py-1.5 text-xs font-semibold text-body shadow-sm">
-                  <MessageCircle className="h-3.5 w-3.5 text-brand" />
-                  {welcome.chat_label}
-                </div>
-              )}
-            </BentoTile>
+                )}
+              </BentoTile>
+            </>
           )}
 
           {/* Services as colorful mini tiles */}

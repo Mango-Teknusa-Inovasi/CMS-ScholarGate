@@ -88,33 +88,37 @@ export function ProfilePage() {
 
           {data.welcome && (
             <>
+              {/* Foto pejabat — potret 4:5, selalu tampil (upload admin / fallback) */}
               <BentoTile
                 tone="white"
                 spanMd={2}
                 spanLg={2}
                 spanXl={4}
+                rowSpan={2}
                 padding="none"
                 className="!p-0"
               >
-                <div className="relative aspect-[4/5] w-full min-h-[220px] md:min-h-full">
+                <div className="relative aspect-[4/5] w-full min-h-[280px] md:min-h-full">
                   <img
                     src={coverSrc(
                       data.welcome.image_path,
-                      'profile-welcome',
+                      data.welcome.key || 'profile-welcome',
                       640,
                       800,
                     )}
-                    alt={data.welcome.title}
-                    className="absolute inset-0 h-full w-full object-cover"
+                    alt={data.welcome.title || 'Foto pejabat'}
+                    className="absolute inset-0 h-full w-full object-cover object-top"
                     loading="lazy"
+                    width={640}
+                    height={800}
                   />
                   {data.welcome.badge_left && (
-                    <span className="absolute left-3 top-4 rounded-full bg-white px-3 py-1 text-[11px] font-bold text-brand shadow">
+                    <span className="absolute left-3 top-4 z-10 rounded-full bg-white px-3 py-1 text-[11px] font-bold text-brand shadow">
                       {data.welcome.badge_left}
                     </span>
                   )}
                   {data.welcome.badge_right && (
-                    <span className="absolute bottom-4 right-3 rounded-full bg-brand px-3 py-1 text-[11px] font-bold text-white shadow">
+                    <span className="absolute bottom-4 right-3 z-10 rounded-full bg-brand px-3 py-1 text-[11px] font-bold text-white shadow">
                       {data.welcome.badge_right}
                     </span>
                   )}
@@ -125,6 +129,7 @@ export function ProfilePage() {
                 spanMd={2}
                 spanLg={4}
                 spanXl={8}
+                rowSpan={2}
                 padding="lg"
                 className="flex flex-col justify-center"
               >

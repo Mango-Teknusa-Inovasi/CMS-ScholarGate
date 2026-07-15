@@ -65,7 +65,7 @@ export function WelcomeAdminPage() {
     <div>
       <AdminPageHeader
         title="Sambutan"
-        description="Teks sambutan + foto kepala/pejabat. Upload foto potret 4:5 agar pas di card."
+        description="Sambutan beranda & profil: upload foto pejabat potret (rasio 4:5). Foto tampil di samping teks sambutan di portal."
       />
 
       <div className="space-y-6">
