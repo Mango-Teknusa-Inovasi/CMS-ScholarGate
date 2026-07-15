@@ -71,14 +71,22 @@ export function HomeBento({
 
   return (
     <div className="bento-page pb-12 md:pb-16">
-      {/* Hero remains full-bleed carousel, slightly tighter into board */}
-      <div className="container-page pt-4 md:pt-5" data-layer data-parallax="6">
-        <HeroCarousel banners={banners} />
-      </div>
-
-      <div className="container-page mt-4 space-y-4 md:mt-5 md:space-y-5" data-layer>
-        {/* —— Board 1: welcome + services —— */}
+      {/* Satu container: banner sejajar tepi kiri/kanan dengan tile bento di bawah */}
+      <div className="container-page space-y-3 pt-4 sm:space-y-3.5 md:space-y-4 md:pt-5" data-layer>
+        {/* —— Board 0+1: hero full-width + welcome + services (satu grid) —— */}
         <BentoBoard>
+          <BentoTile
+            tone="white"
+            span={12}
+            spanMd={4}
+            spanLg={6}
+            spanXl={12}
+            padding="none"
+            className="!col-span-2 !p-0 hover:translate-y-0 md:!col-span-4 lg:!col-span-6 xl:!col-span-12"
+          >
+            <HeroCarousel banners={banners} embedded />
+          </BentoTile>
+
           {/* Welcome — large soft peach */}
           {welcome && (
             <BentoTile

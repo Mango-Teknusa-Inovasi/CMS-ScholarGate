@@ -14,10 +14,16 @@ import {
 } from 'lucide-react'
 import { api } from '../lib/api'
 import { SeoHead } from '../components/seo/SeoHead'
-import { CardGridSkeleton } from '../components/ui/Skeleton'
-import { softTones, toneAt } from '../lib/buttonTones'
-import { cn, mediaUrl } from '../lib/utils'
+import { Skeleton } from '../components/ui/Skeleton'
+import { mediaUrl } from '../lib/utils'
 import { safeHref } from '../lib/sanitize'
+import {
+  BentoBoard,
+  BentoTile,
+  PageBentoHero,
+  PageBentoShell,
+  type BentoTone,
+} from '../components/ui/PageBento'
 
 type Extracurricular = {
   id: number
@@ -42,6 +48,8 @@ const iconMap: Record<string, LucideIcon> = {
   Sparkles,
 }
 
+const tones: BentoTone[] = ['sky', 'teal', 'mint', 'coral', 'amber', 'violet', 'rose', 'peach']
+
 export function ExtracurricularPage() {
   const { data = [], isLoading } = useQuery({
     queryKey: ['ekstrakurikuler'],
@@ -49,112 +57,112 @@ export function ExtracurricularPage() {
   })
 
   return (
-    <div>
+    <>
       <SeoHead kind="page" page="ekstrakurikuler" fallbackTitle="Ekstrakurikuler | Scholargate" />
-      <section className="page-hero-band" data-layer data-parallax="3">
-        <div className="container-page py-10">
-          <p className="mb-2 text-sm text-subtle">Beranda / Ekstrakurikuler</p>
-          <h1 className="text-3xl font-bold text-ink">Ekstrakurikuler</h1>
-          <p className="mt-2 max-w-2xl text-subtle">
-            Daftar kegiatan ekstrakurikuler sekolah untuk mengembangkan bakat, minat, dan karakter siswa.
-          </p>
-        </div>
-      </section>
+      <PageBentoShell>
+        <BentoBoard>
+          <PageBentoHero
+            crumbs={[{ label: 'Beranda', to: '/' }, { label: 'Ekstrakurikuler' }]}
+            title="Ekstrakurikuler"
+            description="Kembangkan bakat, minat, dan karakter lewat kegiatan di luar kelas."
+            tone="mint"
+            icon={<Users className="h-5 w-5 text-teal-600" strokeWidth={1.75} />}
+          />
+        </BentoBoard>
 
-      <div className="container-page py-10">
         {isLoading ? (
-          <CardGridSkeleton count={6} />
+          <BentoBoard>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton
+                key={i}
+                className="col-span-1 min-h-[180px] rounded-[22px] md:col-span-2 xl:col-span-4"
+              />
+            ))}
+          </BentoBoard>
         ) : data.length === 0 ? (
-          <p className="rounded-[16px] border border-line bg-surface p-8 text-center text-subtle">
-            Belum ada data ekstrakurikuler.
-          </p>
+          <BentoTile tone="white" span={12} spanMd={4} spanLg={6} spanXl={12} padding="lg">
+            <p className="text-center text-subtle">Belum ada data ekstrakurikuler.</p>
+          </BentoTile>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" data-layer data-parallax="4">
+          <BentoBoard>
             {data.map((item, i) => {
               const Icon = iconMap[item.icon || ''] || Sparkles
-              const tone = softTones[toneAt(i)]
               const logo = mediaUrl(item.logo_path)
-              const CardInner = (
+              const safeUrl = item.url ? safeHref(item.url) : undefined
+              const tone = tones[i % tones.length]
+
+              const inner = (
                 <>
                   {logo ? (
-                    <div className="mb-3 flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl border border-line bg-white p-1.5 shadow-sm">
+                    <div className="mb-3 flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl border border-white/80 bg-white p-1.5 shadow-sm">
                       <img
                         src={logo}
                         alt={`Logo ${item.title}`}
                         className="h-full w-full object-contain"
                         loading="lazy"
-                        width={56}
-                        height={56}
                       />
                     </div>
                   ) : (
-                    <div
-                      className={cn(
-                        'mb-3 flex h-12 w-12 items-center justify-center rounded-2xl',
-                        tone.chip,
-                      )}
-                    >
-                      <Icon className="h-6 w-6" />
+                    <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/80 text-brand shadow-sm ring-1 ring-black/5">
+                      <Icon className="h-6 w-6" strokeWidth={1.75} />
                     </div>
                   )}
-                  <h2 className="text-lg font-bold text-ink">{item.title}</h2>
+                  <h2 className="text-base font-bold text-ink md:text-lg">{item.title}</h2>
                   {item.description && (
-                    <p className="mt-2 text-sm leading-relaxed text-subtle">{item.description}</p>
+                    <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-subtle">
+                      {item.description}
+                    </p>
                   )}
                   <div className="mt-4 space-y-1.5 text-xs text-body">
                     {item.schedule && (
                       <p className="inline-flex items-center gap-1.5">
-                        <Calendar className="h-3.5 w-3.5 opacity-70" style={{ color: tone.hex }} />
+                        <Calendar className="h-3.5 w-3.5 opacity-70" />
                         {item.schedule}
                       </p>
                     )}
                     {item.coach && (
                       <p className="flex items-center gap-1.5">
-                        <UserRound className="h-3.5 w-3.5 opacity-70" style={{ color: tone.hex }} />
+                        <UserRound className="h-3.5 w-3.5 opacity-70" />
                         Pembina: {item.coach}
                       </p>
                     )}
                   </div>
-                  {item.url && (
-                    <span
-                      className={cn(
-                        'mt-4 inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold',
-                        tone.soft,
-                      )}
-                    >
+                  {safeUrl && (
+                    <span className="mt-4 inline-flex items-center rounded-full bg-white/80 px-2.5 py-1 text-xs font-semibold text-brand shadow-sm">
                       Info & pendaftaran →
                     </span>
                   )}
                 </>
               )
 
-              const className =
-                'rounded-[16px] border border-line bg-surface p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md'
-
-              const safeUrl = item.url ? safeHref(item.url) : undefined
-              if (safeUrl) {
-                return (
-                  <a
-                    key={item.id}
-                    href={safeUrl}
-                    target={item.open_in_new_tab ? '_blank' : undefined}
-                    rel="noopener noreferrer"
-                    className={className}
-                  >
-                    {CardInner}
-                  </a>
-                )
-              }
-
               return (
-                <div key={item.id} className={className}>
-                  {CardInner}
-                </div>
+                <BentoTile
+                  key={item.id}
+                  tone={tone}
+                  spanMd={2}
+                  spanLg={2}
+                  spanXl={4}
+                  padding="lg"
+                  className="flex flex-col"
+                >
+                  {safeUrl ? (
+                    <a
+                      href={safeUrl}
+                      target={item.open_in_new_tab ? '_blank' : undefined}
+                      rel="noopener noreferrer"
+                      className="flex h-full flex-col outline-none"
+                    >
+                      {inner}
+                    </a>
+                  ) : (
+                    inner
+                  )}
+                </BentoTile>
               )
             })}
-          </div>
+          </BentoBoard>
         )}
-      </div>
-    </div>
+      </PageBentoShell>
+    </>
   )
 }

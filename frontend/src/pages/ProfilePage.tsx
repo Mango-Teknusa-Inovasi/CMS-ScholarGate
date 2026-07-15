@@ -16,12 +16,20 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { api, type ContactInfo, type QuickService, type WelcomeBlock } from '../lib/api'
-import { cn } from '../lib/utils'
+import { cn, coverSrc } from '../lib/utils'
 import { SeoHead } from '../components/seo/SeoHead'
 import { PageSkeleton } from '../components/ui/Skeleton'
-import { softTones, toneAt } from '../lib/buttonTones'
 import { SafeHtml } from '../components/ui/SafeHtml'
 import { safeHref } from '../lib/sanitize'
+import {
+  BentoBoard,
+  BentoEyebrow,
+  BentoTile,
+  PageBentoHero,
+  PageBentoSection,
+  PageBentoShell,
+  type BentoTone,
+} from '../components/ui/PageBento'
 
 const iconMap: Record<string, LucideIcon> = {
   'map-pin': MapPin,
@@ -36,6 +44,9 @@ const iconMap: Record<string, LucideIcon> = {
   newspaper: Newspaper,
   download: Download,
 }
+
+const contactTones: BentoTone[] = ['sky', 'mint', 'coral', 'amber', 'violet']
+const serviceTones: BentoTone[] = ['sky', 'teal', 'mint', 'coral', 'amber', 'violet']
 
 type ProfilePayload = {
   page: {
@@ -63,175 +74,195 @@ export function ProfilePage() {
   const active = tabs[tab]
 
   return (
-    <div>
+    <>
       <SeoHead kind="page" page="profil" fallbackTitle="Profil | Scholargate" />
-      <section className="page-hero-band" data-layer data-parallax="3">
-        <div className="container-page py-10">
-          <p className="mb-2 text-sm text-subtle">Beranda / Profil</p>
-          <div className="flex items-start gap-3">
-            <div className="mt-1 rounded-xl bg-white p-2 shadow-sm">
-              <Building2 className="h-6 w-6 text-brand" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-ink">{data.page?.title || 'Profil'}</h1>
-              {data.page?.subtitle && (
-                <p className="mt-2 max-w-2xl text-subtle">{data.page.subtitle}</p>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
+      <PageBentoShell>
+        <BentoBoard>
+          <PageBentoHero
+            crumbs={[{ label: 'Beranda', to: '/' }, { label: 'Profil' }]}
+            title={data.page?.title || 'Profil'}
+            description={data.page?.subtitle}
+            tone="peach"
+            icon={<Building2 className="h-5 w-5 text-brand" strokeWidth={1.75} />}
+          />
 
-      {data.welcome && (
-        <section className="container-page py-10">
-          <div className="grid items-center gap-8 rounded-[20px] border border-line bg-white p-6 shadow-[var(--shadow-card)] md:grid-cols-[260px_1fr] md:p-8">
-            <div className="relative mx-auto aspect-[4/5] w-full max-w-[240px] overflow-hidden rounded-[20px] border border-line">
-              <img
-                src={
-                  data.welcome.image_path
-                    ? `/storage/${String(data.welcome.image_path).replace(/^\/?storage\//, '')}`
-                    : 'https://picsum.photos/seed/scholargate-profile-welcome/640/800'
-                }
-                alt={data.welcome.title}
-                className="h-full w-full object-cover"
-                loading="lazy"
-              />
-              {data.welcome.badge_left && (
-                <span className="absolute left-3 top-4 rounded-full bg-white px-3 py-1 text-[11px] font-bold text-brand shadow">
-                  {data.welcome.badge_left}
-                </span>
-              )}
-              {data.welcome.badge_right && (
-                <span className="absolute bottom-4 right-3 rounded-full bg-brand px-3 py-1 text-[11px] font-bold text-white shadow">
-                  {data.welcome.badge_right}
-                </span>
-              )}
-            </div>
-            <div className="rounded-[16px] bg-peach p-6 md:p-8">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-brand">Sambutan</p>
-              <h2 className="text-balance text-2xl font-bold tracking-tight text-ink">{data.welcome.title}</h2>
-              <SafeHtml
-                className="prose-article mt-4 leading-relaxed text-body"
-                html={data.welcome.body}
-                plainFallback
-              />
-            </div>
-          </div>
-        </section>
-      )}
-
-      <section id="kontak" className="container-page pb-10">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {data.contacts.map((c, i) => {
-            const Icon = iconMap[c.icon || ''] || MapPin
-            const tone = softTones[toneAt(i)]
-            return (
-              <div
-                key={c.id}
-                className="rounded-[16px] border border-line bg-white p-4 shadow-sm"
+          {data.welcome && (
+            <>
+              <BentoTile
+                tone="white"
+                spanMd={2}
+                spanLg={2}
+                spanXl={4}
+                padding="none"
+                className="!p-0"
               >
-                <div
-                  className={cn(
-                    'mb-3 flex h-10 w-10 items-center justify-center rounded-xl',
-                    tone.chip,
+                <div className="relative aspect-[4/5] w-full min-h-[220px] md:min-h-full">
+                  <img
+                    src={coverSrc(
+                      data.welcome.image_path,
+                      'profile-welcome',
+                      640,
+                      800,
+                    )}
+                    alt={data.welcome.title}
+                    className="absolute inset-0 h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                  {data.welcome.badge_left && (
+                    <span className="absolute left-3 top-4 rounded-full bg-white px-3 py-1 text-[11px] font-bold text-brand shadow">
+                      {data.welcome.badge_left}
+                    </span>
                   )}
-                >
-                  <Icon className="h-5 w-5" />
+                  {data.welcome.badge_right && (
+                    <span className="absolute bottom-4 right-3 rounded-full bg-brand px-3 py-1 text-[11px] font-bold text-white shadow">
+                      {data.welcome.badge_right}
+                    </span>
+                  )}
                 </div>
-                <p className="text-xs font-bold uppercase tracking-wide text-subtle">{c.label}</p>
-                <p className="mt-1 whitespace-pre-line text-sm font-medium text-ink">{c.value}</p>
-                {safeHref(c.link_url) && (
-                  <a
-                    href={safeHref(c.link_url)}
-                    target="_blank"
-                    rel="noopener noreferrer"
+              </BentoTile>
+              <BentoTile
+                tone="peach"
+                spanMd={2}
+                spanLg={4}
+                spanXl={8}
+                padding="lg"
+                className="flex flex-col justify-center"
+              >
+                <BentoEyebrow>Sambutan</BentoEyebrow>
+                <h2 className="text-balance text-xl font-bold tracking-tight text-ink md:text-2xl">
+                  {data.welcome.title}
+                </h2>
+                <SafeHtml
+                  className="prose-article mt-4 max-w-none leading-relaxed text-body"
+                  html={data.welcome.body}
+                  plainFallback
+                />
+              </BentoTile>
+            </>
+          )}
+        </BentoBoard>
+
+        {data.contacts.length > 0 && (
+          <PageBentoSection eyebrow="Kontak" title="Hubungi kami">
+            <BentoBoard>
+              {data.contacts.map((c, i) => {
+                const Icon = iconMap[c.icon || ''] || MapPin
+                const href = safeHref(c.link_url)
+                return (
+                  <BentoTile
+                    key={c.id}
+                    tone={contactTones[i % contactTones.length]}
+                    spanMd={2}
+                    spanLg={2}
+                    spanXl={i === 0 ? 4 : 2}
+                    padding="md"
+                  >
+                    <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-white/80 shadow-sm ring-1 ring-black/5">
+                      <Icon className="h-5 w-5 text-brand" strokeWidth={1.75} />
+                    </div>
+                    <p className="text-[11px] font-bold uppercase tracking-wide text-subtle">
+                      {c.label}
+                    </p>
+                    <p className="mt-1 whitespace-pre-line text-sm font-medium text-ink">
+                      {c.value}
+                    </p>
+                    {href && (
+                      <a
+                        href={href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-3 inline-flex rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-sky-700 shadow-sm ring-1 ring-sky-100 transition hover:bg-white"
+                      >
+                        Buka tautan
+                      </a>
+                    )}
+                  </BentoTile>
+                )
+              })}
+            </BentoBoard>
+          </PageBentoSection>
+        )}
+
+        {tabs.length > 0 && (
+          <BentoBoard>
+            <BentoTile
+              tone="white"
+              spanMd={4}
+              spanLg={6}
+              spanXl={12}
+              padding="none"
+              className="!col-span-2 !p-0 hover:translate-y-0 md:!col-span-4 lg:!col-span-6 xl:!col-span-12"
+            >
+              <div className="flex flex-wrap gap-1 border-b border-line bg-muted/40 p-2 md:p-2.5">
+                {tabs.map((t, i) => (
+                  <button
+                    key={t.key}
+                    type="button"
+                    onClick={() => setTab(i)}
                     className={cn(
-                      'mt-3 inline-flex rounded-[12px] px-3 py-1.5 text-xs font-semibold transition active:scale-[0.98]',
-                      softTones.sky.solid,
+                      'rounded-full px-4 py-2 text-sm font-semibold transition',
+                      i === tab
+                        ? 'bg-sky-500 text-white shadow-sm'
+                        : 'text-subtle hover:bg-white hover:text-ink',
                     )}
                   >
-                    Buka Google Maps
-                  </a>
-                )}
+                    {t.label}
+                  </button>
+                ))}
               </div>
-            )
-          })}
-        </div>
-      </section>
+              <SafeHtml className="prose-article p-5 md:p-8" html={active?.content_html} />
+            </BentoTile>
+          </BentoBoard>
+        )}
 
-      {tabs.length > 0 && (
-        <section className="container-page pb-10">
-          <div className="overflow-hidden rounded-[16px] border border-line bg-white shadow-sm">
-            <div className="flex flex-wrap gap-1 border-b border-line p-2">
-              {tabs.map((t, i) => (
-                <button
-                  key={t.key}
-                  onClick={() => setTab(i)}
-                  className={cn(
-                    'rounded-[12px] px-4 py-2 text-sm font-semibold transition',
-                    i === tab
-                      ? softTones[toneAt(i)].soft
-                      : 'text-subtle hover:bg-muted',
-                  )}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
-            <SafeHtml className="prose-article p-6 md:p-8" html={active?.content_html} />
-          </div>
-        </section>
-      )}
-
-      <section className="container-page pb-16">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-ink">Layanan Cepat</h2>
-          <p className="mt-1 text-subtle">
-            Akses layanan dan halaman penting yang sering dibutuhkan.
-          </p>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-          {data.quick_services.map((item, i) => {
-            const Icon = iconMap[item.icon] || Sparkles
-            const tone = softTones[toneAt(i)]
-            const href = safeHref(item.link_url) || '#'
-            return (
-              <a
-                key={item.id}
-                href={href}
-                {...(href.startsWith('http')
-                  ? { target: '_blank', rel: 'noopener noreferrer' }
-                  : {})}
-                className="rounded-[16px] border border-line bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-              >
-                <div
-                  className={cn(
-                    'mb-3 flex h-12 w-12 items-center justify-center rounded-2xl',
-                    tone.chip,
-                  )}
-                  style={
-                    item.color
-                      ? { backgroundColor: `${item.color}18`, color: item.color }
-                      : undefined
-                  }
-                >
-                  <Icon className="h-6 w-6" />
-                </div>
-                <h3 className="font-bold text-ink">{item.title}</h3>
-                <p className="mt-1 text-xs text-subtle">{item.description}</p>
-                <span
-                  className={cn(
-                    'mt-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold',
-                    tone.soft,
-                  )}
-                >
-                  {item.link_label || 'Buka'} →
-                </span>
-              </a>
-            )
-          })}
-        </div>
-      </section>
-    </div>
+        {data.quick_services.length > 0 && (
+          <PageBentoSection
+            eyebrow="Akses cepat"
+            title="Layanan penting"
+          >
+            <BentoBoard>
+              {data.quick_services.map((item, i) => {
+                const Icon = iconMap[item.icon] || Sparkles
+                const href = safeHref(item.link_url) || '#'
+                return (
+                  <BentoTile
+                    key={item.id}
+                    tone={serviceTones[i % serviceTones.length]}
+                    spanMd={2}
+                    spanLg={2}
+                    spanXl={2}
+                    padding="md"
+                  >
+                    <a
+                      href={href}
+                      {...(href.startsWith('http')
+                        ? { target: '_blank', rel: 'noopener noreferrer' }
+                        : {})}
+                      className="flex h-full flex-col outline-none"
+                    >
+                      <div
+                        className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/80 shadow-sm ring-1 ring-black/5"
+                        style={
+                          item.color
+                            ? { color: item.color }
+                            : undefined
+                        }
+                      >
+                        <Icon className="h-6 w-6" strokeWidth={1.75} />
+                      </div>
+                      <h3 className="font-bold text-ink">{item.title}</h3>
+                      <p className="mt-1 line-clamp-2 text-xs text-subtle">{item.description}</p>
+                      <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-brand">
+                        {item.link_label || 'Buka'} →
+                      </span>
+                    </a>
+                  </BentoTile>
+                )
+              })}
+            </BentoBoard>
+          </PageBentoSection>
+        )}
+      </PageBentoShell>
+    </>
   )
 }
