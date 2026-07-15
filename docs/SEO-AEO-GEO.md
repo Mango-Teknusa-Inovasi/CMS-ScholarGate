@@ -1,72 +1,68 @@
-# SEO · AEO · GEO — Scholargate CMS
+# SEO · AEO · GEO — panduan singkat
 
-## Definisi
+Fokus: **mudah diindeks Google** + setup **Search Console** tanpa ribet.
 
-| Istilah | Fokus |
-|---------|--------|
-| **SEO** | Google/Bing klasik: title, description, canonical, sitemap, robots, structured data, image alt |
-| **AEO** | Answer Engine Optimization: jawaban langsung, FAQ schema + UI, excerpt yang menjawab intent |
-| **GEO** | Generative Engine Optimization **dan** Geo lokal: `llms.txt`, entity schema, koordinat/NAP sekolah |
+## Endpoint otomatis
 
-## Otomatis di sistem
+| URL | Fungsi |
+|-----|--------|
+| `/sitemap.xml` | Peta URL (beranda, halaman, artikel terbit, prestasi) |
+| `/robots.txt` | Izinkan crawl publik; blok admin/login/api/preview |
+| `/llms.txt` | Peta teks untuk AI / answer engines (AEO) |
 
-### Saat upload gambar (penting)
-Semua unggahan lewat **Media Library** dan **ImageUploadField** (banner, cover artikel, logo, galeri, dll.) lewat `ImageOptimizer`:
+Meta title, description, canonical, OG, GEO, JSON-LD, dan **kode verifikasi GSC** di-inject:
+- **Server** (HTML awal SPA) → bot & GSC
+- **Client** (`SeoHead`) → navigasi SPA
 
-1. Orientasi EXIF diperbaiki lalu metadata dibuang  
-2. Resize jika lebar > 1920px  
-3. Konversi ke **WebP** (kualitas ~82)  
-4. Disimpan ke media library  
-5. **Alt text** — default dari nama file; bisa diisi di form upload & diedit di Media Library  
+## Google Search Console (3 langkah)
 
-Badge **WebP** di media library menandai file yang sudah dioptimasi.
+1. Buka [Google Search Console](https://search.google.com/search-console) → **Tambahkan properti** (URL prefix: `https://domain-anda.sch.id`).
+2. Verifikasi **tag HTML** → salin meta → tempel di **Admin → Pengaturan → Google Search Console** → **Simpan**.  
+   Boleh tempel full tag; CMS memotong ke `content="..."`.
+3. Menu **Sitemaps** → submit: `https://domain-anda.sch.id/sitemap.xml`
 
-### Endpoint publik
-- `/sitemap.xml` — semua URL penting + artikel terbit  
-- `/robots.txt` — Allow publik, Disallow admin/api; allow bot AI (GPTBot, ClaudeBot, PerplexityBot, …)  
-- `/llms.txt` — peta situs + ringkasan artikel untuk AI crawler  
-- `/api/v1/seo/*` — meta dinamis (title/desc/OG/geo/JSON-LD) untuk Helmet  
+Cek HTML: buka source homepage → cari `google-site-verification`.
 
-### Schema.org (JSON-LD)
-- Organization / EducationalOrganization + geo coordinates + NAP  
-- WebSite + SearchAction  
-- NewsArticle + BreadcrumbList  
-- FAQPage (jika FAQ diisi di artikel; juga ditampilkan di halaman artikel)  
+## Yang diisi admin (wajib untuk GEO/lokal)
 
-### Meta per halaman publik
-Title & description unik untuk: beranda, profil, artikel, prestasi, ekstrakurikuler, download.  
-Artikel: meta title/description, og:image (cover), noindex opsional, tags, published/modified time.
+**Pengaturan**
 
-## Yang diisi admin
+| Field | Kenapa |
+|-------|--------|
+| Nama + deskripsi situs | Title/description default |
+| Logo + default OG image | Share & schema |
+| Alamat, kota, lat/lng | GEO lokal + schema Organization |
+| Telepon / email | NAP + ContactPoint |
+| Google site verification | GSC |
 
-### Pengaturan (`/admin/settings`)
-- Deskripsi situs, logo, default OG image  
-- Alamat, lat/lng, kota, region (**GEO lokal**)  
-- Verifikasi Google/Bing, Twitter handle  
+**Artikel**
 
-### Per artikel
-- Meta title / description  
-- Focus keyword  
-- Canonical, noindex  
-- FAQ Q&A (**AEO** — schema + accordion di frontend)  
-- Cover (jadi og:image, dioptimasi saat upload)  
-- Jadwal terbit  
+- Meta title / description (atau pakai excerpt)
+- Cover (jadi `og:image`)
+- FAQ 2–5 item → schema FAQPage (**AEO**)
+- Jangan centang noindex kecuali draf rahasia
 
-### Media
-- Alt text per file  
-- Optimasi WebP otomatis  
+## Aturan indeks (otomatis)
 
-## Praktik konten (AEO/GEO)
+| Aturan | Detail |
+|--------|--------|
+| Artikel `noindex` | Tidak masuk sitemap |
+| Admin / login / preview | `noindex` + `Disallow` di robots |
+| robots | `index,follow,max-image-preview:large,...` |
+| Canonical | Per halaman + artikel |
+| Schema | Organization + WebSite + NewsArticle + FAQ + Breadcrumb |
+| hreflang | `id` + `x-default` |
 
-1. **Excerpt & meta description** = jawaban 1–2 kalimat untuk query utama  
-2. **H1 = intent jelas**, bukan basabasi  
-3. **FAQ 2–5 item** di artikel penting (pendaftaran, biaya, jadwal)  
-4. **Alt text** bermakna (bukan “IMG_001”)  
-5. **NAP konsisten** (nama, alamat, telepon) di profil & settings  
-6. Isi **lat/lng** sekolah di pengaturan  
+## Checklist go-live SEO
 
-## Catatan SPA
+- [ ] `APP_URL=https://domain-produksi` (tanpa slash akhir)
+- [ ] Verifikasi GSC sukses
+- [ ] Sitemap submitted
+- [ ] Lat/lng + alamat terisi
+- [ ] 3–5 artikel publish dengan excerpt + cover
+- [ ] Cek [Rich Results Test](https://search.google.com/test/rich-results) pada 1 artikel
 
-Meta diisi client-side via `react-helmet-async`. Untuk crawler modern (Google) biasanya cukup.  
-Sitemap + llms.txt + structured data memperkuat SEO/AEO/GEO.  
-SSR penuh bisa ditambahkan nanti jika butuh preview social yang 100% server-rendered.
+## Catatan
+
+Tidak perlu plugin WordPress. Tidak perlu SSR penuh untuk GSC—meta verifikasi sudah di HTML server.  
+SSR penuh hanya opsional untuk social preview edge-case.

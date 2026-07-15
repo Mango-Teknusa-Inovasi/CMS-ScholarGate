@@ -33,8 +33,16 @@ const fieldMeta: Record<
     group: 'Schema & SEO',
   },
   twitter_handle: { label: 'Twitter/X @handle', group: 'Schema & SEO' },
-  google_site_verification: { label: 'Google site verification', group: 'Schema & SEO' },
-  bing_site_verification: { label: 'Bing site verification', group: 'Schema & SEO' },
+  google_site_verification: {
+    label: 'Google Search Console — kode verifikasi',
+    group: 'Schema & SEO',
+    hint: 'Tempel kode content saja, atau full tag <meta name="google-site-verification" content="…">. Sistem memotong otomatis.',
+  },
+  bing_site_verification: {
+    label: 'Bing Webmaster — kode verifikasi',
+    group: 'Schema & SEO',
+    hint: 'Opsional. Sama: boleh tempel full meta tag msvalidate.01.',
+  },
 }
 
 export function SettingsAdminPage() {
@@ -155,19 +163,59 @@ export function SettingsAdminPage() {
             </div>
           </section>
 
-          <section className="rounded-[16px] border border-line bg-muted p-4 text-xs leading-relaxed text-body">
-            <p className="font-semibold text-ink">Endpoint SEO otomatis</p>
-            <ul className="mt-1 list-disc pl-4">
+          <section className="rounded-[16px] border border-sky-100 bg-sky-50/80 p-4 text-xs leading-relaxed text-body">
+            <p className="font-semibold text-sky-900">Google Search Console (3 langkah)</p>
+            <ol className="mt-2 list-decimal space-y-1.5 pl-4 text-sky-950/90">
               <li>
-                <code>/sitemap.xml</code>
+                Buka{' '}
+                <a
+                  href="https://search.google.com/search-console"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-sky-700 underline"
+                >
+                  search.google.com/search-console
+                </a>{' '}
+                → tambah properti URL domain Anda.
               </li>
               <li>
-                <code>/robots.txt</code>
+                Pilih verifikasi <strong>tag HTML</strong> → salin kode → tempel di field
+                “Google Search Console” di kanan → <strong>Simpan</strong>.
               </li>
               <li>
-                <code>/llms.txt</code>
+                Kembali ke GSC → Verifikasi. Lalu <strong>Sitemaps</strong> → submit:{' '}
+                <code className="rounded bg-white px-1 py-0.5 text-[11px]">
+                  {typeof window !== 'undefined'
+                    ? `${window.location.origin}/sitemap.xml`
+                    : '/sitemap.xml'}
+                </code>
+              </li>
+            </ol>
+            <p className="mt-3 font-semibold text-sky-900">URL otomatis (siap di-crawl)</p>
+            <ul className="mt-1 list-disc space-y-0.5 pl-4">
+              <li>
+                <a href="/sitemap.xml" target="_blank" rel="noreferrer" className="text-sky-700 underline">
+                  /sitemap.xml
+                </a>{' '}
+                — peta URL publik
+              </li>
+              <li>
+                <a href="/robots.txt" target="_blank" rel="noreferrer" className="text-sky-700 underline">
+                  /robots.txt
+                </a>{' '}
+                — aturan bot
+              </li>
+              <li>
+                <a href="/llms.txt" target="_blank" rel="noreferrer" className="text-sky-700 underline">
+                  /llms.txt
+                </a>{' '}
+                — AEO / AI crawler
               </li>
             </ul>
+            <p className="mt-2 text-[11px] text-sky-800/80">
+              Pastikan <code>APP_URL</code> di server = domain publik (https). Meta verifikasi
+              ikut di HTML server-side agar Google langsung membaca.
+            </p>
           </section>
         </div>
 

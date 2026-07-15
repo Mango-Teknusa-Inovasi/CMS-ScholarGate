@@ -270,22 +270,15 @@ class SeoService
             'description' => $baseDesc,
         ];
 
-        return [
+        return array_merge($this->commonHeadMeta($s), [
             'title' => $page['title'],
             'description' => $page['description'],
             'canonical' => $this->absoluteUrl($path === '/' ? '/' : $path),
             'og_type' => 'website',
             'og_image' => $this->mediaUrl($s['default_og_image'] ?: $s['site_logo']),
             'robots' => 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1',
-            'locale' => 'id_ID',
-            'site_name' => $s['site_name'],
-            'geo_region' => $s['geo_region'],
-            'geo_placename' => $s['geo_placename'],
-            'geo_position' => ($s['geo_lat'] && $s['geo_lng']) ? $s['geo_lat'].';'.$s['geo_lng'] : null,
-            'twitter_card' => 'summary_large_image',
-            'twitter_site' => $s['twitter_handle'],
             'json_ld' => $this->organizationGraph(),
-        ];
+        ]);
     }
 
     public function articleMeta(Article $article): array
@@ -298,7 +291,7 @@ class SeoService
         $image = $this->mediaUrl($article->og_image ?: $article->cover_path)
             ?: $this->mediaUrl($s['default_og_image'] ?: $s['site_logo']);
 
-        return [
+        return array_merge($this->commonHeadMeta($s), [
             'title' => $title.' | '.$s['site_name'],
             'description' => $description,
             'canonical' => $article->canonical_url ?: $url,
@@ -307,8 +300,6 @@ class SeoService
             'robots' => $article->noindex
                 ? 'noindex,nofollow'
                 : 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1',
-            'locale' => 'id_ID',
-            'site_name' => $s['site_name'],
             'article_published' => optional($article->published_at)?->toAtomString(),
             'article_modified' => optional($article->updated_at)?->toAtomString(),
             'article_section' => $article->category?->name,
@@ -316,43 +307,107 @@ class SeoService
                 ? $article->tags->pluck('name')->all()
                 : [],
             'focus_keyword' => $article->focus_keyword,
+            'json_ld' => $this->articleGraph($article),
+            'faq_items' => $article->faq_items ?: [],
+        ]);
+    }
+
+    /**
+     * Meta bersama: locale, GEO, GSC/Bing verification.
+     *
+     * @param  array<string, mixed>  $s
+     * @return array<string, mixed>
+     */
+    public function commonHeadMeta(array $s): array
+    {
+        return [
+            'locale' => 'id_ID',
+            'site_name' => $s['site_name'],
             'geo_region' => $s['geo_region'],
             'geo_placename' => $s['geo_placename'],
             'geo_position' => ($s['geo_lat'] && $s['geo_lng']) ? $s['geo_lat'].';'.$s['geo_lng'] : null,
             'twitter_card' => 'summary_large_image',
             'twitter_site' => $s['twitter_handle'],
-            'json_ld' => $this->articleGraph($article),
-            'faq_items' => $article->faq_items ?: [],
+            'google_site_verification' => $s['google_site_verification'] ?: null,
+            'bing_site_verification' => $s['bing_site_verification'] ?: null,
+            'sitemap_url' => $s['app_url'].'/sitemap.xml',
+            'robots_url' => $s['app_url'].'/robots.txt',
+            'llms_url' => $s['app_url'].'/llms.txt',
         ];
+    }
+
+    /**
+     * Normalize kode verifikasi GSC/Bing (boleh tempel full meta tag).
+     */
+    public static function normalizeVerificationCode(?string $value): string
+    {
+        $value = trim((string) $value);
+        if ($value === '') {
+            return '';
+        }
+        // <meta name="google-site-verification" content="XXXX" />
+        if (preg_match('/content\s*=\s*["\']([^"\']+)["\']/i', $value, $m)) {
+            return trim($m[1]);
+        }
+        // google-site-verification=XXXX
+        if (preg_match('/^(?:google-site-verification|msvalidate\.01)\s*=\s*(.+)$/i', $value, $m)) {
+            return trim($m[1]);
+        }
+
+        return $value;
     }
 
     public function sitemapUrls(): array
     {
         $s = $this->siteSettings();
+        $now = now()->toAtomString();
         $urls = [
-            ['loc' => $s['app_url'].'/', 'changefreq' => 'daily', 'priority' => '1.0'],
-            ['loc' => $s['app_url'].'/profil', 'changefreq' => 'monthly', 'priority' => '0.8'],
-            ['loc' => $s['app_url'].'/artikel', 'changefreq' => 'daily', 'priority' => '0.9'],
-            ['loc' => $s['app_url'].'/prestasi', 'changefreq' => 'weekly', 'priority' => '0.7'],
-            ['loc' => $s['app_url'].'/ekstrakurikuler', 'changefreq' => 'weekly', 'priority' => '0.7'],
-            ['loc' => $s['app_url'].'/download', 'changefreq' => 'weekly', 'priority' => '0.6'],
+            ['loc' => $s['app_url'].'/', 'lastmod' => $now, 'changefreq' => 'daily', 'priority' => '1.0'],
+            ['loc' => $s['app_url'].'/profil', 'lastmod' => $now, 'changefreq' => 'monthly', 'priority' => '0.8'],
+            ['loc' => $s['app_url'].'/artikel', 'lastmod' => $now, 'changefreq' => 'daily', 'priority' => '0.9'],
+            ['loc' => $s['app_url'].'/prestasi', 'lastmod' => $now, 'changefreq' => 'weekly', 'priority' => '0.7'],
+            ['loc' => $s['app_url'].'/ekstrakurikuler', 'lastmod' => $now, 'changefreq' => 'weekly', 'priority' => '0.7'],
+            ['loc' => $s['app_url'].'/download', 'lastmod' => $now, 'changefreq' => 'weekly', 'priority' => '0.6'],
         ];
 
-        foreach (Category::query()->orderBy('sort_order')->get() as $cat) {
-            $urls[] = [
-                'loc' => $s['app_url'].'/artikel?category='.$cat->slug,
-                'changefreq' => 'weekly',
-                'priority' => '0.6',
-            ];
-        }
+        // Hindari query-string di sitemap (Google lebih suka URL bersih)
+        // Kategori tetap bisa di-crawl lewat internal links.
 
-        foreach (Article::published()->orderByDesc('published_at')->get(['slug', 'updated_at', 'published_at']) as $a) {
+        $articles = Article::published()
+            ->where(function ($q) {
+                $q->where('noindex', false)->orWhereNull('noindex');
+            })
+            ->orderByDesc('published_at')
+            ->get(['slug', 'updated_at', 'published_at']);
+
+        foreach ($articles as $a) {
             $urls[] = [
                 'loc' => $s['app_url'].'/artikel/'.$a->slug,
                 'lastmod' => optional($a->updated_at ?: $a->published_at)?->toAtomString(),
-                'changefreq' => 'monthly',
+                'changefreq' => 'weekly',
                 'priority' => '0.8',
             ];
+        }
+
+        if (class_exists(\App\Models\Achievement::class)) {
+            try {
+                $achievements = \App\Models\Achievement::published()
+                    ->orderByDesc('achieved_at')
+                    ->get(['slug', 'updated_at', 'achieved_at']);
+                foreach ($achievements as $item) {
+                    if (empty($item->slug)) {
+                        continue;
+                    }
+                    $urls[] = [
+                        'loc' => $s['app_url'].'/prestasi/'.$item->slug,
+                        'lastmod' => optional($item->updated_at ?: $item->achieved_at)?->toAtomString(),
+                        'changefreq' => 'monthly',
+                        'priority' => '0.65',
+                    ];
+                }
+            } catch (\Throwable) {
+                // table may not exist in partial installs
+            }
         }
 
         return $urls;

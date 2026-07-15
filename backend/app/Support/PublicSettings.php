@@ -27,8 +27,10 @@ class PublicSettings
         'google_site_verification',
         'bing_site_verification',
         'logo_path',
+        'site_logo',
         'favicon_path',
         'og_image',
+        'default_og_image',
     ];
 
     /**

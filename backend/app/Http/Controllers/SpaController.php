@@ -48,37 +48,55 @@ class SpaController extends Controller
     {
         $path = $path === '' ? '/' : $path;
 
-        // Preview draf — noindex
+        // Preview draf — noindex (tetap bawa GSC verification agar domain verify)
         if (str_starts_with($path, '/preview/')) {
             $base = $this->seo->pageMeta('/');
 
-            return [
+            return array_merge($base, [
                 'title' => 'Pratinjau draf | Scholargate',
                 'description' => 'Pratinjau konten tidak dipublikasikan.',
                 'canonical' => $this->seo->absoluteUrl($path),
                 'og_type' => 'article',
-                'og_image' => $base['og_image'] ?? null,
                 'robots' => 'noindex,nofollow',
                 'json_ld' => null,
-            ];
+            ]);
         }
 
         // Admin & auth pages — noindex
         if (str_starts_with($path, '/admin') || in_array($path, ['/login', '/daftar', '/register', '/akun'], true)) {
             $base = $this->seo->pageMeta('/');
 
-            return [
+            return array_merge($base, [
                 'title' => 'Scholargate',
-                'description' => $base['description'] ?? '',
                 'canonical' => $this->seo->absoluteUrl($path),
-                'og_type' => 'website',
-                'og_image' => $base['og_image'] ?? null,
                 'robots' => 'noindex,nofollow',
                 'json_ld' => null,
-            ];
+            ]);
         }
 
-        // Artikel detail
+        // Prestasi detail
+        if (preg_match('#^/prestasi/([^/]+)$#', $path, $m)) {
+            try {
+                $item = \App\Models\Achievement::published()->where('slug', $m[1])->first();
+                if ($item) {
+                    $base = $this->seo->pageMeta('/prestasi');
+                    $desc = $item->excerpt ?: ($base['description'] ?? '');
+
+                    return array_merge($base, [
+                        'title' => $item->title.' | '.($base['site_name'] ?? 'Scholargate'),
+                        'description' => \Illuminate\Support\Str::limit(strip_tags((string) $desc), 160),
+                        'canonical' => $this->seo->absoluteUrl($path),
+                        'og_type' => 'article',
+                        'og_image' => $this->seo->mediaUrl($item->cover_path) ?: ($base['og_image'] ?? null),
+                        'robots' => 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1',
+                    ]);
+                }
+            } catch (\Throwable) {
+                // fall through
+            }
+        }
+
+        // Artikel detail — full meta (GSC + schema)
         if (preg_match('#^/artikel/([^/]+)$#', $path, $m)) {
             $article = Article::published()
                 ->with(['category:id,name', 'tags:id,name', 'author:id,name'])
@@ -86,17 +104,7 @@ class SpaController extends Controller
                 ->first();
 
             if ($article) {
-                $meta = $this->seo->articleMeta($article);
-
-                return [
-                    'title' => $meta['title'] ?? $article->title,
-                    'description' => $meta['description'] ?? '',
-                    'canonical' => $meta['canonical'] ?? $this->seo->absoluteUrl($path),
-                    'og_type' => 'article',
-                    'og_image' => $meta['og_image'] ?? null,
-                    'robots' => $meta['robots'] ?? 'index,follow',
-                    'json_ld' => $meta['json_ld'] ?? null,
-                ];
+                return $this->seo->articleMeta($article);
             }
         }
 
@@ -110,35 +118,22 @@ class SpaController extends Controller
         ];
 
         $pagePath = $pageMap[$path] ?? '/';
-        $meta = $this->seo->pageMeta($pagePath === '/' ? '/' : $pagePath);
 
-        // Judul page khusus jika path dikenal
-        if (isset($pageMap[$path]) && $path !== '/') {
-            $meta = $this->seo->pageMeta($path);
-        }
-
-        return [
-            'title' => $meta['title'] ?? 'Scholargate',
-            'description' => $meta['description'] ?? '',
-            'canonical' => $meta['canonical'] ?? $this->seo->absoluteUrl($path),
-            'og_type' => $meta['og_type'] ?? 'website',
-            'og_image' => $meta['og_image'] ?? null,
-            'robots' => $meta['robots'] ?? 'index,follow',
-            'json_ld' => $meta['json_ld'] ?? null,
-        ];
+        return $this->seo->pageMeta($pagePath === '/' ? '/' : $pagePath);
     }
 
     /**
-     * @param  array{title: string, description: string, canonical: string, og_type: string, og_image: ?string, robots: string, json_ld: ?array}  $meta
+     * @param  array<string, mixed>  $meta
      */
     private function injectMeta(string $html, array $meta): string
     {
-        $title = e($meta['title']);
-        $desc = e($meta['description']);
-        $canonical = e($meta['canonical']);
-        $ogType = e($meta['og_type']);
-        $robots = e($meta['robots']);
-        $image = $meta['og_image'] ? e($meta['og_image']) : '';
+        $title = e((string) ($meta['title'] ?? 'Scholargate'));
+        $desc = e((string) ($meta['description'] ?? ''));
+        $canonical = e((string) ($meta['canonical'] ?? ''));
+        $ogType = e((string) ($meta['og_type'] ?? 'website'));
+        $robots = e((string) ($meta['robots'] ?? 'index,follow'));
+        $image = ! empty($meta['og_image']) ? e((string) $meta['og_image']) : '';
+        $siteName = e((string) ($meta['site_name'] ?? 'Scholargate'));
 
         // Ganti <title>…</title>
         $html = preg_replace(
@@ -149,30 +144,62 @@ class SpaController extends Controller
         ) ?? $html;
 
         // Ganti meta description jika ada, atau sisipkan
-        if (preg_match('#<meta\s+name=["\']description["\'][^>]*>#i', $html)) {
-            $html = preg_replace(
-                '#<meta\s+name=["\']description["\'][^>]*>#i',
-                '<meta name="description" content="'.$desc.'" />',
-                $html,
-                1
-            ) ?? $html;
+        if ($desc !== '') {
+            if (preg_match('#<meta\s+name=["\']description["\'][^>]*>#i', $html)) {
+                $html = preg_replace(
+                    '#<meta\s+name=["\']description["\'][^>]*>#i',
+                    '<meta name="description" content="'.$desc.'" />',
+                    $html,
+                    1
+                ) ?? $html;
+            } else {
+                $html = str_replace('</head>', '    <meta name="description" content="'.$desc.'" />'."\n</head>", $html);
+            }
         }
 
         $tags = [
             '<meta name="robots" content="'.$robots.'" />',
+            '<meta name="googlebot" content="'.$robots.'" />',
             '<link rel="canonical" href="'.$canonical.'" />',
+            '<link rel="alternate" hreflang="id" href="'.$canonical.'" />',
+            '<link rel="alternate" hreflang="x-default" href="'.$canonical.'" />',
             '<meta property="og:locale" content="id_ID" />',
             '<meta property="og:type" content="'.$ogType.'" />',
+            '<meta property="og:site_name" content="'.$siteName.'" />',
             '<meta property="og:title" content="'.$title.'" />',
             '<meta property="og:description" content="'.$desc.'" />',
             '<meta property="og:url" content="'.$canonical.'" />',
             '<meta name="twitter:card" content="summary_large_image" />',
             '<meta name="twitter:title" content="'.$title.'" />',
             '<meta name="twitter:description" content="'.$desc.'" />',
+            '<link rel="sitemap" type="application/xml" href="/sitemap.xml" />',
+            '<link rel="alternate" type="text/plain" href="/llms.txt" title="LLMs" />',
         ];
+
+        // Google Search Console + Bing — penting di HTML server (bukan hanya SPA)
+        if (! empty($meta['google_site_verification'])) {
+            $tags[] = '<meta name="google-site-verification" content="'.e((string) $meta['google_site_verification']).'" />';
+        }
+        if (! empty($meta['bing_site_verification'])) {
+            $tags[] = '<meta name="msvalidate.01" content="'.e((string) $meta['bing_site_verification']).'" />';
+        }
+
+        // GEO lokal
+        if (! empty($meta['geo_region'])) {
+            $tags[] = '<meta name="geo.region" content="'.e((string) $meta['geo_region']).'" />';
+        }
+        if (! empty($meta['geo_placename'])) {
+            $tags[] = '<meta name="geo.placename" content="'.e((string) $meta['geo_placename']).'" />';
+        }
+        if (! empty($meta['geo_position'])) {
+            $pos = e((string) $meta['geo_position']);
+            $tags[] = '<meta name="geo.position" content="'.$pos.'" />';
+            $tags[] = '<meta name="ICBM" content="'.str_replace(';', ', ', $pos).'" />';
+        }
 
         if ($image !== '') {
             $tags[] = '<meta property="og:image" content="'.$image.'" />';
+            $tags[] = '<meta property="og:image:alt" content="'.$title.'" />';
             $tags[] = '<meta name="twitter:image" content="'.$image.'" />';
         }
 
@@ -183,7 +210,7 @@ class SpaController extends Controller
             }
         }
 
-        $block = "\n    <!-- server-meta (bots) -->\n    ".implode("\n    ", $tags)."\n";
+        $block = "\n    <!-- server-meta (SEO/AEO/GEO + GSC) -->\n    ".implode("\n    ", $tags)."\n";
 
         if (str_contains($html, '</head>')) {
             $html = str_replace('</head>', $block.'</head>', $html);

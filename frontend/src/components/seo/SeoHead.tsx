@@ -21,6 +21,9 @@ export type SeoMeta = {
   article_section?: string | null
   article_tags?: string[]
   focus_keyword?: string | null
+  google_site_verification?: string | null
+  bing_site_verification?: string | null
+  sitemap_url?: string | null
   json_ld?: Record<string, unknown> | null
 }
 
@@ -62,6 +65,16 @@ export function SeoHead({ kind, page, articleSlug, fallbackTitle }: Props) {
       <meta name="googlebot" content={robots} />
       {data?.focus_keyword && <meta name="keywords" content={data.focus_keyword} />}
       {canonical && <link rel="canonical" href={canonical} />}
+      {canonical && <link rel="alternate" hrefLang="id" href={canonical} />}
+      {canonical && <link rel="alternate" hrefLang="x-default" href={canonical} />}
+
+      {/* Google Search Console + Bing */}
+      {data?.google_site_verification && (
+        <meta name="google-site-verification" content={data.google_site_verification} />
+      )}
+      {data?.bing_site_verification && (
+        <meta name="msvalidate.01" content={data.bing_site_verification} />
+      )}
 
       {/* Open Graph */}
       <meta property="og:locale" content={data?.locale || 'id_ID'} />

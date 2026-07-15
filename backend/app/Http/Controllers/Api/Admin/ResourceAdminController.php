@@ -17,6 +17,7 @@ use App\Models\ServiceItem;
 use App\Models\Setting;
 use App\Models\MenuItem;
 use App\Models\WelcomeBlock;
+use App\Services\SeoService;
 use App\Support\PublicSettings;
 use App\Support\SafeUrl;
 use Illuminate\Database\Eloquent\Model;
@@ -142,6 +143,10 @@ class ResourceAdminController extends Controller
             // URL-like settings
             if (in_array($key, ['report_url'], true) && is_string($value) && $value !== '') {
                 $value = SafeUrl::normalize($value) ?? '';
+            }
+            // GSC / Bing: izinkan tempel full <meta ... content="...">
+            if (in_array($key, ['google_site_verification', 'bing_site_verification'], true)) {
+                $value = SeoService::normalizeVerificationCode(is_string($value) ? $value : (string) $value);
             }
             Setting::setValue($key, is_bool($value) ? ($value ? '1' : '0') : (string) $value);
         }

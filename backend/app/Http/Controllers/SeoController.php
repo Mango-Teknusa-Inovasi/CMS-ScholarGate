@@ -15,13 +15,20 @@ class SeoController extends Controller
     {
         $s = $this->seo->siteSettings();
         $body = implode("\n", array_filter([
+            '# Scholargate — SEO / AEO crawl rules',
             'User-agent: *',
             'Allow: /',
             'Disallow: /admin',
+            'Disallow: /admin/',
             'Disallow: /api/',
             'Disallow: /install',
+            'Disallow: /login',
+            'Disallow: /daftar',
+            'Disallow: /register',
+            'Disallow: /akun',
+            'Disallow: /preview/',
             '',
-            # AI / answer engines — allow crawl for AEO/GEO
+            # AI / answer engines — AEO & GEO
             'User-agent: GPTBot',
             'Allow: /',
             '',
@@ -29,6 +36,9 @@ class SeoController extends Controller
             'Allow: /',
             '',
             'User-agent: Google-Extended',
+            'Allow: /',
+            '',
+            'User-agent: Googlebot',
             'Allow: /',
             '',
             'User-agent: anthropic-ai',
