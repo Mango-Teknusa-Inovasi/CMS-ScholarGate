@@ -76,7 +76,7 @@ Route::prefix('v1')->group(function () {
         Route::middleware('admin')->prefix('admin')->group(function () {
             Route::get('/dashboard', DashboardController::class);
 
-            // Articles (WordPress-like)
+            // Articles
             Route::get('/articles', [ArticleAdminController::class, 'index']);
             Route::post('/articles', [ArticleAdminController::class, 'store']);
             Route::post('/articles/bulk-delete', [ArticleAdminController::class, 'bulkDestroy']);

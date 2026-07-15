@@ -76,7 +76,7 @@ export default function App() {
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<DashboardPage />} />
 
-            {/* Artikel — full page editor ala WordPress */}
+            {/* Artikel — editor halaman penuh */}
             <Route path="articles" element={<ArticlesAdminPage />} />
             <Route path="articles/new" element={<ArticleEditorPage />} />
             <Route path="articles/:id/edit" element={<ArticleEditorPage />} />

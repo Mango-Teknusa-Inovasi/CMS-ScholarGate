@@ -110,7 +110,7 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Prop
         HTMLAttributes: { class: 'rounded-xl overflow-hidden my-4' },
       }),
       Placeholder.configure({
-        placeholder: placeholder || 'Tulis konten seperti di WordPress…',
+        placeholder: placeholder || 'Tulis isi konten di sini…',
       }),
       CharacterCount,
     ],
@@ -173,7 +173,7 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Prop
 
   return (
     <div className={cn('overflow-hidden rounded-[16px] border border-line bg-white', className)}>
-      {/* Toolbar ala WordPress classic */}
+      {/* Toolbar editor */}
       <div className="flex flex-wrap items-center gap-0.5 border-b border-line bg-peach-soft/60 p-2">
         <ToolbarBtn title="Undo" onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()}>
           <Undo2 className="h-4 w-4" />
@@ -283,7 +283,7 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Prop
       <EditorContent editor={editor} />
 
       <div className="flex justify-between border-t border-line bg-page px-3 py-1.5 text-xs text-subtle">
-        <span>Editor kaya fitur (seperti WordPress classic)</span>
+        <span>Editor teks berformat — tebal, tautan, tabel, gambar, video</span>
         <span>
           {words} kata · {chars} karakter
         </span>

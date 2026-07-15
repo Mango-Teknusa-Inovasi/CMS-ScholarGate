@@ -124,7 +124,7 @@ export function UsersAdminPage() {
     <div>
       <AdminPageHeader
         title="Pengguna"
-        description="Kelola admin & editor CMS (seperti Users di WordPress)."
+        description="Kelola akun yang dapat masuk ke panel admin (admin & editor)."
         actions={
           <button
             type="button"

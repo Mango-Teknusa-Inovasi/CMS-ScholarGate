@@ -2,7 +2,7 @@
 
 **Language of this file:** English  
 **Audience:** Claude, Cursor, Grok, Copilot, and any coding agent  
-**Last updated:** 2026-07-15  
+**Last updated:** 2026-07-15 (UI copy: no WordPress branding in admin strings)  
 
 ---
 
@@ -34,7 +34,7 @@ Before finishing, the agent **must**:
 
 | Item | Value |
 |------|--------|
-| Name | **CMS Scholargate** (school portal + WordPress-like admin) |
+| Name | **CMS Scholargate** (school portal + admin CMS) |
 | Backend | Laravel 13 API + Sanctum (Bearer tokens) |
 | Frontend | React 19 + TypeScript + Vite + Tailwind v4 |
 | Production shape | **Monolith document root**: `backend/public` serves API + built SPA |

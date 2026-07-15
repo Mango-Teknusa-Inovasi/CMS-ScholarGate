@@ -72,7 +72,7 @@ export function ArticlesAdminPage() {
     <div>
       <AdminPageHeader
         title="Artikel"
-        description="Semua pos. Edit di halaman penuh. Gunakan Sampah untuk restore."
+        description="Daftar artikel portal. Buka editor untuk menulis atau ubah. Tab Sampah untuk pulihkan yang dihapus."
         actions={
           <Link
             to="/admin/articles/new"

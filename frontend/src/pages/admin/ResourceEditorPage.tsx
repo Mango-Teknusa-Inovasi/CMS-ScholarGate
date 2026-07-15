@@ -75,7 +75,7 @@ export function ResourceEditorPage({ config }: Props) {
 
   return (
     <div>
-      {/* WP-like top bar */}
+      {/* Top bar editor */}
       <div className="mb-6 flex flex-col gap-3 border-b border-line pb-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3">
           <Link

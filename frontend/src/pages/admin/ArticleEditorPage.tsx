@@ -225,7 +225,7 @@ export function ArticleEditorPage() {
         <div className="min-w-0 space-y-4">
           <input
             className="w-full rounded-[14px] border border-line bg-white px-4 py-3.5 text-xl font-bold tracking-tight text-ink shadow-[var(--shadow-card)] outline-none focus:border-brand md:text-2xl"
-            placeholder="Tambahkan judul"
+            placeholder="Judul artikel"
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
             autoFocus
@@ -236,7 +236,7 @@ export function ArticleEditorPage() {
             <RichTextEditor
               value={form.body}
               onChange={(html) => setForm((f) => ({ ...f, body: html }))}
-              placeholder="Mulai menulis… (seperti WordPress)"
+              placeholder="Tulis isi artikel di sini…"
             />
           </div>
 
@@ -262,7 +262,7 @@ export function ArticleEditorPage() {
                 </label>
                 <input
                   className="w-full rounded-[12px] border border-line bg-page px-3 py-2.5 text-sm outline-none focus:border-brand focus:bg-white"
-                  placeholder="contoh: pendaftaran smk 2026"
+                  placeholder="Contoh: pendaftaran siswa baru"
                   value={form.focus_keyword}
                   onChange={(e) => setForm({ ...form, focus_keyword: e.target.value })}
                 />
@@ -273,7 +273,7 @@ export function ArticleEditorPage() {
                 </label>
                 <input
                   className="w-full rounded-[12px] border border-line bg-page px-3 py-2.5 text-sm outline-none focus:border-brand focus:bg-white"
-                  placeholder="Judul untuk Google & AI answer"
+                  placeholder="Judul di hasil pencarian (opsional)"
                   value={form.meta_title}
                   onChange={(e) => setForm({ ...form, meta_title: e.target.value })}
                 />
@@ -286,7 +286,7 @@ export function ArticleEditorPage() {
                 <textarea
                   className="w-full rounded-[12px] border border-line bg-page px-3 py-2.5 text-sm outline-none focus:border-brand focus:bg-white"
                   rows={3}
-                  placeholder="1–2 kalimat yang menjawab intent pencarian secara langsung"
+                  placeholder="Ringkasan singkat 1–2 kalimat untuk mesin pencari"
                   value={form.meta_description}
                   onChange={(e) => setForm({ ...form, meta_description: e.target.value })}
                 />
@@ -435,7 +435,7 @@ export function ArticleEditorPage() {
                 </label>
                 <input
                   className="w-full rounded-[12px] border border-line bg-page px-3 py-2.5 text-sm outline-none focus:border-brand focus:bg-white"
-                  placeholder="sekolah, prestasi, smk"
+                  placeholder="Contoh: berita, kegiatan, prestasi"
                   value={form.tags_text}
                   onChange={(e) => setForm({ ...form, tags_text: e.target.value })}
                 />
@@ -480,7 +480,7 @@ export function ArticleEditorPage() {
                 </label>
                 <input
                   className="w-full rounded-[12px] border border-line bg-page px-3 py-2.5 font-mono text-xs outline-none focus:border-brand focus:bg-white"
-                  placeholder="otomatis-dari-judul"
+                  placeholder="Otomatis dari judul jika dikosongkan"
                   value={form.slug}
                   onChange={(e) => setForm({ ...form, slug: e.target.value })}
                 />

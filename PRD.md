@@ -9,7 +9,7 @@
 
 ## 1. Vision
 
-A **school/education portal** with a **WordPress-like admin CMS**, easy to deploy on **shared hosting** (single PHP document root), with solid **SEO / AEO / GEO**, secure media on **Cloudflare R2**, and a **cheerful bento-grid** public UI.
+A **school/education portal** with a full **admin CMS**, easy to deploy on **shared hosting** (single PHP document root), with solid **SEO / AEO / GEO**, secure media on **Cloudflare R2**, and a **cheerful bento-grid** public UI.
 
 ---
 
@@ -58,7 +58,7 @@ A **school/education portal** with a **WordPress-like admin CMS**, easy to deplo
 
 ### 4.2 Admin CMS (`/admin`)
 
-- Dashboard, articles (WP-like editor + preview tokens), media library, tags, categories
+- Dashboard, articles (full-page editor + preview tokens), media library, tags, categories
 - Resources: banners, welcome, menus, services, gallery, partners, contacts, quick services, ekskul, downloads
 - Settings (identity, GEO, GSC/Bing verification, branding images)
 - Users (super admin only)
