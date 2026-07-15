@@ -2,7 +2,17 @@
 
 Portal sekolah + Admin CMS — **Laravel 13 API + React SPA**.
 
-Desain canvas **putih** (referensi portal) dengan aksen soft color pada kartu/tombol tertentu. Siap **shared hosting** (satu document root) maupun VPS.
+Desain canvas **putih** (referensi portal) dengan aksen soft color / **bento grid** pada portal publik. Siap **shared hosting** (satu document root) maupun VPS.
+
+## AI & product docs (English)
+
+| File | Purpose |
+|------|---------|
+| [CLAUDE.md](./CLAUDE.md) | Rules for AI agents (must re-check after every code change) |
+| [PRD.md](./PRD.md) | Product requirements (living) |
+| [GUIDE-FOR-IDE.md](./GUIDE-FOR-IDE.md) | Developer / IDE guide |
+
+Agents **must update** those files when conventions or product scope change.
 
 ## Shared hosting — perlu jalankan backend & frontend terpisah?
 
