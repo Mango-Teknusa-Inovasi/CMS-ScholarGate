@@ -63,7 +63,7 @@ class SpaController extends Controller
         }
 
         // Admin & auth pages — noindex
-        if (str_starts_with($path, '/admin') || in_array($path, ['/login', '/daftar', '/register', '/akun'], true)) {
+        if (str_starts_with($path, '/admin') || in_array($path, ['/login', '/daftar', '/register', '/akun', '/update', '/install'], true)) {
             $base = $this->seo->pageMeta('/');
 
             return array_merge($base, [

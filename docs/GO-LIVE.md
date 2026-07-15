@@ -55,7 +55,16 @@ php artisan storage:link   # opsional (legacy lokal)
 
 Document root = `backend/public`.
 
-## 3b. Kunci installer
+## 3b. Update setelah ganti file
+
+```text
+https://domain-anda/update
+```
+
+Login admin → jalankan update (migrasi + cache).  
+Atau CLI: `php artisan scholargate:update`
+
+## 3c. Kunci installer
 
 Pastikan setelah setup:
 

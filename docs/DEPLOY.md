@@ -28,12 +28,42 @@ composer install --no-dev --optimize-autoloader
 # 3. Upload folder backend/ ke hosting
 # Document root = public/
 
-# 4. Di server
+# 4. Di server — pilih salah satu:
+
+# A) Easy update (shared hosting / tanpa SSH)
+#    Buka https://domain-anda/update
+#    Login admin → centang konfirmasi → Jalankan update
+#    (migrate + clear/cache otomatis)
+
+# B) CLI
+php artisan scholargate:update
+# atau:
 php artisan migrate --force
 php artisan config:cache
 php artisan route:cache
+
 # install pertama: /install atau php artisan scholargate:install
 ```
+
+## Easy update (`/update`)
+
+Setelah **replace file** di hosting:
+
+1. Upload folder `backend/` (dan SPA build di `public/spa` bila ada perubahan frontend).
+2. Buka **`https://domain-anda/update`**
+3. Login **akun role admin** (bukan editor/member).
+4. Centang konfirmasi → **Jalankan update**.
+
+Yang dijalankan otomatis:
+
+- `migrate --force` (tidak menghapus data)
+- `config:clear`, `cache:clear`, `view:clear`, `route:clear`
+- `storage:link` (jika memungkinkan)
+- di production: `config:cache` + `route:cache` (opsional, bisa dicentang)
+
+CLI setara: `php artisan scholargate:update`
+
+**Keamanan:** butuh password admin, rate limit, `noindex`, diblok di `robots.txt`.
 
 ## Shared hosting (satu document root)
 

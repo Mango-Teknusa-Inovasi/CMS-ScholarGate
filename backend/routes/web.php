@@ -3,6 +3,7 @@
 use App\Http\Controllers\InstallController;
 use App\Http\Controllers\SeoController;
 use App\Http\Controllers\SpaController;
+use App\Http\Controllers\UpdateController;
 use App\Support\Installer;
 use Illuminate\Support\Facades\Route;
 
@@ -27,6 +28,14 @@ Route::middleware('throttle:5,60')->group(function () {
     Route::post('/install', [InstallController::class, 'store'])->name('install.store');
 });
 
+// Easy update setelah ganti file — login admin di form
+Route::middleware('throttle:20,1')->group(function () {
+    Route::get('/update', [UpdateController::class, 'show'])->name('update.show');
+});
+Route::middleware('throttle:5,30')->group(function () {
+    Route::post('/update', [UpdateController::class, 'store'])->name('update.store');
+});
+
 // Redirect root ke installer HANYA jika web install diizinkan
 Route::get('/', function () {
     if (! Installer::isInstalled() && Installer::canInstallViaWeb()) {
@@ -36,7 +45,7 @@ Route::get('/', function () {
     return app(SpaController::class)();
 });
 
-// SPA catch-all (jangan tangkap api/*, install, storage)
+// SPA catch-all (jangan tangkap api/*, install, update, storage)
 Route::get('/{any}', SpaController::class)
-    ->where('any', '^(?!api(?:/|$)|install(?:/|$)|storage(?:/|$)|sanctum(?:/|$)|up$|robots\\.txt$|sitemap\\.xml$|llms\\.txt$).*')
+    ->where('any', '^(?!api(?:/|$)|install(?:/|$)|update(?:/|$)|storage(?:/|$)|sanctum(?:/|$)|up$|robots\\.txt$|sitemap\\.xml$|llms\\.txt$).*')
     ->name('spa');

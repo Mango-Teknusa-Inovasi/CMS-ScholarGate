@@ -22,6 +22,7 @@ class SeoController extends Controller
             'Disallow: /admin/',
             'Disallow: /api/',
             'Disallow: /install',
+            'Disallow: /update',
             'Disallow: /login',
             'Disallow: /daftar',
             'Disallow: /register',
