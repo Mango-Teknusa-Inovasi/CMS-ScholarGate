@@ -33,7 +33,7 @@ export function HeroCarousel({ banners }: { banners: Banner[] }) {
   return (
     <section className="container-page pt-5 md:pt-6">
       <motion.div
-        className="relative overflow-hidden rounded-[20px] border border-line shadow-[var(--shadow-card)]"
+        className="relative overflow-hidden rounded-[22px] border border-line shadow-[var(--shadow-card)]"
         initial={reduce ? false : { opacity: 0, y: 16, scale: 0.985 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.55, ease: easeOutExpo }}
