@@ -8,6 +8,8 @@ import { AdminPageHeader } from '../../components/admin/AdminPageHeader'
 import { StatusBadge } from '../../components/admin/StatusBadge'
 import { Skeleton } from '../../components/ui/Skeleton'
 import { cn } from '../../lib/utils'
+import { useConfirm } from '../../components/ui/ConfirmModal'
+import { useToast } from '../../components/ui/Toast'
 
 type ArticleRow = {
   id: number
@@ -23,6 +25,8 @@ type ArticleRow = {
 
 export function ArticlesAdminPage() {
   const qc = useQueryClient()
+  const { confirm } = useConfirm()
+  const toast = useToast()
   const [q, setQ] = useState('')
   const [status, setStatus] = useState('')
   const [trash, setTrash] = useState(false)
@@ -48,12 +52,18 @@ export function ArticlesAdminPage() {
     onSuccess: () => {
       setSelected([])
       qc.invalidateQueries({ queryKey: ['admin-articles'] })
+      toast.success(trash ? 'Artikel dihapus permanen.' : 'Artikel dipindah ke sampah.')
     },
+    onError: () => toast.error('Gagal menghapus artikel.'),
   })
 
   const restore = useMutation({
     mutationFn: async (id: number) => api.post(`/admin/articles/${id}/restore`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-articles'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-articles'] })
+      toast.success('Artikel dipulihkan.')
+    },
+    onError: () => toast.error('Gagal memulihkan artikel.'),
   })
 
   const bulk = useMutation({
@@ -62,7 +72,9 @@ export function ArticlesAdminPage() {
     onSuccess: () => {
       setSelected([])
       qc.invalidateQueries({ queryKey: ['admin-articles'] })
+      toast.success(trash ? 'Artikel terpilih dihapus permanen.' : 'Artikel terpilih dipindah ke sampah.')
     },
+    onError: () => toast.error('Gagal memproses artikel terpilih.'),
   })
 
   const rows = data?.data || []
@@ -141,9 +153,16 @@ export function ArticlesAdminPage() {
           <span className="font-medium text-ink">{selected.length} dipilih</span>
           <button
             type="button"
-            onClick={() => {
-              if (confirm(trash ? 'Hapus permanen yang dipilih?' : 'Pindah ke sampah?'))
-                bulk.mutate()
+            onClick={async () => {
+              const ok = await confirm({
+                title: trash ? 'Hapus permanen?' : 'Pindah ke sampah?',
+                message: trash
+                  ? `${selected.length} artikel akan dihapus permanen dan tidak dapat dipulihkan.`
+                  : `${selected.length} artikel akan dipindah ke sampah.`,
+                confirmLabel: trash ? 'Ya, hapus permanen' : 'Ya, pindahkan',
+                tone: 'danger',
+              })
+              if (ok) bulk.mutate()
             }}
             className="rounded-lg bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700"
           >
@@ -252,8 +271,14 @@ export function ArticlesAdminPage() {
                             </button>
                             <button
                               type="button"
-                              onClick={() => {
-                                if (confirm('Hapus permanen?')) remove.mutate(row.id)
+                              onClick={async () => {
+                                const ok = await confirm({
+                                  title: 'Hapus permanen?',
+                                  message: `Artikel “${row.title}” akan dihapus permanen.`,
+                                  confirmLabel: 'Ya, hapus',
+                                  tone: 'danger',
+                                })
+                                if (ok) remove.mutate(row.id)
                               }}
                               className="inline-flex items-center gap-1 rounded-[10px] bg-rose-50 px-2.5 py-1.5 text-xs font-semibold text-rose-700"
                             >
@@ -272,8 +297,14 @@ export function ArticlesAdminPage() {
                             </Link>
                             <button
                               type="button"
-                              onClick={() => {
-                                if (confirm('Pindah ke sampah?')) remove.mutate(row.id)
+                              onClick={async () => {
+                                const ok = await confirm({
+                                  title: 'Pindah ke sampah?',
+                                  message: `Artikel “${row.title}” dipindah ke sampah dan bisa dipulihkan nanti.`,
+                                  confirmLabel: 'Ya, pindahkan',
+                                  tone: 'warning',
+                                })
+                                if (ok) remove.mutate(row.id)
                               }}
                               className="inline-flex items-center gap-1 rounded-[10px] bg-rose-50 px-2.5 py-1.5 text-xs font-semibold text-rose-700"
                             >

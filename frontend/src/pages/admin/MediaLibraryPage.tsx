@@ -6,6 +6,8 @@ import { AdminPageHeader } from '../../components/admin/AdminPageHeader'
 import { MediaGridSkeleton } from '../../components/ui/Skeleton'
 import { uploadSmart } from '../../lib/upload'
 import { cn } from '../../lib/utils'
+import { useConfirm } from '../../components/ui/ConfirmModal'
+import { useToast } from '../../components/ui/Toast'
 
 type MediaItem = {
   id: number
@@ -29,6 +31,8 @@ function formatBytes(n: number) {
 
 export function MediaLibraryPage() {
   const qc = useQueryClient()
+  const { confirm } = useConfirm()
+  const toast = useToast()
   const [q, setQ] = useState('')
   const [selected, setSelected] = useState<number[]>([])
   const [uploading, setUploading] = useState(false)
@@ -54,11 +58,12 @@ export function MediaLibraryPage() {
     try {
       for (const file of Array.from(files)) {
         const alt = file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ')
-        // Gambar raster → kompres lokal → R2
-        // PDF/DOC/SVG → presign langsung ke R2
         await uploadSmart(file, { alt, maxWidth: 1920 })
       }
       qc.invalidateQueries({ queryKey: ['admin-media'] })
+      toast.success(`${files.length} file berhasil diunggah.`)
+    } catch {
+      toast.error('Gagal mengunggah file.')
     } finally {
       setUploading(false)
     }
@@ -70,7 +75,9 @@ export function MediaLibraryPage() {
     onSuccess: () => {
       setEditingAlt(null)
       qc.invalidateQueries({ queryKey: ['admin-media'] })
+      toast.success('Teks alternatif disimpan.')
     },
+    onError: () => toast.error('Gagal menyimpan alt text.'),
   })
 
   const remove = useMutation({
@@ -81,7 +88,9 @@ export function MediaLibraryPage() {
     onSuccess: () => {
       setSelected([])
       qc.invalidateQueries({ queryKey: ['admin-media'] })
+      toast.success('Media dihapus.')
     },
+    onError: () => toast.error('Gagal menghapus media.'),
   })
 
   const toggle = (id: number) => {
@@ -89,9 +98,14 @@ export function MediaLibraryPage() {
   }
 
   const copyUrl = async (item: MediaItem) => {
-    await navigator.clipboard.writeText(item.url)
-    setCopied(item.id)
-    setTimeout(() => setCopied(null), 1500)
+    try {
+      await navigator.clipboard.writeText(item.url)
+      setCopied(item.id)
+      toast.success('URL disalin ke papan klip.')
+      setTimeout(() => setCopied(null), 1500)
+    } catch {
+      toast.error('Gagal menyalin URL.')
+    }
   }
 
   return (
@@ -128,8 +142,14 @@ export function MediaLibraryPage() {
         {selected.length > 0 && (
           <button
             type="button"
-            onClick={() => {
-              if (confirm(`Hapus ${selected.length} file?`)) remove.mutate(selected)
+            onClick={async () => {
+              const ok = await confirm({
+                title: 'Hapus file terpilih?',
+                message: `${selected.length} file akan dihapus dari perpustakaan media.`,
+                confirmLabel: 'Ya, hapus',
+                tone: 'danger',
+              })
+              if (ok) remove.mutate(selected)
             }}
             className="inline-flex items-center gap-2 rounded-[12px] bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700"
           >
@@ -240,8 +260,14 @@ export function MediaLibraryPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => {
-                        if (confirm('Hapus file ini?')) remove.mutate([item.id])
+                      onClick={async () => {
+                        const ok = await confirm({
+                          title: 'Hapus file?',
+                          message: `“${item.filename}” akan dihapus.`,
+                          confirmLabel: 'Ya, hapus',
+                          tone: 'danger',
+                        })
+                        if (ok) remove.mutate([item.id])
                       }}
                       className="rounded-lg bg-rose-50 px-2 py-1 text-rose-700 hover:bg-rose-100"
                     >

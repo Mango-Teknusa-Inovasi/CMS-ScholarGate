@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Check, Copy, Share2 } from 'lucide-react'
 import { cn } from '../lib/utils'
+import { useToast } from './ui/Toast'
+import { usePrompt } from './ui/PromptModal'
 
 type Props = {
   url?: string
@@ -15,6 +17,8 @@ type Props = {
 export function ShareButton({ url, title, text, className }: Props) {
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
+  const toast = useToast()
+  const { prompt } = usePrompt()
 
   const shareUrl = url || (typeof window !== 'undefined' ? window.location.href : '')
   const shareTitle = title || (typeof document !== 'undefined' ? document.title : 'Scholargate')
@@ -35,12 +39,19 @@ export function ShareButton({ url, title, text, className }: Props) {
         document.body.removeChild(ta)
       }
       setCopied(true)
+      toast.success('Tautan disalin.')
       setTimeout(() => {
         setCopied(false)
         setOpen(false)
       }, 1600)
     } catch {
-      window.prompt('Salin tautan ini:', shareUrl)
+      await prompt({
+        title: 'Salin tautan',
+        message: 'Salin tautan di bawah ini secara manual.',
+        defaultValue: shareUrl,
+        confirmLabel: 'Tutup',
+        required: false,
+      })
     }
   }
 

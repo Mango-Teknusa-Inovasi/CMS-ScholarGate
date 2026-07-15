@@ -7,6 +7,7 @@ import { MEDIA_GUIDES } from '../../lib/mediaGuide'
 import { RichTextEditor } from '../../components/admin/RichTextEditor'
 import { ImageUploadField } from '../../components/admin/ImageUploadField'
 import { AdminFormSkeleton } from '../../components/ui/Skeleton'
+import { useToast } from '../../components/ui/Toast'
 
 type Category = { id: number; name: string }
 type Tag = { id: number; name: string; slug: string }
@@ -44,8 +45,8 @@ export function ArticleEditorPage() {
   const isNew = !id || id === 'new'
   const navigate = useNavigate()
   const qc = useQueryClient()
+  const toast = useToast()
   const [form, setForm] = useState(emptyForm)
-  const [savedMsg, setSavedMsg] = useState('')
   const [previewBusy, setPreviewBusy] = useState(false)
 
   const { data: categories = [] } = useQuery({
@@ -124,12 +125,12 @@ export function ArticleEditorPage() {
       qc.invalidateQueries({ queryKey: ['admin-articles'] })
       qc.invalidateQueries({ queryKey: ['admin-article', id] })
       qc.invalidateQueries({ queryKey: ['admin-tags'] })
-      setSavedMsg('Disimpan.')
-      setTimeout(() => setSavedMsg(''), 2500)
+      toast.success('Artikel disimpan.')
       if (isNew && res.data?.id) {
         navigate(`/admin/articles/${res.data.id}/edit`, { replace: true })
       }
     },
+    onError: () => toast.error('Gagal menyimpan artikel.'),
   })
 
   if (!isNew && isLoading) {
@@ -149,7 +150,7 @@ export function ArticleEditorPage() {
           </Link>
           <div>
             <p className="text-xs font-medium text-subtle">
-              Artikel / {isNew ? 'Tambah baru' : 'Edit pos'}
+              Artikel / {isNew ? 'Tambah baru' : 'Edit'}
             </p>
             <h1 className="text-xl font-bold tracking-tight text-ink md:text-2xl">
               {isNew ? 'Tambah artikel' : 'Edit artikel'}
@@ -157,7 +158,6 @@ export function ArticleEditorPage() {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {savedMsg && <span className="text-sm font-medium text-emerald-700">{savedMsg}</span>}
           {!isNew && form.slug && form.status === 'published' && (
             <Link
               to={`/artikel/${form.slug}`}
@@ -183,9 +183,9 @@ export function ArticleEditorPage() {
                   )
                   const path = data.path || `/preview/artikel/${(data as { token?: string }).token}`
                   window.open(path, '_blank', 'noopener,noreferrer')
+                  toast.success('Pratinjau dibuka di tab baru.')
                 } catch {
-                  setSavedMsg('Gagal buat link pratinjau.')
-                  setTimeout(() => setSavedMsg(''), 3000)
+                  toast.error('Gagal membuat link pratinjau.')
                 } finally {
                   setPreviewBusy(false)
                 }
@@ -512,9 +512,6 @@ export function ArticleEditorPage() {
                   Kembali ke semua artikel
                 </Link>
               </div>
-              {save.isError && (
-                <p className="text-xs text-rose-600">Gagal menyimpan. Coba lagi.</p>
-              )}
             </div>
           </div>
 

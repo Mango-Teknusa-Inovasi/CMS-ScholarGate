@@ -6,11 +6,15 @@ import { mediaUrl } from '../../lib/utils'
 import type { ResourceConfig } from '../../admin/resourceConfigs'
 import { AdminPageHeader } from '../../components/admin/AdminPageHeader'
 import { Skeleton } from '../../components/ui/Skeleton'
+import { useConfirm } from '../../components/ui/ConfirmModal'
+import { useToast } from '../../components/ui/Toast'
 
 type Props = { config: ResourceConfig }
 
 export function ResourceListPage({ config }: Props) {
   const qc = useQueryClient()
+  const { confirm } = useConfirm()
+  const toast = useToast()
   const { data = [], isLoading } = useQuery({
     queryKey: ['admin', config.slug],
     queryFn: async () => (await api.get(`/admin/${config.slug}`)).data,
@@ -18,7 +22,11 @@ export function ResourceListPage({ config }: Props) {
 
   const remove = useMutation({
     mutationFn: async (id: number) => api.delete(`/admin/${config.slug}/${id}`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', config.slug] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', config.slug] })
+      toast.success(`${config.singular} dihapus.`)
+    },
+    onError: () => toast.error(`Gagal menghapus ${config.singular}.`),
   })
 
   const rows = data as Array<Record<string, unknown>>
@@ -123,9 +131,15 @@ export function ResourceListPage({ config }: Props) {
                           </Link>
                           <button
                             type="button"
-                            onClick={() => {
-                              if (confirm('Pindahkan ke sampah / hapus item ini?'))
-                                remove.mutate(id)
+                            onClick={async () => {
+                              const label = String(row.title || row.name || row.label || `#${id}`)
+                              const ok = await confirm({
+                                title: `Hapus ${config.singular}?`,
+                                message: `“${label}” akan dihapus dari daftar.`,
+                                confirmLabel: 'Ya, hapus',
+                                tone: 'danger',
+                              })
+                              if (ok) remove.mutate(id)
                             }}
                             className="inline-flex items-center gap-1 rounded-[10px] bg-rose-50 px-2.5 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-100"
                           >

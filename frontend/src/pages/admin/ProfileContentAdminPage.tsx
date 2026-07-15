@@ -5,6 +5,8 @@ import { api } from '../../lib/api'
 import { RichTextEditor } from '../../components/admin/RichTextEditor'
 import { AdminPageHeader } from '../../components/admin/AdminPageHeader'
 import { Skeleton } from '../../components/ui/Skeleton'
+import { useToast } from '../../components/ui/Toast'
+import { useConfirm } from '../../components/ui/ConfirmModal'
 
 type Tab = { key: string; label: string; content_html: string }
 
@@ -17,6 +19,8 @@ type ProfilePage = {
 
 export function ProfileContentAdminPage() {
   const qc = useQueryClient()
+  const toast = useToast()
+  const { confirm } = useConfirm()
   const { data, isLoading } = useQuery({
     queryKey: ['admin-profile-page'],
     queryFn: async () => (await api.get<ProfilePage | null>('/admin/profile-page')).data,
@@ -41,7 +45,11 @@ export function ProfileContentAdminPage() {
 
   const save = useMutation({
     mutationFn: async () => api.put('/admin/profile-page', form),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-profile-page'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-profile-page'] })
+      toast.success('Konten profil disimpan.')
+    },
+    onError: () => toast.error('Gagal menyimpan konten profil.'),
   })
 
   const updateTab = (i: number, patch: Partial<Tab>) => {
@@ -67,9 +75,18 @@ export function ProfileContentAdminPage() {
     setActiveTab(form.tabs.length)
   }
 
-  const removeTab = (i: number) => {
+  const removeTab = async (i: number) => {
+    const label = form.tabs[i]?.label || `Tab ${i + 1}`
+    const ok = await confirm({
+      title: 'Hapus tab?',
+      message: `Tab “${label}” akan dihapus dari form. Simpan untuk menerapkan ke portal.`,
+      confirmLabel: 'Ya, hapus tab',
+      tone: 'danger',
+    })
+    if (!ok) return
     setForm((f) => ({ ...f, tabs: f.tabs.filter((_, idx) => idx !== i) }))
     setActiveTab(0)
+    toast.info('Tab dihapus dari form. Klik simpan untuk menerapkan.')
   }
 
   if (isLoading) {
@@ -152,7 +169,7 @@ export function ProfileContentAdminPage() {
               />
               <button
                 type="button"
-                onClick={() => removeTab(activeTab)}
+                onClick={() => void removeTab(activeTab)}
                 className="rounded-[12px] bg-rose-50 px-3 text-rose-600"
               >
                 <Trash2 className="h-4 w-4" />
@@ -168,11 +185,6 @@ export function ProfileContentAdminPage() {
         )}
       </div>
 
-      {save.isSuccess && (
-        <p className="mt-4 rounded-xl bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
-          Konten profil tersimpan.
-        </p>
-      )}
     </div>
   )
 }

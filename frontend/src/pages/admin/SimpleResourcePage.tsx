@@ -7,6 +7,8 @@ import { guideForField } from '../../lib/mediaGuide'
 import { AdminPageHeader } from '../../components/admin/AdminPageHeader'
 import { ImageUploadField } from '../../components/admin/ImageUploadField'
 import { Skeleton } from '../../components/ui/Skeleton'
+import { useConfirm } from '../../components/ui/ConfirmModal'
+import { useToast } from '../../components/ui/Toast'
 
 export type FieldDef = {
   key: string
@@ -25,6 +27,8 @@ type Props = {
 
 export function SimpleResourcePage({ title, description, resource, fields }: Props) {
   const qc = useQueryClient()
+  const { confirm } = useConfirm()
+  const toast = useToast()
   const [open, setOpen] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [form, setForm] = useState<Record<string, string | boolean | null>>({})
@@ -39,16 +43,23 @@ export function SimpleResourcePage({ title, description, resource, fields }: Pro
       if (editingId) return api.put(`/admin/${resource}/${editingId}`, form)
       return api.post(`/admin/${resource}`, form)
     },
-    onSuccess: () => {
+    onSuccess: (_data, _vars, _ctx) => {
+      const wasEdit = editingId != null
       qc.invalidateQueries({ queryKey: ['admin', resource] })
       setOpen(false)
       setEditingId(null)
+      toast.success(wasEdit ? 'Perubahan disimpan.' : 'Data berhasil ditambahkan.')
     },
+    onError: () => toast.error('Gagal menyimpan data.'),
   })
 
   const remove = useMutation({
     mutationFn: async (id: number) => api.delete(`/admin/${resource}/${id}`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', resource] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', resource] })
+      toast.success('Data dihapus.')
+    },
+    onError: () => toast.error('Gagal menghapus data.'),
   })
 
   const openCreate = () => {
@@ -174,8 +185,14 @@ export function SimpleResourcePage({ title, description, resource, fields }: Pro
                           </button>
                           <button
                             type="button"
-                            onClick={() => {
-                              if (confirm('Hapus item ini?')) remove.mutate(Number(row.id))
+                            onClick={async () => {
+                              const ok = await confirm({
+                                title: 'Hapus data?',
+                                message: 'Data yang dihapus tidak dapat dikembalikan.',
+                                confirmLabel: 'Ya, hapus',
+                                tone: 'danger',
+                              })
+                              if (ok) remove.mutate(Number(row.id))
                             }}
                             className="inline-flex items-center gap-1 rounded-[10px] bg-rose-50 px-2.5 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-100"
                           >

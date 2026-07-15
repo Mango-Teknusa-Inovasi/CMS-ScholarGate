@@ -15,6 +15,8 @@ import { TableHeader } from '@tiptap/extension-table-header'
 import Youtube from '@tiptap/extension-youtube'
 import CharacterCount from '@tiptap/extension-character-count'
 import { useCallback, useEffect, useRef } from 'react'
+import { usePrompt } from '../ui/PromptModal'
+import { useToast } from '../ui/Toast'
 import {
   AlignCenter,
   AlignJustify,
@@ -82,6 +84,8 @@ function ToolbarBtn({
 
 export function RichTextEditor({ value, onChange, placeholder, className }: Props) {
   const fileRef = useRef<HTMLInputElement>(null)
+  const { prompt } = usePrompt()
+  const toast = useToast()
 
   const editor = useEditor({
     extensions: [
@@ -134,36 +138,56 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Prop
     }
   }, [value, editor])
 
-  const setLink = useCallback(() => {
+  const setLink = useCallback(async () => {
     if (!editor) return
     const prev = editor.getAttributes('link').href as string | undefined
-    const url = window.prompt('URL tautan', prev || 'https://')
+    const url = await prompt({
+      title: 'Sisipkan tautan',
+      message: 'Masukkan URL lengkap (https://…) atau kosongkan untuk menghapus tautan.',
+      defaultValue: prev || 'https://',
+      placeholder: 'https://contoh.sch.id/halaman',
+      confirmLabel: 'Terapkan',
+      required: false,
+    })
     if (url === null) return
-    if (url === '') {
+    if (url.trim() === '') {
       editor.chain().focus().extendMarkRange('link').unsetLink().run()
+      toast.info('Tautan dihapus.')
       return
     }
-    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
-  }, [editor])
+    editor.chain().focus().extendMarkRange('link').setLink({ href: url.trim() }).run()
+    toast.success('Tautan ditambahkan.')
+  }, [editor, prompt, toast])
 
-  const addYoutube = useCallback(() => {
+  const addYoutube = useCallback(async () => {
     if (!editor) return
-    const url = window.prompt('URL YouTube')
+    const url = await prompt({
+      title: 'Sisipkan video YouTube',
+      message: 'Tempel URL video YouTube.',
+      placeholder: 'https://www.youtube.com/watch?v=…',
+      confirmLabel: 'Sisipkan',
+    })
     if (!url) return
-    editor.commands.setYoutubeVideo({ src: url })
-  }, [editor])
+    editor.commands.setYoutubeVideo({ src: url.trim() })
+    toast.success('Video disisipkan.')
+  }, [editor, prompt, toast])
 
   const uploadImage = useCallback(
     async (file: File) => {
       if (!editor) return
-      const form = new FormData()
-      form.append('file', file)
-      const { data } = await api.post('/admin/media', form, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      })
-      editor.chain().focus().setImage({ src: data.url, alt: file.name }).run()
+      try {
+        const form = new FormData()
+        form.append('file', file)
+        const { data } = await api.post('/admin/media', form, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        })
+        editor.chain().focus().setImage({ src: data.url, alt: file.name }).run()
+        toast.success('Gambar disisipkan.')
+      } catch {
+        toast.error('Gagal mengunggah gambar.')
+      }
     },
-    [editor],
+    [editor, toast],
   )
 
   if (!editor) return null

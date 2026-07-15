@@ -4,6 +4,8 @@ import { Download, HardDriveDownload, Trash2, Upload } from 'lucide-react'
 import { api, getAuthToken } from '../../lib/api'
 import { AdminPageHeader } from '../../components/admin/AdminPageHeader'
 import { Skeleton } from '../../components/ui/Skeleton'
+import { useConfirm } from '../../components/ui/ConfirmModal'
+import { useToast } from '../../components/ui/Toast'
 
 type BackupItem = {
   filename: string
@@ -19,10 +21,10 @@ function formatBytes(n: number) {
 
 export function BackupAdminPage() {
   const qc = useQueryClient()
+  const { confirm } = useConfirm()
+  const toast = useToast()
   const fileRef = useRef<HTMLInputElement>(null)
   const [mode, setMode] = useState<'merge' | 'replace'>('merge')
-  const [msg, setMsg] = useState('')
-  const [err, setErr] = useState('')
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-backups'],
@@ -32,17 +34,20 @@ export function BackupAdminPage() {
   const create = useMutation({
     mutationFn: async () => api.post('/admin/backups'),
     onSuccess: () => {
-      setMsg('Backup berhasil dibuat.')
-      setErr('')
+      toast.success('Backup berhasil dibuat.')
       qc.invalidateQueries({ queryKey: ['admin-backups'] })
     },
-    onError: () => setErr('Gagal membuat backup.'),
+    onError: () => toast.error('Gagal membuat backup.'),
   })
 
   const remove = useMutation({
     mutationFn: async (filename: string) =>
       api.delete(`/admin/backups/${encodeURIComponent(filename)}`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-backups'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-backups'] })
+      toast.success('File backup dihapus.')
+    },
+    onError: () => toast.error('Gagal menghapus backup.'),
   })
 
   const restore = useMutation({
@@ -55,14 +60,12 @@ export function BackupAdminPage() {
       })
     },
     onSuccess: (res) => {
-      setErr('')
       const d = res.data as {
         tables?: number
         rows?: number
         mode?: string
         source?: string | null
         target?: string
-        skipped?: string[]
       }
       const cross =
         d.source && d.target && d.source !== d.target
@@ -70,15 +73,14 @@ export function BackupAdminPage() {
           : d.target
             ? ` · DB ${d.target}`
             : ''
-      setMsg(
-        `Restore OK · ${d.tables ?? 0} tabel · ${d.rows ?? 0} baris (${d.mode})${cross}`,
+      toast.success(
+        `Restore berhasil · ${d.tables ?? 0} tabel · ${d.rows ?? 0} baris (${d.mode})${cross}`,
       )
       qc.invalidateQueries()
     },
     onError: (e: unknown) => {
       const ax = e as { response?: { data?: { message?: string } } }
-      setErr(ax.response?.data?.message || 'Restore gagal.')
-      setMsg('')
+      toast.error(ax.response?.data?.message || 'Restore gagal.')
     },
   })
 
@@ -88,7 +90,7 @@ export function BackupAdminPage() {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     })
     if (!res.ok) {
-      setErr('Gagal mengunduh backup.')
+      toast.error('Gagal mengunduh backup.')
       return
     }
     const blob = await res.blob()
@@ -98,6 +100,7 @@ export function BackupAdminPage() {
     a.download = filename
     a.click()
     URL.revokeObjectURL(url)
+    toast.success('Unduhan dimulai.')
   }
 
   const items = data?.backups || []
@@ -156,8 +159,14 @@ export function BackupAdminPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => {
-                        if (confirm(`Hapus ${b.filename}?`)) remove.mutate(b.filename)
+                      onClick={async () => {
+                        const ok = await confirm({
+                          title: 'Hapus file backup?',
+                          message: `“${b.filename}” akan dihapus dari server.`,
+                          confirmLabel: 'Ya, hapus',
+                          tone: 'danger',
+                        })
+                        if (ok) remove.mutate(b.filename)
                       }}
                       className="inline-flex items-center gap-1 rounded-[10px] bg-rose-50 px-2.5 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-100"
                     >
@@ -209,15 +218,21 @@ export function BackupAdminPage() {
               type="file"
               accept=".json,.zip,application/json,application/zip"
               className="hidden"
-              onChange={(e) => {
+              onChange={async (e) => {
                 const f = e.target.files?.[0]
                 if (!f) return
-                if (
-                  mode === 'replace' &&
-                  !confirm('Replace akan mengosongkan data tabel terkait dulu. Lanjut?')
-                ) {
-                  e.target.value = ''
-                  return
+                if (mode === 'replace') {
+                  const ok = await confirm({
+                    title: 'Mode replace?',
+                    message:
+                      'Data di tabel terkait akan dikosongkan dulu sebelum diisi ulang dari backup. Lanjutkan?',
+                    confirmLabel: 'Ya, restore replace',
+                    tone: 'warning',
+                  })
+                  if (!ok) {
+                    e.target.value = ''
+                    return
+                  }
                 }
                 restore.mutate(f)
                 e.target.value = ''
@@ -248,16 +263,6 @@ export function BackupAdminPage() {
         </section>
       </div>
 
-      {msg && (
-        <p className="mt-4 rounded-xl bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800">
-          {msg}
-        </p>
-      )}
-      {err && (
-        <p className="mt-4 rounded-xl bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700">
-          {err}
-        </p>
-      )}
     </div>
   )
 }

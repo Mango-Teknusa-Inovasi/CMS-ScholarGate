@@ -4,6 +4,7 @@ import { api } from '../../lib/api'
 import { AdminPageHeader } from '../../components/admin/AdminPageHeader'
 import { ImageUploadField } from '../../components/admin/ImageUploadField'
 import { Skeleton } from '../../components/ui/Skeleton'
+import { useToast } from '../../components/ui/Toast'
 
 const fieldMeta: Record<
   string,
@@ -47,6 +48,7 @@ const fieldMeta: Record<
 
 export function SettingsAdminPage() {
   const qc = useQueryClient()
+  const toast = useToast()
   const { data, isLoading } = useQuery({
     queryKey: ['admin-settings'],
     queryFn: async () => (await api.get<Record<string, string>>('/admin/settings')).data,
@@ -62,7 +64,9 @@ export function SettingsAdminPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-settings'] })
       qc.invalidateQueries({ queryKey: ['settings'] })
+      toast.success('Pengaturan disimpan.')
     },
+    onError: () => toast.error('Gagal menyimpan pengaturan.'),
   })
 
   const grouped = useMemo(() => {
@@ -246,16 +250,6 @@ export function SettingsAdminPage() {
         </div>
       </div>
 
-      {save.isSuccess && (
-        <p className="mt-4 rounded-xl bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
-          Pengaturan tersimpan.
-        </p>
-      )}
-      {save.isError && (
-        <p className="mt-4 rounded-xl bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700">
-          Gagal menyimpan. Coba lagi.
-        </p>
-      )}
     </div>
   )
 }

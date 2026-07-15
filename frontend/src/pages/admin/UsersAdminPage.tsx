@@ -6,6 +6,8 @@ import { api } from '../../lib/api'
 import { formatDate } from '../../lib/utils'
 import { AdminPageHeader } from '../../components/admin/AdminPageHeader'
 import { Skeleton } from '../../components/ui/Skeleton'
+import { useConfirm } from '../../components/ui/ConfirmModal'
+import { useToast } from '../../components/ui/Toast'
 
 type UserRow = {
   id: number
@@ -17,6 +19,8 @@ type UserRow = {
 
 export function UsersAdminPage() {
   const qc = useQueryClient()
+  const { confirm } = useConfirm()
+  const toast = useToast()
   const [mode, setMode] = useState<'list' | 'new'>('list')
   const [form, setForm] = useState({
     name: '',
@@ -36,12 +40,18 @@ export function UsersAdminPage() {
       qc.invalidateQueries({ queryKey: ['admin-users'] })
       setMode('list')
       setForm({ name: '', email: '', password: '', role: 'editor' })
+      toast.success('Pengguna baru ditambahkan.')
     },
+    onError: () => toast.error('Gagal menambahkan pengguna.'),
   })
 
   const remove = useMutation({
     mutationFn: async (id: number) => api.delete(`/admin/users/${id}`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-users'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-users'] })
+      toast.success('Pengguna dihapus.')
+    },
+    onError: () => toast.error('Gagal menghapus pengguna.'),
   })
 
   if (mode === 'new') {
@@ -167,8 +177,14 @@ export function UsersAdminPage() {
                   <td className="px-5 py-4 text-right">
                     <button
                       type="button"
-                      onClick={() => {
-                        if (confirm(`Hapus ${u.name}?`)) remove.mutate(u.id)
+                      onClick={async () => {
+                        const ok = await confirm({
+                          title: 'Hapus pengguna?',
+                          message: `Akun “${u.name}” (${u.email}) akan dihapus dari panel admin.`,
+                          confirmLabel: 'Ya, hapus',
+                          tone: 'danger',
+                        })
+                        if (ok) remove.mutate(u.id)
                       }}
                       className="inline-flex items-center gap-1 rounded-[10px] bg-rose-50 px-2.5 py-1.5 text-xs font-semibold text-rose-700"
                     >

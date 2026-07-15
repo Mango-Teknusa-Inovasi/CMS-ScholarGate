@@ -6,6 +6,7 @@ import { RichTextEditor } from '../../components/admin/RichTextEditor'
 import { AdminPageHeader } from '../../components/admin/AdminPageHeader'
 import { ImageUploadField } from '../../components/admin/ImageUploadField'
 import { Skeleton } from '../../components/ui/Skeleton'
+import { useToast } from '../../components/ui/Toast'
 
 type WelcomeBlock = {
   id: number
@@ -23,6 +24,7 @@ const welcomeGuide = MEDIA_GUIDES.find((g) => g.key === 'welcome')
 
 export function WelcomeAdminPage() {
   const qc = useQueryClient()
+  const toast = useToast()
   const { data = [], isLoading } = useQuery({
     queryKey: ['admin', 'welcome-blocks'],
     queryFn: async () => (await api.get<WelcomeBlock[]>('/admin/welcome-blocks')).data,
@@ -45,7 +47,9 @@ export function WelcomeAdminPage() {
       qc.invalidateQueries({ queryKey: ['admin', 'welcome-blocks'] })
       qc.invalidateQueries({ queryKey: ['home'] })
       qc.invalidateQueries({ queryKey: ['profile'] })
+      toast.success('Sambutan disimpan.')
     },
+    onError: () => toast.error('Gagal menyimpan sambutan.'),
   })
 
   if (isLoading) {
