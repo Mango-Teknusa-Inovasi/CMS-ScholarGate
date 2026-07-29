@@ -2,9 +2,9 @@
 # Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 services:
   frontend:
-    image: ardianryan/b68b687bb88by7ybby7fwbbf8eb7b8y3:frontend-latest
+    image: ardianryan/cms-scholargate-frontend:latest
     build: !reset null
 
   backend:
-    image: ardianryan/b68b687bb88by7ybby7fwbbf8eb7b8y3:backend-latest
+    image: ardianryan/cms-scholargate-backend:latest
     build: !reset null

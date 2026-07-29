@@ -7,8 +7,8 @@ on:
 
 env:
   REGISTRY: docker.io
-  IMAGE_BACKEND: ardianryan/b68b687bb88by7ybby7fwbbf8eb7b8y3
-  IMAGE_FRONTEND: ardianryan/b68b687bb88by7ybby7fwbbf8eb7b8y3
+  IMAGE_BACKEND: ardianryan/cms-scholargate-backend
+  IMAGE_FRONTEND: ardianryan/cms-scholargate-frontend
 
 jobs:
   # ─────────────────────────────────────────────────────────────
@@ -37,9 +37,9 @@ jobs:
         with:
           images: ${{ env.IMAGE_BACKEND }}
           tags: |
-            type=raw,value=backend-latest,enable={{is_default_branch}}
-            type=raw,value=backend-{{branch}}
-            type=semver,pattern=backend-{{version}}
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=ref,event=branch
+            type=semver,pattern={{version}}
 
       - name: Build & Push Backend
         uses: docker/build-push-action@v5
@@ -78,9 +78,9 @@ jobs:
         with:
           images: ${{ env.IMAGE_FRONTEND }}
           tags: |
-            type=raw,value=frontend-latest,enable={{is_default_branch}}
-            type=raw,value=frontend-{{branch}}
-            type=semver,pattern=frontend-{{version}}
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=ref,event=branch
+            type=semver,pattern={{version}}
 
       - name: Build & Push Frontend
         uses: docker/build-push-action@v5
