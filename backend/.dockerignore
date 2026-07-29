@@ -11,5 +11,5 @@ bootstrap/cache/*.php
 .git/
 .gitignore
 tests/
-docker/
 *.md
+# JANGAN exclude docker/ — dibutuhkan oleh Dockerfile untuk COPY config
