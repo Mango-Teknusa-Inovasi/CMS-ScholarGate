@@ -2,14 +2,13 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-// Production build → Laravel public/spa (satu document root untuk shared hosting)
+// Production build → dist/ untuk deployment ke smage.my.id (terpisah dari Laravel)
 // Dev: npm run dev (proxy ke :8000)
-export default defineConfig(({ command }) => ({
+export default defineConfig({
   plugins: [react(), tailwindcss()],
-  // Asset base path when served by Laravel as /spa/...
-  base: command === 'build' ? '/spa/' : '/',
+  base: '/',
   build: {
-    outDir: '../backend/public/spa',
+    outDir: 'dist',
     emptyOutDir: true,
     manifest: true,
   },
@@ -37,4 +36,4 @@ export default defineConfig(({ command }) => ({
       '/llms.txt': { target: 'http://localhost:8000', changeOrigin: true },
     },
   },
-}))
+})

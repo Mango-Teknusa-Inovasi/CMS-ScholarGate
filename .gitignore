@@ -24,6 +24,7 @@ backend/.env.*
 frontend/.env
 frontend/.env.*
 !frontend/.env.example
+!frontend/.env.production
 frontend/.env.local
 
 # Backend (Laravel)
@@ -82,4 +83,5 @@ backups/
 *.sql
 *.sql.gz
 *.zip
-!backend/public/spa/**
+# SPA build kini di-deploy ke smage.my.id (terpisah), bukan bagian repo
+backend/public/spa/

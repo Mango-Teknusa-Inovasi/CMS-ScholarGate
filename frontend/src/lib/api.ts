@@ -2,12 +2,13 @@ import axios from 'axios'
 import { ADMIN_TOKEN_KEY, MEMBER_TOKEN_KEY } from './auth'
 
 export const api = axios.create({
-  baseURL: '/api/v1',
+  baseURL: `${import.meta.env.VITE_API_URL ?? ''}/api/v1`,
   headers: {
     Accept: 'application/json',
     'X-Requested-With': 'XMLHttpRequest',
   },
 })
+
 
 function isAdminContext(url: string): boolean {
   const path = String(url || '')
