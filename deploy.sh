@@ -17,6 +17,13 @@ error()   { echo -e "${RED}[ERR]${NC}  $*"; exit 1; }
 
 COMMAND="${1:-update}"
 
+# Pakai image dari Docker Hub jika ada docker-compose.prod.yml
+if [ -f docker-compose.prod.yml ]; then
+  COMPOSE_CMD="docker compose -f docker-compose.yml -f docker-compose.prod.yml"
+else
+  COMPOSE_CMD="docker compose"
+fi
+
 # ── Cek prerequisite ─────────────────────────────────────────────────────────
 command -v docker >/dev/null 2>&1 || error "Docker belum terinstall"
 docker compose version >/dev/null 2>&1 || error "Docker Compose v2 belum terinstall"
@@ -58,14 +65,14 @@ ENVEOF
 
 build_and_start() {
   info "Building dan starting containers..."
-  docker compose up -d --build --remove-orphans
+  $COMPOSE_CMD pull && $COMPOSE_CMD up -d --build --remove-orphans
   success "Containers berjalan!"
 }
 
 wait_backend() {
   info "Menunggu backend siap..."
   for i in {1..30}; do
-    if docker compose exec -T backend php artisan --version >/dev/null 2>&1; then
+    if $COMPOSE_CMD exec -T backend php artisan --version >/dev/null 2>&1; then
       success "Backend siap!"
       return 0
     fi
@@ -76,7 +83,7 @@ wait_backend() {
 }
 
 run_artisan() {
-  docker compose exec -T backend php artisan "$@"
+  $COMPOSE_CMD exec -T backend php artisan "$@"
 }
 
 # ── Command: install (first time) ─────────────────────────────────────────────
@@ -98,7 +105,7 @@ cmd_install() {
 
   info "Menandai aplikasi sebagai terinstall..."
   run_artisan storage:link || true
-  docker compose exec -T backend touch storage/app/installed
+  $COMPOSE_CMD exec -T backend touch storage/app/installed
 
   info "Optimisasi cache..."
   run_artisan config:cache
@@ -142,7 +149,7 @@ cmd_fresh() {
   read -rp "Ketik 'yes' untuk konfirmasi: " confirm
   [ "$confirm" = "yes" ] || error "Dibatalkan"
 
-  docker compose down -v 2>/dev/null || true
+  $COMPOSE_CMD down -v 2>/dev/null || true
   rm -f backend/storage/app/installed
   cmd_install
 }

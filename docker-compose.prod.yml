@@ -1,0 +1,12 @@
+# docker-compose override untuk PRODUCTION — pakai image dari Docker Hub
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Atau update deploy.sh untuk pakai ini secara otomatis
+services:
+  frontend:
+    image: ardianryan/cms-scholargate-frontend:latest
+    build: !reset null   # skip build, pakai image dari Hub
+
+  backend:
+    image: ardianryan/cms-scholargate-backend:latest
+    build: !reset null   # skip build, pakai image dari Hub
