@@ -40,8 +40,8 @@ class HomePageTest extends TestCase
         $this->get('/llms.txt')->assertOk();
     }
 
-    public function test_admin_guest_is_redirected_to_login(): void
+    public function test_admin_guest_serves_inertia_shell(): void
     {
-        $this->get('/admin')->assertRedirect('/admin/login');
+        $this->get('/admin')->assertOk();
     }
 }

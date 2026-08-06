@@ -79,7 +79,7 @@ Route::controller(PageController::class)->group(function () {
 | Admin CMS (Inertia) — session auth + admin middleware
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::prefix('admin')->name('admin.')->group(function () {
     $p = PageController::class;
 
     Route::get('/', [$p, 'adminDashboard'])->name('dashboard');

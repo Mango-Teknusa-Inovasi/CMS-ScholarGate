@@ -71,6 +71,7 @@ class AuthController extends Controller
         Auth::login($user, true);
         if ($request->hasSession()) {
             $request->session()->regenerate();
+            $request->session()->save();
         }
 
         $user->tokens()->where('name', 'admin-spa')->delete();
