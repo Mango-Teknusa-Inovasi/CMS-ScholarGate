@@ -416,7 +416,8 @@ class Installer
 
     public static function spaExists(): bool
     {
-        return File::exists(public_path('spa/index.html'))
+        return File::exists(public_path('build/manifest.json'))
+            || File::exists(public_path('spa/index.html'))
             || File::exists(public_path('spa/.vite/manifest.json'));
     }
 }
