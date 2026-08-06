@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use App\Services\HtmlSanitizer;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
 class ProfilePage extends Model
 {
+    use HasUuids;
     protected $fillable = ['title', 'subtitle', 'tabs'];
 
     protected function casts(): array

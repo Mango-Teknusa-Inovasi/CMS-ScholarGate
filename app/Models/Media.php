@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use App\Support\MediaStorage;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Media extends Model
 {
+    use HasUuids;
     protected $table = 'media';
 
     protected $fillable = [

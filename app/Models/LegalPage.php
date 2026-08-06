@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use App\Services\HtmlSanitizer;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
 class LegalPage extends Model
 {
+    use HasUuids;
     public const KEY_PRIVACY = 'privacy';
 
     public const KEY_TERMS = 'terms';

@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('service_items', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('title');
             $table->string('description')->nullable();
             $table->string('icon')->default('sparkles'); // lucide icon name

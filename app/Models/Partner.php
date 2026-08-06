@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
 class Partner extends Model
 {
+    use HasUuids;
     protected $fillable = [
         'name', 'logo_path', 'url', 'sort_order', 'is_active',
     ];

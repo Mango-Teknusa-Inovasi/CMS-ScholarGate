@@ -9,15 +9,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('menu_items', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('label');
             $table->string('url')->default('/');
             $table->string('location')->default('header'); // header, footer
-            $table->foreignId('parent_id')->nullable()->constrained('menu_items')->nullOnDelete();
+            $table->uuid('parent_id')->nullable();
             $table->unsignedInteger('sort_order')->default(0);
             $table->boolean('is_active')->default(true);
             $table->boolean('open_in_new_tab')->default(false);
             $table->timestamps();
+        });
+
+        Schema::table('menu_items', function (Blueprint $table) {
+            $table->foreign('parent_id')->references('id')->on('menu_items')->nullOnDelete();
         });
     }
 

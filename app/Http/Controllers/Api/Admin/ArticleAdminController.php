@@ -164,19 +164,19 @@ class ArticleAdminController extends Controller
             'is_featured' => ['nullable', 'boolean'],
             'published_at' => ['nullable', 'date'],
             'tag_ids' => ['nullable', 'array'],
-            'tag_ids.*' => ['integer', 'exists:tags,id'],
+            'tag_ids.*' => ['string', 'exists:tags,id'],
             'tags' => ['nullable', 'array'],
             'tags.*' => ['string', 'max:100'],
         ]);
     }
 
     /**
-     * @return list<int>|null null = jangan ubah tags
+     * @return list<string>|null null = jangan ubah tags
      */
     private function syncTagIds(Request $request): ?array
     {
         if ($request->has('tag_ids')) {
-            return array_values(array_unique(array_map('intval', $request->input('tag_ids', []))));
+            return array_values(array_unique(array_map('strval', $request->input('tag_ids', []))));
         }
 
         if (! $request->has('tags')) {

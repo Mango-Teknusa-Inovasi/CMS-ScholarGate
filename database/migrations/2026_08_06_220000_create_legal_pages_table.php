@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('legal_pages', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('key', 40)->unique(); // privacy | terms
             $table->string('title');
             $table->longText('body')->nullable();

@@ -4,11 +4,13 @@ namespace App\Models;
 
 use App\Services\HtmlSanitizer;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class Achievement extends Model
 {
+    use HasUuids;
     protected $fillable = [
         'title', 'slug', 'excerpt', 'body', 'cover_path', 'badge_label',
         'is_featured', 'status', 'achieved_at', 'sort_order',

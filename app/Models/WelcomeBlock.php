@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use App\Services\HtmlSanitizer;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
 class WelcomeBlock extends Model
 {
+    use HasUuids;
     protected $fillable = [
         'key', 'title', 'body', 'image_path', 'badge_left',
         'badge_right', 'chat_label', 'is_active',
