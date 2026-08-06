@@ -15,6 +15,16 @@ export const api = axios.create({
   xsrfHeaderName: 'X-XSRF-TOKEN',
 })
 
+api.interceptors.request.use((config) => {
+  const adminToken = localStorage.getItem('scholargate_admin_token')
+  const memberToken = localStorage.getItem('scholargate_member_token')
+  const token = adminToken && adminToken !== 'session' ? adminToken : memberToken
+  if (token && token !== 'session') {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
 /** Fetch Sanctum CSRF cookie before login/mutating without prior session */
 export async function ensureCsrf() {
   await axios.get('/sanctum/csrf-cookie', {
