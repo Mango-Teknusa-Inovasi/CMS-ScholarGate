@@ -50,7 +50,7 @@ export function gravatarUrl(_email: string, size = 128): string {
 
 export async function fetchMemberMe(): Promise<AuthUser | null> {
   try {
-    const { data } = await api.get<{ user: AuthUser }>('/auth/me')
+    const { data } = await api.get<{ user: AuthUser }>('/auth/me', { timeout: 5000 })
     return data.user
   } catch {
     setMemberToken(null)
@@ -60,7 +60,7 @@ export async function fetchMemberMe(): Promise<AuthUser | null> {
 
 export async function fetchAdminMe(): Promise<AuthUser | null> {
   try {
-    const { data } = await api.get<{ user: AuthUser }>('/auth/me')
+    const { data } = await api.get<{ user: AuthUser }>('/auth/me', { timeout: 5000 })
     if (!data.user?.is_admin && data.user?.role !== 'admin' && data.user?.role !== 'editor') {
       setAdminToken(null)
       return null

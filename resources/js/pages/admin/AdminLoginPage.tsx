@@ -19,13 +19,20 @@ export function AdminLoginPage() {
   useEffect(() => {
     let cancelled = false
     ;(async () => {
-      const me = await fetchAdminMe()
-      if (cancelled) return
-      if (me) {
-        navigate('/admin', { replace: true })
-        return
+      try {
+        const me = await fetchAdminMe()
+        if (cancelled) return
+        if (me) {
+          navigate('/admin', { replace: true })
+          return
+        }
+      } catch {
+        // ignore
+      } finally {
+        if (!cancelled) {
+          setChecking(false)
+        }
       }
-      setChecking(false)
     })()
     return () => {
       cancelled = true
