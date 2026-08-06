@@ -291,15 +291,15 @@ export function ArticlesPage() {
               padding="lg"
               className="bg-gradient-to-br from-teal-400 to-sky-500 !border-teal-300 text-white"
             >
-              <h3 className="font-bold">Layanan publikasi</h3>
+              <h3 className="font-bold">Area member</h3>
               <p className="mt-2 text-sm text-white/90">
-                Butuh bantuan unggah berita atau dokumentasi? Hubungi admin portal.
+                Sudah punya akun portal? Masuk untuk mengakses area member.
               </p>
               <Link
-                to="/admin/login"
+                to="/login"
                 className="mt-4 inline-flex rounded-full bg-white px-4 py-2 text-sm font-semibold text-sky-700 shadow-sm transition hover:bg-sky-50"
               >
-                Masuk Admin
+                Masuk Member
               </Link>
             </BentoTile>
 
