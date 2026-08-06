@@ -4,7 +4,7 @@ Thumbs.db
 .AppleDouble
 .LSOverride
 
-# IDE / local AI tooling (bukan produk)
+# IDE / local AI tooling
 .idea/
 .vscode/
 *.swp
@@ -18,54 +18,45 @@ skills-lock.json
 .env
 .env.*
 !.env.example
-backend/.env
-backend/.env.*
-!backend/.env.example
-frontend/.env
-frontend/.env.*
-!frontend/.env.example
-!frontend/.env.production
-frontend/.env.local
+!.env.docker.example
 
-# Backend (Laravel)
-backend/vendor/
-backend/node_modules/
-backend/storage/*.key
-backend/storage/pail/
-backend/storage/logs/*
-!backend/storage/logs/.gitignore
-backend/storage/framework/cache/*
-!backend/storage/framework/cache/.gitignore
-backend/storage/framework/sessions/*
-!backend/storage/framework/sessions/.gitignore
-backend/storage/framework/testing/*
-!backend/storage/framework/testing/.gitignore
-backend/storage/framework/views/*
-!backend/storage/framework/views/.gitignore
-backend/storage/app/public/*
-!backend/storage/app/public/.gitignore
-backend/storage/app/private/*
-!backend/storage/app/private/.gitignore
-backend/storage/app/backups/
-backend/storage/app/installed
-backend/storage/app/htmlpurifier/
-backend/bootstrap/cache/*.php
-!backend/bootstrap/cache/.gitignore
-backend/public/storage
-backend/public/hot
-backend/database/*.sqlite
-backend/database/*.sqlite-journal
-backend/database/*.sqlite-*
+# Composer / Node
+/vendor/
+/node_modules/
+
+# Laravel
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail/
+/storage/logs/*
+!/storage/logs/.gitignore
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/testing/*
+!/storage/framework/testing/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/storage/app/public/*
+!/storage/app/public/.gitignore
+/storage/app/private/*
+!/storage/app/private/.gitignore
+/storage/app/backups/
+/storage/app/installed
+/storage/app/htmlpurifier/
+/storage/inertia-devtools/
+/bootstrap/cache/*.php
+!/bootstrap/cache/.gitignore
+/database/*.sqlite
+/database/*.sqlite-journal
+/database/*.sqlite-*
 .phpunit.result.cache
-backend/.phpunit.result.cache
 Homestead.json
 Homestead.yaml
 auth.json
-
-# Frontend (source-only di repo; dist lokal diabaikan)
-frontend/node_modules/
-frontend/dist/
-frontend/coverage/
 
 # Logs & caches
 *.log
@@ -75,13 +66,11 @@ yarn-error.log*
 .cache/
 .turbo/
 
-# Local dumps / screenshots (bukan aset produk)
+# Local dumps / screenshots
 screenshot-*.png
 *.local.md
 plan.md
-backups/
+/backups/
 *.sql
 *.sql.gz
 *.zip
-# SPA build kini di-deploy ke smage.my.id (terpisah), bukan bagian repo
-backend/public/spa/

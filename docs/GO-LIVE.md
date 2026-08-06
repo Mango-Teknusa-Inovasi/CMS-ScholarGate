@@ -1,72 +1,64 @@
-# Go-live checklist — prioritas tinggi
+# Go-live checklist
 
-Struktur folder & apa yang di-upload: [DEPLOY.md](./DEPLOY.md) · Keamanan: [SECURITY.md](./SECURITY.md)
+**Language:** English  
 
-## 1. Environment production
+Related: [DEPLOY.md](./DEPLOY.md) · [SECURITY.md](./SECURITY.md)
 
-Di `backend/.env` server:
+## 1. Production environment
 
 ```env
 APP_ENV=production
 APP_DEBUG=false
-APP_URL=https://domain-anda.sch.id
+APP_URL=https://your-domain.example
 
 FILESYSTEM_DISK=r2
 R2_ENDPOINT=...
 R2_BUCKET_NAME=...
 R2_FOLDER_PATH=scholargate
-R2_PUBLIC_URL=https://static-r2-apac.ppti.me
+R2_PUBLIC_URL=https://your-cdn.example
 R2_ACCESS_KEY_ID=...
 R2_SECRET_ACCESS_KEY=...
 
-SANCTUM_STATEFUL_DOMAINS=domain-anda.sch.id,www.domain-anda.sch.id
-
-SEED_ADMIN_PASSWORD=GantiPasswordAdminKuat!
-SEED_MEMBER_PASSWORD=GantiPasswordMemberKuat!
+SANCTUM_STATEFUL_DOMAINS=your-domain.example,www.your-domain.example
+ALLOW_INSTALL=false
 ```
 
-Frontend build:
+Build-time (optional):
 
 ```env
-VITE_R2_PUBLIC_URL=https://static-r2-apac.ppti.me
+VITE_R2_PUBLIC_URL=https://your-cdn.example
 VITE_R2_FOLDER_PATH=scholargate
 ```
 
-## 2. Build SPA
+## 2. Build assets
 
 ```bash
-cd frontend
-# pastikan .env berisi VITE_R2_*
-npm ci
+npm ci --legacy-peer-deps
 npm run build
-# hasil → backend/public/spa
+# → public/build
 ```
 
-## 3. Deploy backend
+## 3. Deploy application
 
 ```bash
-cd backend
 composer install --no-dev --optimize-autoloader
 php artisan migrate --force
 php artisan config:cache
 php artisan route:cache
-php artisan storage:link   # opsional (legacy lokal)
+php artisan storage:link   # optional for local disk
 ```
 
-Document root = `backend/public`.
+Document root = `public/` (must include `build/`).
 
-## 3b. Update setelah ganti file
+### After replacing files
 
 ```text
-https://domain-anda/update
+https://your-domain/update
 ```
 
-Login admin → jalankan update (migrasi + cache).  
-Atau CLI: `php artisan scholargate:update`
+Admin login → run update (migrate + cache), or CLI: `php artisan scholargate:update`
 
-## 3c. Kunci installer
-
-Pastikan setelah setup:
+### Lock the installer
 
 ```env
 ALLOW_INSTALL=false
@@ -74,58 +66,44 @@ APP_DEBUG=false
 APP_ENV=production
 ```
 
-Cek: `https://domain-anda/install` → harus **403** (Installer terkunci).  
-Jangan biarkan `ALLOW_INSTALL=true` di production.
+`https://your-domain/install` must return **403**.
 
-## 4. Password
+## 4. Passwords
 
-Default seed (dev):
+Dev seed defaults (change in production):
 
 | Role | Email | Password |
 |------|-------|----------|
-| Admin CMS | admin@scholargate.test | `Scholargate!Admin2026` |
+| Admin | admin@scholargate.test | `Scholargate!Admin2026` |
 | Member | member@scholargate.test | `Scholargate!Member2026` |
 
-**Production:** ganti lewat env seed + re-seed user, atau ubah di admin Users.
-
-## 5. Backup DB
+## 5. Database backup
 
 ```bash
 chmod +x scripts/backup-db.sh
 ./scripts/backup-db.sh
-# output: backups/scholargate_*.sql.gz
+# → backups/scholargate_*.sql.gz
 ```
 
-Jadwalkan cron harian di server.
+Schedule daily via cron. Also use Admin → Backup for portable JSON.
 
-## 6. Keamanan yang sudah diaktifkan
+## 6. Smoke tests
 
-- Middleware `admin` pada semua `/api/v1/admin/*` (token member → 403)
-- Rate limit login: 10/menit
-- Trust proxies (HTTPS di belakang Cloudflare/nginx)
-- R2 object storage (bukan disk publik shared hosting)
-
-## 7. Smoke test
-
-1. `/login` member → navbar Gravatar + logout  
-2. `/daftar` registrasi member baru  
-3. `/admin/login` admin → dashboard  
-4. Member token tidak bisa akses `/api/v1/admin/dashboard`  
-5. Upload gambar (kompres → R2 CDN URL)  
-6. Upload PDF (presign → R2)  
+1. Member `/login` → account menu  
+2. `/daftar` registration  
+3. `/admin/login` → dashboard  
+4. Member token cannot call `/api/v1/admin/dashboard`  
+5. Image upload (optimize → R2)  
+6. PDF upload (presign path)  
 7. `/sitemap.xml`, `/robots.txt`, `/llms.txt`  
-8. View-source beranda/artikel: meta OG + JSON-LD sudah di HTML server (bot)
+8. View-source homepage/article: OG + JSON-LD present in server HTML  
+9. Settings → upload logo → favicon/apple icons update  
 
-## 8. Fitur lanjutan
+## 7. Feature status
 
-| Fitur | Status |
-|-------|--------|
-| Preview draft (token 14 hari) | ✅ Editor → **Pratinjau** → `/preview/artikel/{token}` |
-| CI GitHub Actions | ✅ `.github/workflows/ci.yml` |
-| Revisi konten (history) | Belum |
-| Migrasi `/storage` → R2 | Manual / script belakangan |
-
-### Pratinjau draf
-1. Simpan artikel (boleh status draft)
-2. Klik **Pratinjau** di editor
-3. Tab baru: `/preview/artikel/{token}` (noindex, 14 hari)
+| Feature | Status |
+|---------|--------|
+| Draft preview (14-day token) | Yes — `/preview/artikel/{token}` |
+| GitHub Actions CI | Yes — tests + build |
+| Content revision history UI | Not yet |
+| Full SSR framework | Not planned (Inertia + server meta is enough for GSC) |

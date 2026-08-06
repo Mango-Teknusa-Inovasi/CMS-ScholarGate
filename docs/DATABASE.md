@@ -1,57 +1,51 @@
-# Database — multi-engine & backup portable
+# Database — multi-engine & portable backup
 
-## Engine yang didukung (install)
+**Language:** English
 
-| Driver | Label | Ekstensi PHP | Catatan |
-|--------|-------|--------------|---------|
-| **pgsql** | PostgreSQL (**disarankan**) | `pdo_pgsql` | Produksi ideal |
-| **mysql** | MySQL | `pdo_mysql` | Shared hosting umum |
-| **mariadb** | MariaDB | `pdo_mysql` | Alternatif MySQL |
+## Supported engines (install)
 
-Migrasi memakai **Laravel Schema builder** (portable):
+| Driver | Label | PHP extension | Notes |
+|--------|-------|---------------|--------|
+| **pgsql** | PostgreSQL (**recommended**) | `pdo_pgsql` | Best for production |
+| **mysql** | MySQL | `pdo_mysql` | Common on shared hosting |
+| **mariadb** | MariaDB | `pdo_mysql` | MySQL-compatible |
 
-- `id`, `string`, `text`, `longText`, `boolean`, `json`, `timestamp`, `foreignId`
-- Tidak memakai tipe khusus PG-only (`jsonb` raw) atau MySQL-only enum
-- Modifier `->after()` hanya efektif di MySQL/MariaDB; di PostgreSQL diabaikan (aman)
+Migrations use the **Laravel Schema builder** only:
 
-## Backup / restore JSON (lintas DB)
+- Portable types: `id`, `string`, `text`, `longText`, `boolean`, `json`, `timestamp`, `foreignId`
+- No engine-specific raw SQL (`jsonb`, MySQL-only ENUMs)
+- `->after()` is cosmetic on MySQL; ignored on PostgreSQL (safe)
+
+## Portable JSON backup (cross-database)
 
 Format **portable v2** (`BackupService::FORMAT_VERSION = 2`):
 
-| Aspek | Perilaku |
-|-------|----------|
-| Boolean | Disimpan `true`/`false`; di MySQL di-restore sebagai `0`/`1` |
-| JSON (`faq_items`, `tabs`) | Array di file; di-encode string saat insert |
-| Tanggal | ISO-8601 di file → `Y-m-d H:i:s` saat restore |
-| Password users | **Tidak** di-export |
-| PostgreSQL | Sequence `id` di-reset setelah restore (agar insert baru tidak bentrok) |
-| FK | Dinonaktifkan sementara (MySQL / PG / SQLite) |
+| Concern | Behavior |
+|---------|----------|
+| Booleans | Stored as true/false; restored as 0/1 on MySQL |
+| JSON columns | Arrays in file; encoded on insert |
+| Dates | ISO-8601 in file → `Y-m-d H:i:s` on restore |
+| User passwords | **Not exported** |
+| PostgreSQL | ID sequences reset after restore |
+| Foreign keys | Temporarily disabled during restore |
 
-### Migrasi engine (contoh MySQL → PostgreSQL)
+### Example: MySQL → PostgreSQL
 
-1. Di server MySQL: Admin → **Backup** → unduh JSON/ZIP.
-2. Install Scholargate baru dengan **PostgreSQL** (`/install` atau CLI).
-3. Login super admin → **Backup** → Restore file JSON (mode merge/replace).
-4. Centang `include_users` hanya jika perlu metadata user (password tetap kosong → set ulang password admin).
+1. On MySQL install: Admin → **Backup** → download JSON/ZIP.
+2. Fresh Scholargate on **PostgreSQL** (`/install` or CLI).
+3. Super admin → **Backup** → Restore (merge/replace).
+4. Check `include_users` only if needed (passwords empty → reset admin password).
 
-Disarankan: **target PostgreSQL**.
+Prefer **PostgreSQL** as the long-term target.
 
-### CLI setara
+## Hosting checklist
 
-```bash
-# Backup lewat admin UI, atau restore setelah upload ke storage
-php artisan migrate --force   # skema
-# Restore konten: Admin CMS → Backup
-```
+- [ ] `pdo_pgsql` **or** `pdo_mysql` enabled
+- [ ] `DB_CONNECTION=pgsql|mysql|mariadb` in `.env`
+- [ ] UTF-8 (`utf8mb4` MySQL/MariaDB; UTF-8 on PG)
+- [ ] After PG restore: create a new article (sequences OK)
 
-## Checklist hosting
+## Not covered by JSON backup
 
-- [ ] Ekstensi `pdo_pgsql` **atau** `pdo_mysql` aktif
-- [ ] `DB_CONNECTION=pgsql|mysql|mariadb` di `.env`
-- [ ] Charset UTF-8 (`utf8mb4` MySQL/MariaDB, `utf8` PG)
-- [ ] Setelah restore PG: cek insert artikel baru (sequence OK)
-
-## Bukan untuk
-
-- Dump SQL mentah (`pg_dump` / `mysqldump`) — beda dialect
-- File media R2/storage — backup JSON = **konten DB saja**; file media tetap di object storage / disk
+- Raw SQL dumps (`pg_dump` / `mysqldump`) — different dialects
+- Media files on R2/disk — JSON backup is **database content only**

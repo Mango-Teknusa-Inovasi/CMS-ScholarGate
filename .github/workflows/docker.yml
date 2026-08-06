@@ -7,15 +7,11 @@ on:
 
 env:
   REGISTRY: docker.io
-  IMAGE_BACKEND: ardianryan/cms-scholargate-backend
-  IMAGE_FRONTEND: ardianryan/cms-scholargate-frontend
+  IMAGE_APP: ardianryan/cms-scholargate-app
 
 jobs:
-  # ─────────────────────────────────────────────────────────────
-  # Build & Push Backend (Laravel PHP-FPM + Nginx)
-  # ─────────────────────────────────────────────────────────────
-  build-backend:
-    name: Backend Docker Image
+  build-app:
+    name: App Docker Image (Laravel + Inertia)
     runs-on: ubuntu-latest
 
     steps:
@@ -31,66 +27,23 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Docker metadata (tags & labels)
-        id: meta-backend
+      - name: Docker metadata
+        id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.IMAGE_BACKEND }}
+          images: ${{ env.IMAGE_APP }}
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
             type=ref,event=branch
             type=semver,pattern={{version}}
 
-      - name: Build & Push Backend
+      - name: Build & Push
         uses: docker/build-push-action@v5
         with:
-          context: ./backend
-          file: ./backend/Dockerfile
+          context: .
+          file: ./Dockerfile
           push: true
-          tags: ${{ steps.meta-backend.outputs.tags }}
-          labels: ${{ steps.meta-backend.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-  # ─────────────────────────────────────────────────────────────
-  # Build & Push Frontend (React + Nginx)
-  # ─────────────────────────────────────────────────────────────
-  build-frontend:
-    name: Frontend Docker Image
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Docker metadata (tags & labels)
-        id: meta-frontend
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.IMAGE_FRONTEND }}
-          tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=ref,event=branch
-            type=semver,pattern={{version}}
-
-      - name: Build & Push Frontend
-        uses: docker/build-push-action@v5
-        with:
-          context: ./frontend
-          file: ./frontend/Dockerfile
-          push: true
-          tags: ${{ steps.meta-frontend.outputs.tags }}
-          labels: ${{ steps.meta-frontend.outputs.labels }}
-          build-args: |
-            VITE_API_URL=https://api-cms.smage.my.id
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

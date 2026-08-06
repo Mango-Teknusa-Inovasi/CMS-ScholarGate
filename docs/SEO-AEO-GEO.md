@@ -1,68 +1,69 @@
-# SEO · AEO · GEO — panduan singkat
+# SEO · AEO · GEO
 
-Fokus: **mudah diindeks Google** + setup **Search Console** tanpa ribet.
+**Language:** English  
 
-## Endpoint otomatis
+Goal: **Google-indexable** pages + easy **Search Console** setup.
 
-| URL | Fungsi |
-|-----|--------|
-| `/sitemap.xml` | Peta URL (beranda, halaman, artikel terbit, prestasi) |
-| `/robots.txt` | Izinkan crawl publik; blok admin/login/api/preview |
-| `/llms.txt` | Peta teks untuk AI / answer engines (AEO) |
+## Automatic endpoints
 
-Meta title, description, canonical, OG, GEO, JSON-LD, dan **kode verifikasi GSC** di-inject:
-- **Server** (HTML awal SPA) → bot & GSC
-- **Client** (`SeoHead`) → navigasi SPA
+| URL | Role |
+|-----|------|
+| `/sitemap.xml` | Indexable URLs (home, pages, published articles, achievements) |
+| `/robots.txt` | Allow public; disallow admin, API, install, update, login, preview |
+| `/llms.txt` | Text map for AI / answer engines (AEO) |
 
-## Google Search Console (3 langkah)
+Meta (title, description, canonical, OG, GEO, JSON-LD, GSC verification) is injected:
 
-1. Buka [Google Search Console](https://search.google.com/search-console) → **Tambahkan properti** (URL prefix: `https://domain-anda.sch.id`).
-2. Verifikasi **tag HTML** → salin meta → tempel di **Admin → Pengaturan → Google Search Console** → **Simpan**.  
-   Boleh tempel full tag; CMS memotong ke `content="..."`.
-3. Menu **Sitemaps** → submit: `https://domain-anda.sch.id/sitemap.xml`
+- **Server** (`app.blade.php` + `seo` props) → bots & GSC
+- **Client** (`SeoHead` / `BrandIcons`) → after Inertia navigations
 
-Cek HTML: buka source homepage → cari `google-site-verification`.
+## Google Search Console (3 steps)
 
-## Yang diisi admin (wajib untuk GEO/lokal)
+1. [Search Console](https://search.google.com/search-console) → add property (`https://your-domain.example`).
+2. HTML tag verification → paste into **Admin → Settings → Google Search Console** → Save.  
+   Full `<meta …>` tags are accepted; the CMS extracts `content="..."`.
+3. **Sitemaps** → submit `https://your-domain.example/sitemap.xml`.
 
-**Pengaturan**
+Verify in page source: `google-site-verification`.
 
-| Field | Kenapa |
-|-------|--------|
-| Nama + deskripsi situs | Title/description default |
-| Logo + default OG image | Share & schema |
-| Alamat, kota, lat/lng | GEO lokal + schema Organization |
-| Telepon / email | NAP + ContactPoint |
-| Google site verification | GSC |
+## Admin fields that matter
 
-**Artikel**
+**Settings**
 
-- Meta title / description (atau pakai excerpt)
-- Cover (jadi `og:image`)
-- FAQ 2–5 item → schema FAQPage (**AEO**)
-- Jangan centang noindex kecuali draf rahasia
+| Field | Why |
+|-------|-----|
+| Site name + description | Default title/description |
+| Logo (auto favicon) + default OG | Social + schema |
+| Address, city, lat/lng | Local GEO + Organization schema |
+| Phone / email | NAP + ContactPoint |
+| GSC / Bing verification | Search property ownership |
 
-## Aturan indeks (otomatis)
+**Articles**
 
-| Aturan | Detail |
-|--------|--------|
-| Artikel `noindex` | Tidak masuk sitemap |
-| Admin / login / preview | `noindex` + `Disallow` di robots |
-| robots | `index,follow,max-image-preview:large,...` |
-| Canonical | Per halaman + artikel |
-| Schema | Organization + WebSite + NewsArticle + FAQ + Breadcrumb |
+- Meta title / description (or excerpt)
+- Cover → `og:image`
+- FAQ items → FAQPage schema (**AEO**)
+- Avoid `noindex` except private drafts
+
+## Index rules (automatic)
+
+| Rule | Detail |
+|------|--------|
+| Article `noindex` | Excluded from sitemap |
+| Admin / login / preview | `noindex` + robots Disallow |
+| Canonical | Per page and article |
+| Schema | Organization, WebSite, NewsArticle, FAQ, Breadcrumb |
 | hreflang | `id` + `x-default` |
 
-## Checklist go-live SEO
+## Go-live SEO checklist
 
-- [ ] `APP_URL=https://domain-produksi` (tanpa slash akhir)
-- [ ] Verifikasi GSC sukses
+- [ ] `APP_URL=https://production-domain` (no trailing slash)
+- [ ] GSC verified
 - [ ] Sitemap submitted
-- [ ] Lat/lng + alamat terisi
-- [ ] 3–5 artikel publish dengan excerpt + cover
-- [ ] Cek [Rich Results Test](https://search.google.com/test/rich-results) pada 1 artikel
+- [ ] Lat/lng + address filled
+- [ ] Several published articles with excerpt + cover
+- [ ] [Rich Results Test](https://search.google.com/test/rich-results) on one article
 
-## Catatan
+## Notes
 
-Tidak perlu plugin WordPress. Tidak perlu SSR penuh untuk GSC—meta verifikasi sudah di HTML server.  
-SSR penuh hanya opsional untuk social preview edge-case.
+No WordPress plugins required. Full SSR frameworks are not required for GSC — verification meta is in the initial HTML. Inertia remains the delivery model for the app UI.

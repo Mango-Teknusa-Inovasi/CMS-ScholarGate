@@ -2,7 +2,7 @@
 
 **Language of this file:** English  
 **Audience:** Claude, Cursor, Grok, Copilot, and any coding agent  
-**Last updated:** 2026-07-15 (UI copy: no WordPress branding in admin strings)  
+**Last updated:** 2026-08-06 (root monolith; English docs; PHPUnit unit/feature suite)  
 
 ---
 
@@ -14,8 +14,8 @@ Before finishing, the agent **must**:
 
 1. **Self-check** against §1–§8 (architecture, security, SEO, DB, UI, deploy).
 2. **Run** relevant verification (at least one that applies):
-   - Backend: `php -l` on touched PHP files; `php artisan route:list` if routes changed.
-   - Frontend: `npx tsc -b` or `npm run build` if TS/UI changed.
+   - Backend: `php -l` on touched PHP files; `php artisan route:list` if routes changed; `php artisan test` when behavior changes.
+   - Frontend: `npm run build` if TS/UI changed.
 3. **Update docs when rules or product behavior changed**:
    - `CLAUDE.md` (this file) — agent rules
    - `PRD.md` — product requirements / scope
@@ -35,10 +35,10 @@ Before finishing, the agent **must**:
 | Item | Value |
 |------|--------|
 | Name | **CMS Scholargate** (school portal + admin CMS) |
-| Backend | Laravel 13 API + Sanctum (Bearer tokens) |
-| Frontend | React 19 + TypeScript + Vite + Tailwind v4 |
-| Production shape | **Monolith document root**: `backend/public` serves API + built SPA |
-| SPA build output | `frontend` → `backend/public/spa/` (`base: /spa/` in production) |
+| Backend | Laravel 13 + Inertia.js + Sanctum (session + optional Bearer) |
+| Frontend | React 19 + TypeScript + Vite + Tailwind v4 **inside** `resources/js` |
+| Production shape | **True monolith**: document root `public` serves Inertia + API + assets |
+| Asset build | `npm run build` → `public/build/` (laravel-vite-plugin) |
 | Recommended DB | **PostgreSQL**; also MySQL + MariaDB |
 | Media (production) | Cloudflare R2 (S3-compatible); compress images then upload |
 
@@ -46,27 +46,33 @@ Before finishing, the agent **must**:
 
 ## 2. Architecture rules
 
-1. **Do not** require Node.js at runtime on production. Node is build-time only.
-2. **Do not** split production into two always-on processes (API + Node). Dev may use `:8000` + Vite `:5173`.
-3. API under `/api/v1/*`. Public SPA routes served by Laravel `SpaController` (meta injection for bots).
-4. Auth:
-   - **Member** token (`member-spa`) vs **admin** token (`admin-spa`) — separate localStorage keys.
-   - Admin routes: `auth:sanctum` + middleware `admin` (roles `admin` \| `editor`).
+1. **Do not** require Node.js at runtime on production. Node is **build-time only** (`npm run build` on laptop/CI).
+2. **Do not** split production into two always-on processes (API + Node). Dev: `php artisan serve` + `npm run dev` (Vite) in repo root.
+3. **Inertia** for page navigation (`Inertia::render` in `PageController`). Hybrid: page shells + `/api/v1/*` JSON for CRUD/uploads.
+4. API under `/api/v1/*`. SEO meta for bots in `resources/views/app.blade.php` via shared `seo` props.
+5. Auth (session-first for UI):
+   - Web session (`Auth::login`) + CSRF (`/sanctum/csrf-cookie`, axios `withCredentials`).
+   - Optional Sanctum tokens still issued for non-browser clients.
+   - Admin Inertia routes: middleware `auth` + `admin` (roles `admin` \| `editor`).
+   - API admin: `auth:sanctum` + `admin` (session works via `statefulApi()`).
    - Super-admin only: middleware `super_admin` (role `admin` only) — users, backup/restore.
-5. Password cast is `hashed` on User model — **never** double-hash with `Hash::make` on create.
-6. Install: `/install` (web) or `php artisan scholargate:install`. Locked after install (`ALLOW_INSTALL`, lock file, `looksInstalled()`).
-7. Easy update after file replace: **`/update`** (admin password) or `php artisan scholargate:update` — migrate + cache, **never** `migrate:fresh` unless user explicitly demands reinstall.
+6. Password cast is `hashed` on User model — **never** double-hash with `Hash::make` on create.
+7. Install: `/install` (web) or `php artisan scholargate:install`. Locked after install.
+8. Easy update: **`/update`** or `php artisan scholargate:update` — never `migrate:fresh` unless user demands reinstall.
+9. UI source is **`resources/js` only** (Inertia). No separate SPA package; do not reintroduce `frontend/` or `public/spa/`.
 
 ### Critical paths
 
 ```
-backend/app/Http/Controllers/   # API + Install + Update + Spa + Seo
-backend/app/Services/           # Seo, Backup, HtmlSanitizer, ImageOptimizer, Presign
-backend/app/Support/            # Installer, Updater, MediaStorage, PublicSettings, SafeUrl
-frontend/src/pages/             # Public + admin pages
-frontend/src/components/ui/     # Bento, SafeHtml, PageBento
-frontend/src/lib/               # api, auth, sanitize, upload
-docs/                           # Deploy, security, SEO, database
+app/Http/Controllers/Inertia/  # PageController (Inertia pages)
+app/Http/Controllers/Api/      # JSON API v1
+app/Http/Middleware/           # HandleInertiaRequests, admin, SecurityHeaders
+resources/js/                  # React pages, components, lib (Inertia entry: app.tsx)
+resources/views/app.blade.php  # Inertia root + server SEO meta
+public/build/                  # Vite production assets
+app/Services/                  # Seo, Backup, HtmlSanitizer, ImageOptimizer, Presign
+app/Support/                   # Installer, Updater, MediaStorage, PublicSettings, SafeUrl
+docs/                                  # Deploy, security, SEO, database
 ```
 
 ---
@@ -80,8 +86,8 @@ docs/                           # Deploy, security, SEO, database
 | Uploads | **No SVG**. Media confirm path must match `uploads/...` without `..`. |
 | Settings | Public + admin update: **whitelist** `PublicSettings::KEYS` only. |
 | Backup | No password hashes in export. Restore skips `users` unless `include_users` + super admin. |
-| CSRF | Bearer API — no CSRF cookie flow. Web forms (`/install`, `/update`) use `@csrf`. |
-| Tokens | Prefer Sanctum expiration (`SANCTUM_TOKEN_EXPIRATION`). |
+| CSRF | Session UI + stateful API: CSRF required (`X-XSRF-TOKEN`). Web forms (`/install`, `/update`) use `@csrf`. |
+| Tokens | Session preferred for browser; optional Bearer still issued. Prefer Sanctum expiration (`SANCTUM_TOKEN_EXPIRATION`). |
 | Headers | `SecurityHeaders` middleware stays on. |
 | Rate limits | Named limiters in `AppServiceProvider` — keep on public auth/search/read. |
 | GSC verification | Inject in **server HTML** (`SpaController`) and Helmet. Normalize pasted meta tags. |
@@ -118,7 +124,7 @@ If adding an admin endpoint that is destructive or sensitive → **`super_admin`
 1. **Public portal**: bento grid (`BentoBoard` / `BentoTile` / `PageBento*`) — fun, soft pastels, aligned container edges.
 2. Hero/banner must share the **same horizontal edge** as bento rows (no nested double `container-page`).
 3. Admin CMS: practical dense UI (not necessarily bento); keep peach/soft accents where already used.
-4. Tailwind v4 + design tokens in `frontend/src/index.css`.
+4. Tailwind v4 + design tokens in `resources/js/index.css`.
 5. Motion: prefer existing `motion` / GSAP hooks; respect `prefers-reduced-motion`.
 
 ---
@@ -137,8 +143,8 @@ If adding an admin endpoint that is destructive or sensitive → **`super_admin`
 |--------|-----|
 | First install | `/install` or `scholargate:install` |
 | After replacing files | `/update` (admin login) or `scholargate:update` |
-| Build SPA | `cd frontend && npm run build` → `backend/public/spa` |
-| Document root | `backend/public` |
+| Build assets | `npm ci && npm run build` → `public/build` |
+| Document root | `public` |
 
 Do not commit secrets, `vendor/`, `node_modules/`, local sqlite dumps, or screenshots.
 
@@ -157,13 +163,13 @@ Do not commit secrets, `vendor/`, `node_modules/`, local sqlite dumps, or screen
 ## 10. End-of-task checklist (copy mentally every time)
 
 ```
-[ ] Architecture (SPA in public/spa, API v1) respected
-[ ] Authz: admin vs super_admin correct
+[ ] Architecture (Inertia in resources/js, public/build, API v1) respected
+[ ] Authz: session + admin vs super_admin correct
 [ ] XSS/URL/upload/settings rules not weakened
 [ ] Migrations portable (pgsql/mysql/mariadb)
-[ ] SEO endpoints still coherent if routes/meta changed
+[ ] SEO endpoints + app.blade meta still coherent
 [ ] Public UI still bento-aligned if home/pages touched
-[ ] Build/lint smoke run
+[ ] Build/lint smoke: `npm run build`; `php artisan route:list`
 [ ] CLAUDE.md / PRD.md / GUIDE-FOR-IDE.md / docs/* updated if rules changed
 ```
 
@@ -181,6 +187,7 @@ Do not commit secrets, `vendor/`, `node_modules/`, local sqlite dumps, or screen
 | [docs/DEPLOY.md](./docs/DEPLOY.md) | Deploy + `/update` |
 | [docs/GO-LIVE.md](./docs/GO-LIVE.md) | Production checklist |
 | [docs/STORAGE-R2.md](./docs/STORAGE-R2.md) | R2 media |
+| [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) | Layers & tests |
 
 ---
 

@@ -1,68 +1,77 @@
-# Penyimpanan media — Cloudflare R2 (wajib)
+# Media storage — Cloudflare R2
 
-Semua unggahan CMS (banner, cover artikel, logo, media library, dokumen) **wajib** lewat object storage **S3-compatible**, production default **Cloudflare R2**.
+**Language:** English  
 
-Pola env mengikuti proyek **twibbon-moklet**.
+All CMS uploads (banners, covers, logos, media library, documents) use **S3-compatible object storage**. Production default: **Cloudflare R2**.
 
-## Env backend (`backend/.env`)
+## Application `.env`
 
 ```env
 FILESYSTEM_DISK=r2
 
 R2_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
-R2_BUCKET_NAME=static-cdn-r2
+R2_BUCKET_NAME=your-bucket
 R2_FOLDER_PATH=scholargate
-R2_PUBLIC_URL=https://static-r2-apac.ppti.me
+R2_PUBLIC_URL=https://your-cdn.example
 R2_ACCESS_KEY_ID=...
 R2_SECRET_ACCESS_KEY=...
 R2_REGION=auto
 R2_USE_PATH_STYLE_ENDPOINT=true
 ```
 
-## Env frontend (build)
+## Optional Vite build env
 
 ```env
-VITE_R2_PUBLIC_URL=https://static-r2-apac.ppti.me
+VITE_R2_PUBLIC_URL=https://your-cdn.example
 VITE_R2_FOLDER_PATH=scholargate
 ```
 
-## Path di bucket
+## Object key layout
 
 ```
 {R2_FOLDER_PATH}/uploads/YYYY/MM/{slug}-{rand}.webp
 ```
 
-Contoh: `scholargate/uploads/2026/07/banner-abc123.webp`  
-URL publik: `{R2_PUBLIC_URL}/scholargate/uploads/2026/07/banner-abc123.webp`
+Public URL: `{R2_PUBLIC_URL}/{R2_FOLDER_PATH}/uploads/...`
 
-## Kode terkait
-
-| File | Peran |
-|------|--------|
-| `config/filesystems.php` | Disk `r2` + `s3` |
-| `app/Support/MediaStorage.php` | Disk default, URL, delete, folder prefix |
-| `app/Services/ImageOptimizer.php` | Upload WebP ke disk R2 |
-| `app/Models/Media.php` | `url` dari R2 public |
-
-## Dua alur upload
-
-| Jenis file | Alur | API |
-|------------|------|-----|
-| **Gambar raster** (JPG/PNG/GIF/WebP) | Kompres di server (tmp lokal) → upload R2 | `POST /admin/media-library` multipart |
-| **Tanpa kompres** (PDF/DOC/SVG, dll.) | Presign PUT → client ke R2 → confirm | `POST …/presign` + `PUT R2` + `POST …/confirm` |
+Brand assets (from logo upload):
 
 ```
-[Gambar perlu kompres]
-  Browser ──multipart──▶ Laravel ──tmp lokal──▶ ImageOptimizer ──▶ R2
-
-[File tanpa kompres]
-  Browser ──presign──▶ Laravel (token)
-  Browser ──PUT──▶ R2 (langsung)
-  Browser ──confirm──▶ Laravel (catat media library)
+{R2_FOLDER_PATH}/uploads/brand/{timestamp}/logo.webp
+{R2_FOLDER_PATH}/uploads/brand/{timestamp}/favicon-32.png
+…
 ```
 
-## Catatan
+## Related code
 
-- Production: R2 **wajib** terisi (kalau tidak, exception).
-- Dev: jika `R2_*` belum diisi, fallback disk `public` lokal; presign jadi server upload.
-- Folder `scholargate` memisahkan file dari twibbon-moklet (`twbsmansage`).
+| File | Role |
+|------|------|
+| `config/filesystems.php` | Disks `r2` / `s3` |
+| `app/Support/MediaStorage.php` | Default disk, URL, delete, folder prefix |
+| `app/Services/ImageOptimizer.php` | Raster → WebP → R2 |
+| `app/Services/BrandLogoService.php` | Logo → favicon / apple / OG variants |
+| `app/Models/Media.php` | Media library + `url` |
+
+## Upload paths
+
+| File type | Flow | API |
+|-----------|------|-----|
+| **Raster images** | Server optimize (local temp) → R2 | `POST /api/v1/admin/media-library` multipart |
+| **Non-raster** (PDF, etc.) | Presign PUT → client → R2 → confirm | `presign` + `PUT` + `confirm` |
+| **Site logo** | Brand pipeline (logo + favicons) | `POST /api/v1/admin/settings/logo` |
+
+```
+[Raster]
+  Browser ──multipart──▶ Laravel ──tmp──▶ ImageOptimizer ──▶ R2
+
+[Non-raster]
+  Browser ──presign──▶ Laravel
+  Browser ──PUT──▶ R2
+  Browser ──confirm──▶ Laravel (media library row)
+```
+
+## Notes
+
+- Production: R2 must be configured (exception if missing).
+- Local dev: if `R2_*` empty, fall back to `public` disk.
+- Folder prefix isolates this app’s objects from other projects on the same bucket.

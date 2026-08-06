@@ -7,12 +7,9 @@ on:
     branches: [main, master]
 
 jobs:
-  backend:
-    name: Backend (PHP)
+  app:
+    name: Laravel + Inertia
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
 
     steps:
       - uses: actions/checkout@v4
@@ -27,8 +24,8 @@ jobs:
       - name: Get Composer cache
         uses: actions/cache@v4
         with:
-          path: backend/vendor
-          key: composer-${{ hashFiles('backend/composer.lock') }}
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
 
       - name: Install Composer deps
         run: composer install --no-interaction --prefer-dist --no-progress
@@ -37,10 +34,27 @@ jobs:
         run: |
           find app routes config database -name '*.php' -print0 | xargs -0 -n1 php -l
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install npm & build assets
+        run: |
+          npm ci --legacy-peer-deps
+          npm run build
+        env:
+          VITE_R2_PUBLIC_URL: https://example.com
+          VITE_R2_FOLDER_PATH: scholargate
+
+      - name: Check Vite build
+        run: test -f public/build/manifest.json
+
       - name: Prepare app
         run: |
           cp .env.example .env
-          # CI: sqlite + local disk (tanpa R2)
           php -r '
             $e = file_get_contents(".env");
             $e = preg_replace("/^DB_CONNECTION=.*/m", "DB_CONNECTION=sqlite", $e);
@@ -49,38 +63,13 @@ jobs:
             file_put_contents(".env", $e);
           '
           touch database/ci.sqlite
-          echo "DB_DATABASE=${{ github.workspace }}/backend/database/ci.sqlite" >> .env
+          echo "DB_DATABASE=${{ github.workspace }}/database/ci.sqlite" >> .env
           php artisan key:generate --force
           php artisan config:clear
           php artisan migrate --force --no-interaction
+
       - name: Feature smoke (routes)
         run: php artisan route:list --json > /dev/null
 
-  frontend:
-    name: Frontend (build)
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install
-        run: npm ci
-
-      - name: Typecheck & build
-        env:
-          VITE_R2_PUBLIC_URL: https://example.com
-          VITE_R2_FOLDER_PATH: scholargate
-        run: npm run build
-
-      - name: Check SPA output
-        run: test -f dist/index.html
+      - name: PHPUnit
+        run: php artisan test --without-tty

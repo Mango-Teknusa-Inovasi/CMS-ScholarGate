@@ -1,97 +1,67 @@
-# Deploy — apa yang di-upload
+# Deploy
 
-## Ringkas
+**Language:** English
 
-| Path | Perlu di server? | Keterangan |
-|------|------------------|------------|
-| `backend/` | **Ya** | Aplikasi production |
-| `backend/public/` | Document root | Point domain ke sini |
-| `backend/public/spa/` | **Ya** | Hasil `npm run build` |
-| `frontend/` | **Tidak** | Hanya untuk build di laptop/CI |
-| `docs/`, `scripts/` | Opsional | Ops / backup |
-| `node_modules/`, `vendor/` | Jangan commit | Install di server: `composer install --no-dev` |
+## What to upload
 
-## Alur recommended
+| Path | On server? | Notes |
+|------|------------|--------|
+| Application root (Laravel) | **Yes** | `app/`, `bootstrap/`, `config/`, `routes/`, `resources/`, etc. |
+| `public/` | **Document root** | Point the domain here |
+| `public/build/` | **Yes** | Output of `npm run build` |
+| `vendor/` | Install on server | `composer install --no-dev` |
+| `node_modules/` | **No** | Build-time only |
+| `docs/`, `scripts/` | Optional | Ops helpers |
+
+## Recommended flow
 
 ```bash
-# 1. Build SPA (laptop atau CI)
-cd frontend
-cp .env.example .env   # set VITE_R2_*
-npm ci
-npm run build          # → backend/public/spa/
-
-# 2. Siapkan backend
-cd ../backend
 composer install --no-dev --optimize-autoloader
-# pastikan .env production (lihat docs/GO-LIVE.md)
+npm ci --legacy-peer-deps
+npm run build
 
-# 3. Upload folder backend/ ke hosting
-# Document root = public/
-
-# 4. Di server — pilih salah satu:
-
-# A) Easy update (shared hosting / tanpa SSH)
-#    Buka https://domain-anda/update
-#    Login admin → centang konfirmasi → Jalankan update
-#    (migrate + clear/cache otomatis)
-
-# B) CLI
-php artisan scholargate:update
-# atau:
+# Point web server document root to public/
+# On server:
 php artisan migrate --force
+# or open /update (admin) / php artisan scholargate:update
+
 php artisan config:cache
 php artisan route:cache
-
-# install pertama: /install atau php artisan scholargate:install
+php artisan view:cache
+php artisan storage:link   # if using local public disk
 ```
+
+## Shared hosting
+
+```
+public_html/     ← contents of public/
+  index.php
+  build/
+  .htaccess
+```
+
+Parent directory holds `app/`, `vendor/`, `.env`, etc.
+
+**Node.js is not required on the server.**
+
+## Docker
+
+```bash
+cp .env.example .env
+./deploy.sh install
+# App: http://localhost:8080
+```
+
+Single **app** service (Laravel + built assets) + **db** (PostgreSQL).
+
+## Auth & session (production)
+
+- `APP_URL` = public HTTPS origin (cookies, sitemap, canonical)
+- `SANCTUM_STATEFUL_DOMAINS` includes the public host
+- Browser UI uses session + CSRF; API mutations use credentials + `X-XSRF-TOKEN`
 
 ## Database
 
-- Install: **PostgreSQL (disarankan)**, MySQL, atau MariaDB — lihat [DATABASE.md](./DATABASE.md)
-- Backup JSON **portable** (MySQL ↔ PostgreSQL). Restore lewat Admin → Backup.
+PostgreSQL recommended; MySQL and MariaDB supported. See [DATABASE.md](./DATABASE.md).
 
-## Easy update (`/update`)
-
-Setelah **replace file** di hosting:
-
-1. Upload folder `backend/` (dan SPA build di `public/spa` bila ada perubahan frontend).
-2. Buka **`https://domain-anda/update`**
-3. Login **akun role admin** (bukan editor/member).
-4. Centang konfirmasi → **Jalankan update**.
-
-Yang dijalankan otomatis:
-
-- `migrate --force` (tidak menghapus data)
-- `config:clear`, `cache:clear`, `view:clear`, `route:clear`
-- `storage:link` (jika memungkinkan)
-- di production: `config:cache` + `route:cache` (opsional, bisa dicentang)
-
-CLI setara: `php artisan scholargate:update`
-
-**Keamanan:** butuh password admin, rate limit, `noindex`, diblok di `robots.txt`.
-
-## Shared hosting (satu document root)
-
-```
-public_html/          ← isi = isi backend/public/
-  index.php
-  spa/                ← build React
-  .htaccess
-  ...
-  ../                 ← sisa Laravel di luar webroot jika memungkinkan
-```
-
-Ideal: upload seluruh `backend/`, set document root ke `backend/public`.  
-Jika host hanya `public_html`, ikuti pola Laravel shared hosting (public di webroot, app di atasnya).
-
-## Jangan di-upload
-
-- `frontend/node_modules`, `backend/vendor` (boleh di-generate di server)
-- `frontend/src` (kecuali Anda build di server)
-- `.env` lokal / credential dev
-- `backups/`, `screenshot-*.png`, `storage/logs/*`
-- folder AI tooling (`.agents`, `.grok`)
-
-## Checklist lengkap
-
-Lihat [GO-LIVE.md](./GO-LIVE.md) · storage R2: [STORAGE-R2.md](./STORAGE-R2.md) · install: [../INSTALL.md](../INSTALL.md)
+Portable JSON backup/restore via Admin → Backup (cross-engine).

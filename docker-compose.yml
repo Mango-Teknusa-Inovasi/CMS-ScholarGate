@@ -1,43 +1,22 @@
 services:
-  # ─────────────────────────────────────────────────────────────
-  # Frontend: React SPA dilayani Nginx (→ smage.my.id via reverse proxy)
-  # ─────────────────────────────────────────────────────────────
-  frontend:
+  # Laravel + Inertia monolith (PHP-FPM + Nginx)
+  app:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        VITE_API_URL: https://api-cms.smage.my.id
-    restart: unless-stopped
-    ports:
-      - "3000:80"
-    networks:
-      - cms-net
-
-  # ─────────────────────────────────────────────────────────────
-  # Backend: Laravel API dilayani PHP-FPM + Nginx (→ api-cms.smage.my.id)
-  # ─────────────────────────────────────────────────────────────
-  backend:
-    build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
       - "8080:80"
     volumes:
-      - ./backend/.env:/var/www/html/.env:ro
-      - backend_storage:/var/www/html/storage
-      - backend_cache:/var/www/html/bootstrap/cache
+      - ./.env:/var/www/html/.env:ro
+      - app_storage:/var/www/html/storage
+      - app_cache:/var/www/html/bootstrap/cache
     depends_on:
       db:
         condition: service_healthy
     networks:
       - cms-net
 
-  # ─────────────────────────────────────────────────────────────
-  # Database: PostgreSQL
-  # (Skip ini jika sudah pakai PostgreSQL dari aaPanel)
-  # ─────────────────────────────────────────────────────────────
   db:
     image: postgres:16-alpine
     restart: unless-stopped
@@ -62,6 +41,6 @@ networks:
     driver: bridge
 
 volumes:
-  backend_storage:
-  backend_cache:
+  app_storage:
+  app_cache:
   db_data:

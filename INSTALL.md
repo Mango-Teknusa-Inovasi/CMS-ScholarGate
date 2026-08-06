@@ -1,38 +1,39 @@
-# Instalasi & Deploy Scholargate CMS
+# Installation & setup
 
-## Jawaban singkat: shared hosting?
-
-**Bisa**, asalkan hosting mendukung **PHP 8.2+** dan database **PostgreSQL** (disarankan) atau **MySQL/MariaDB**.
-
-| Komponen | Production / shared hosting | Development lokal |
-|----------|----------------------------|-------------------|
-| Backend Laravel | ✅ Jalan di PHP (document root = `backend/public`) | `php artisan serve` |
-| Frontend React | ✅ **Sudah di-build** ke `backend/public/spa` — **tidak perlu Node di server** | `npm run dev` (Vite) |
-| Database | PostgreSQL (default) atau MySQL/MariaDB | sama |
-
-Anda **tidak** menjalankan dua proses terpisah di production.  
-Alur production:
-
-1. Build SPA di komputer lokal / CI: `npm run build` → hasil ke `backend/public/spa`
-2. Upload folder `backend/` (termasuk `public/spa`) ke hosting
-3. Point domain ke `public/`
-4. Buka `/install` atau jalankan `php artisan scholargate:install`
+**Language:** English  
+**Product:** CMS Scholargate (Laravel + Inertia monolith)
 
 ---
 
-## Persyaratan
+## Shared hosting — do I need two processes?
 
-- PHP **8.2+** dengan ekstensi: `pdo`, `mbstring`, `openssl`, `tokenizer`, `json`, `ctype`, `fileinfo`, `curl`
-- Untuk PostgreSQL: `pdo_pgsql`
-- Untuk MySQL/MariaDB: `pdo_mysql`
-- Composer
-- Node.js 20+ **hanya untuk build frontend** (bukan runtime production)
-- Database kosong: PostgreSQL **atau** MySQL/MariaDB
-- **Object storage wajib (production): Cloudflare R2** (S3-compatible) — lihat env di bawah
+**No.** Production is a single PHP application:
 
-### Cloudflare R2 (wajib production)
+| Component | Production | Local development |
+|-----------|------------|-------------------|
+| Laravel + Inertia | PHP, document root = `public/` | `php artisan serve` |
+| React UI | Built assets in `public/build/` — **no Node on the server** | `npm run dev` (Vite HMR) |
+| Database | PostgreSQL (recommended) / MySQL / MariaDB | same |
 
-Pola env sama proyek **twibbon-moklet**:
+Production flow:
+
+1. Build assets on your laptop/CI: `npm run build` → `public/build`
+2. Upload the project (or deploy image)
+3. Point the domain document root to **`public/`**
+4. Open `/install` or run `php artisan scholargate:install`
+
+---
+
+## Requirements
+
+- PHP **8.2+** with: `pdo`, `mbstring`, `openssl`, `tokenizer`, `json`, `ctype`, `fileinfo`, `curl`, `gd`
+- PostgreSQL: `pdo_pgsql` — or MySQL/MariaDB: `pdo_mysql`
+- Composer 2.x
+- Node.js 20+ **only for building assets** (not a production runtime)
+- Empty database
+- Production media: **Cloudflare R2** (S3-compatible) — see [docs/STORAGE-R2.md](./docs/STORAGE-R2.md)
+
+### Cloudflare R2 (production)
 
 ```env
 FILESYSTEM_DISK=r2
@@ -46,49 +47,45 @@ R2_REGION=auto
 R2_USE_PATH_STYLE_ENDPOINT=true
 ```
 
-Frontend (saat `npm run build`) agar URL media benar:
+Optional at build time:
 
 ```env
 VITE_R2_PUBLIC_URL=https://your-public-cdn-url.com
 VITE_R2_FOLDER_PATH=scholargate
 ```
 
-Semua upload CMS (banner, cover, media library, logo) disimpan ke R2 di folder `R2_FOLDER_PATH`.
-
 ---
 
-## Instalasi pertama (pilih DB)
+## First-time install
 
-### Opsi A — Web installer (paling mudah di shared hosting)
+### Option A — Web installer
 
-1. Pastikan SPA sudah di-build dan di-upload (`public/spa`).
-2. Buat database di panel hosting.
-3. Di `.env` set **`ALLOW_INSTALL=true`** (wajib di production / staging).
-4. Buka: `https://domain-anda/install`
-5. Pilih:
-   - **PostgreSQL (default)**, atau
-   - **MySQL / MariaDB**
-6. Isi host, port, nama DB, user, password, URL situs, akun admin.
-7. Centang seed demo jika ingin data contoh.
-8. Klik **Install sekarang**.
+1. Ensure Vite assets are built and deployed (`public/build`).
+2. Create a database in your host panel.
+3. In `.env` set **`ALLOW_INSTALL=true`**.
+4. Open `https://your-domain/install`.
+5. Choose **PostgreSQL** (default) or **MySQL / MariaDB**.
+6. Enter DB credentials, site URL, and admin account.
+7. Optionally seed demo content.
+8. Click **Install**.
 
-Installer menulis `.env`, migrate, seed, membuat admin, lalu **mengunci** instalasi:
-- file `storage/app/installed`
-- `ALLOW_INSTALL=false` di `.env`
+On success the installer locks:
 
-Setelah itu `/install` mengembalikan **403**. Meski file lock dihapus, installer tetap terkunci jika database sudah berisi data (kecuali Anda set lagi `ALLOW_INSTALL=true` dengan sadar).
+- `storage/app/installed`
+- `ALLOW_INSTALL=false` written to `.env`
 
-### Opsi B — CLI (VPS / lokal)
+`/install` then returns **403**. Even if the lock file is removed, install stays blocked when the database already looks installed (unless you deliberately set `ALLOW_INSTALL=true` again).
+
+### Option B — CLI
 
 ```bash
-cd backend
 composer install --no-dev --optimize-autoloader
-cp .env.example .env   # jika belum ada
+cp .env.example .env   # if needed
 
-# Interaktif — default PostgreSQL
+# Interactive (default PostgreSQL)
 php artisan scholargate:install
 
-# Atau non-interaktif MySQL/MariaDB:
+# Non-interactive MySQL example
 php artisan scholargate:install \
   --driver=mysql \
   --host=127.0.0.1 \
@@ -96,99 +93,98 @@ php artisan scholargate:install \
   --database=scholargate \
   --username=root \
   --password=secret \
-  --url=https://sekolahmu.sch.id \
-  --admin-email=admin@sekolahmu.sch.id \
-  --admin-password='GantiPasswordKuat'
+  --url=https://school.example \
+  --admin-email=admin@school.example \
+  --admin-password='StrongPasswordHere'
+```
 
-# PostgreSQL non-interaktif:
-php artisan scholargate:install \
-  --driver=pgsql \
-  --host=127.0.0.1 \
-  --port=5432 \
-  --database=scholargate \
-  --username=postgres \
-  --password=secret \
-  --url=https://sekolahmu.sch.id
+Forced re-install (destructive): `php artisan scholargate:install --force`
+
+### Option C — Docker
+
+```bash
+cp .env.example .env
+# set APP_URL, DB_*, R2_* as needed
+./deploy.sh install
+# → http://localhost:8080
 ```
 
 ---
 
-## Build frontend (wajib sebelum production)
-
-Dari root project atau folder `frontend`:
+## Build assets (required before production upload)
 
 ```bash
-cd frontend
-npm install
+npm ci --legacy-peer-deps
 npm run build
-# → output: backend/public/spa/
+# → public/build/
 ```
 
-Atau dari root:
-
-```bash
-npm run build
-```
-
-Setelah build, **satu** document root sudah cukup: `backend/public`.
+Or from CI: see `.github/workflows/ci.yml`.
 
 ---
 
-## Deploy shared hosting (contoh)
-
-1. Di lokal: `composer install` + `npm run build` (+ install/migrate jika perlu).
-2. Upload isi `backend/` ke hosting (bisa via Git + composer di server, atau zip).
-3. Set document root domain ke folder **`public`**.
-4. Pastikan `storage/` dan `bootstrap/cache/` **writable** (chmod 775).
-5. Buka `/install` jika belum terpasang.
-6. (Opsional) `php artisan storage:link` via SSH / cron one-shot.
-
-### Struktur di hosting
+## Shared hosting layout
 
 ```
-public_html/          ← document root = backend/public
+public_html/          ← document root = project public/
   index.php
   .htaccess
-  spa/                ← hasil npm run build
-  storage -> ...
-  ...
-(app code di luar public, sesuaikan path hosting)
+  build/              ← Vite output
+  storage → …
 ```
 
-Jika shared hosting memaksa semua file di `public_html`, gunakan layout Laravel standar:  
-`app/`, `bootstrap/`, `config/`, … di luar web root; hanya `public/*` yang di-expose.
+Keep `app/`, `vendor/`, `resources/`, `.env`, etc. **outside** the public web root (standard Laravel layout).
+
+Ensure `storage/` and `bootstrap/cache/` are writable.
 
 ---
 
-## Development (dua proses — hanya lokal)
+## Local development
 
 ```bash
-# Terminal 1 — API
-cd backend && php artisan serve
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed
 
-# Terminal 2 — Vite HMR
-cd frontend && npm run dev
+php artisan serve          # terminal 1
+npm install --legacy-peer-deps && npm run dev   # terminal 2
 ```
 
-Buka http://localhost:5173 (proxy ke API :8000).
+Open http://127.0.0.1:8000
 
 ---
 
-## Keamanan installer
+## After file updates
 
-- Setelah sukses, file lock: `storage/app/installed`
-- Route `/install` redirect jika sudah terpasang
-- Jangan biarkan `APP_DEBUG=true` di production
-- Ganti password admin default segera
+Use **`/update`** (admin password) or:
+
+```bash
+php artisan scholargate:update
+```
+
+Never run `migrate:fresh` on a live site unless you intend to wipe data.
+
+---
+
+## Installer security
+
+- Lock file after success
+- `ALLOW_INSTALL` must be `false` in production
+- Rate limited (GET/POST)
+- CLI re-install requires explicit `--force`
 
 ---
 
 ## Troubleshooting
 
-| Masalah | Solusi |
-|---------|--------|
-| Halaman putih / 503 SPA | Jalankan `npm run build`, pastikan `public/spa/index.html` ada |
-| Installer gagal koneksi DB | Cek host/port/user/password; pastikan DB sudah dibuat |
-| Ekstensi pgsql/mysql hilang | Aktifkan di panel hosting / `php.ini` |
-| 500 setelah install | Cek `storage/logs/laravel.log`; pastikan `APP_KEY` terisi |
-| Upload file gagal | `storage/app/public` writable + `storage:link` |
+| Issue | Fix |
+|-------|-----|
+| Blank page / missing assets | `npm run build`; confirm `public/build/manifest.json` |
+| Installer cannot connect to DB | Host, port, credentials; DB must exist |
+| Missing pdo_pgsql / pdo_mysql | Enable extension in hosting panel |
+| 500 after install | Check `storage/logs/laravel.log`; ensure `APP_KEY` is set |
+| Upload failures | Writable storage; R2 credentials in production |
+| 419 CSRF | Same-origin cookies; call `/sanctum/csrf-cookie` before auth |
+
+More: [docs/GO-LIVE.md](./docs/GO-LIVE.md) · [docs/SECURITY.md](./docs/SECURITY.md)
