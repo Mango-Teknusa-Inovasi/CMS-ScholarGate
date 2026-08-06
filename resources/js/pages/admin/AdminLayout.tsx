@@ -411,6 +411,7 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
       return data as { user: AuthUser }
     },
     retry: false,
+    staleTime: 1000 * 60 * 5,
     initialData: sharedUser?.is_admin || sharedUser?.role === 'admin' || sharedUser?.role === 'editor'
       ? { user: sharedUser }
       : undefined,
@@ -447,9 +448,11 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
     if (isLoading) return
     if (isError || !user || !canAccessAdmin) {
       setAdminToken(null)
-      navigate('/admin/login', { replace: true })
+      if (location.pathname !== '/admin/login') {
+        navigate('/admin/login', { replace: true })
+      }
     }
-  }, [isLoading, isError, user, canAccessAdmin, navigate])
+  }, [isLoading, isError, user, canAccessAdmin, location.pathname, navigate])
 
   if (isLoading || isError || !user || !canAccessAdmin) {
     return (

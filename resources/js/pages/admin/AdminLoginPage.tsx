@@ -49,8 +49,10 @@ export function AdminLoginPage() {
         setError('Login gagal: sesi tidak diterima.')
         return
       }
-      await qc.invalidateQueries({ queryKey: ['auth-me-admin'] })
-      qc.removeQueries({ queryKey: ['auth-me'] })
+      qc.setQueryData(['auth-me-admin', 'session'], { user: data.user })
+      if (data.user.id) {
+        qc.setQueryData(['auth-me-admin', data.user.id], { user: data.user })
+      }
       navigate('/admin', { replace: true })
     } catch (err: unknown) {
       const ax = err as { response?: { data?: { message?: string; errors?: { email?: string[] } } } }
