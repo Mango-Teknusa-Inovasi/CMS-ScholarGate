@@ -56,7 +56,7 @@ class AuthController extends Controller
         ]);
 
         $user = User::query()->where('email', $credentials['email'])->first();
-        if (! $user || ! Hash::check($credentials['password'], $user->getRawOriginal('password') ?: $user->password)) {
+        if (! $user || ! Hash::check($credentials['password'], (string) $user->getRawOriginal('password'))) {
             throw ValidationException::withMessages([
                 'email' => ['Email atau password tidak valid.'],
             ]);
