@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Services\HtmlSanitizer;
+use App\Support\Installer;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -16,6 +17,15 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(HtmlSanitizer::class);
+
+        // Saat aplikasi belum ter-install, paksa session & cache pakai 'file'
+        // agar halaman /install bisa diakses tanpa error DB/session table.
+        if (! Installer::isInstalled()) {
+            config([
+                'session.driver' => 'file',
+                'cache.default' => 'file',
+            ]);
+        }
     }
 
     /**
