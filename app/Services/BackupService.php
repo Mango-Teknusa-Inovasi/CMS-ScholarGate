@@ -247,69 +247,71 @@ class BackupService
             $skipped[] = "cross-db: sumber={$source} → target={$target} (format portable v".($data['version'] ?? 1).')';
         }
 
-        DB::connection()->getPdo()->beginTransaction();
+        $this->disableForeignKeys();
+
         try {
-            $this->disableForeignKeys();
+            DB::connection()->getPdo()->beginTransaction();
+            try {
+                foreach ($restoreList as $table) {
+                    if (! Schema::hasTable($table) || empty($data['tables'][$table])) {
+                        continue;
+                    }
+                    $records = $data['tables'][$table];
+                    if (! is_array($records)) {
+                        continue;
+                    }
 
-            foreach ($restoreList as $table) {
-                if (! Schema::hasTable($table) || empty($data['tables'][$table])) {
-                    continue;
-                }
-                $records = $data['tables'][$table];
-                if (! is_array($records)) {
-                    continue;
-                }
+                    if ($mode === 'replace') {
+                        DB::table($table)->delete();
+                    }
 
-                if ($mode === 'replace') {
-                    DB::table($table)->delete();
-                }
+                    foreach (array_chunk($records, 100) as $chunk) {
+                        foreach ($chunk as $row) {
+                            if (! is_array($row)) {
+                                continue;
+                            }
 
-                foreach (array_chunk($records, 100) as $chunk) {
-                    foreach ($chunk as $row) {
-                        if (! is_array($row)) {
-                            continue;
-                        }
-
-                        if ($table === 'users') {
-                            if (empty($row['password'])) {
-                                unset($row['password']);
-                                if (! isset($row['id']) || ! DB::table('users')->where('id', $row['id'])->exists()) {
-                                    continue;
+                            if ($table === 'users') {
+                                if (empty($row['password'])) {
+                                    unset($row['password']);
+                                    if (! isset($row['id']) || ! DB::table('users')->where('id', $row['id'])->exists()) {
+                                        continue;
+                                    }
+                                }
+                                if (isset($row['role']) && ! in_array($row['role'], ['admin', 'editor', 'member'], true)) {
+                                    $row['role'] = 'member';
                                 }
                             }
-                            if (isset($row['role']) && ! in_array($row['role'], ['admin', 'editor', 'member'], true)) {
-                                $row['role'] = 'member';
+
+                            $row = $this->filterColumns($table, $row);
+                            if ($row === []) {
+                                continue;
                             }
+
+                            $row = $this->importRow($table, $row);
+                            $row = $this->sanitizeRestoredRow($table, $row);
+
+                            // Setelah sanitize, encode ulang JSON jika masih array
+                            $row = $this->encodeJsonForDriver($table, $row);
+
+                            DB::table($table)->updateOrInsert(
+                                $this->primaryKeyFilter($table, $row),
+                                $row
+                            );
+                            $rows++;
                         }
-
-                        $row = $this->filterColumns($table, $row);
-                        if ($row === []) {
-                            continue;
-                        }
-
-                        $row = $this->importRow($table, $row);
-                        $row = $this->sanitizeRestoredRow($table, $row);
-
-                        // Setelah sanitize, encode ulang JSON jika masih array
-                        $row = $this->encodeJsonForDriver($table, $row);
-
-                        DB::table($table)->updateOrInsert(
-                            $this->primaryKeyFilter($table, $row),
-                            $row
-                        );
-                        $rows++;
                     }
+                    $tablesRestored++;
                 }
-                $tablesRestored++;
+
+                $this->resetPostgresSequences();
+                DB::connection()->getPdo()->commit();
+            } catch (\Throwable $e) {
+                DB::connection()->getPdo()->rollBack();
+                throw $e;
             }
-
+        } finally {
             $this->enableForeignKeys();
-            $this->resetPostgresSequences();
-
-            DB::connection()->getPdo()->commit();
-        } catch (\Throwable $e) {
-            DB::connection()->getPdo()->rollBack();
-            throw $e;
         }
 
         return [
@@ -507,25 +509,29 @@ class BackupService
 
     private function disableForeignKeys(): void
     {
-        $driver = $this->driverName();
-        if ($this->isMysqlFamily()) {
-            DB::statement('SET FOREIGN_KEY_CHECKS=0');
-        } elseif ($driver === 'pgsql') {
-            DB::statement('SET session_replication_role = replica');
-        } elseif ($driver === 'sqlite') {
-            DB::statement('PRAGMA foreign_keys = OFF');
+        try {
+            $driver = $this->driverName();
+            if ($this->isMysqlFamily()) {
+                DB::statement('SET FOREIGN_KEY_CHECKS=0');
+            } elseif ($driver === 'sqlite') {
+                DB::statement('PRAGMA foreign_keys = OFF');
+            }
+        } catch (\Throwable) {
+            // Ignore
         }
     }
 
     private function enableForeignKeys(): void
     {
-        $driver = $this->driverName();
-        if ($this->isMysqlFamily()) {
-            DB::statement('SET FOREIGN_KEY_CHECKS=1');
-        } elseif ($driver === 'pgsql') {
-            DB::statement('SET session_replication_role = DEFAULT');
-        } elseif ($driver === 'sqlite') {
-            DB::statement('PRAGMA foreign_keys = ON');
+        try {
+            $driver = $this->driverName();
+            if ($this->isMysqlFamily()) {
+                DB::statement('SET FOREIGN_KEY_CHECKS=1');
+            } elseif ($driver === 'sqlite') {
+                DB::statement('PRAGMA foreign_keys = ON');
+            }
+        } catch (\Throwable) {
+            // Ignore
         }
     }
 
@@ -549,15 +555,18 @@ class BackupService
                 continue;
             }
             try {
-                DB::statement(
-                    "SELECT setval(
-                        pg_get_serial_sequence('{$table}', 'id'),
-                        COALESCE((SELECT MAX(id) FROM {$table}), 1),
-                        true
-                    )"
-                );
+                $seq = DB::selectOne("SELECT pg_get_serial_sequence('{$table}', 'id') as seq")?->seq;
+                if ($seq) {
+                    DB::statement(
+                        "SELECT setval(
+                            '{$seq}',
+                            COALESCE((SELECT MAX(id) FROM {$table}), 1),
+                            true
+                        )"
+                    );
+                }
             } catch (\Throwable) {
-                // tabel tanpa serial / sequence custom — abaikan
+                // abaikan
             }
         }
     }
