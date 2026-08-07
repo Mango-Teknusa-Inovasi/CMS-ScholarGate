@@ -25,6 +25,26 @@ const fieldMeta: Record<
   report_url: { label: 'URL tombol Lapor', hint: 'Link eksternal form laporan', group: 'Kontak' },
   contact_email: { label: 'Email kontak', group: 'Kontak' },
   contact_phone: { label: 'Telepon', group: 'Kontak' },
+  social_instagram: {
+    label: 'URL Instagram',
+    hint: 'Contoh: https://instagram.com/sman1gedeg',
+    group: 'Media sosial',
+  },
+  social_facebook: {
+    label: 'URL Facebook',
+    hint: 'Contoh: https://facebook.com/sman1gedeg',
+    group: 'Media sosial',
+  },
+  social_tiktok: {
+    label: 'URL TikTok',
+    hint: 'Contoh: https://tiktok.com/@sman1gedeg',
+    group: 'Media sosial',
+  },
+  social_youtube: {
+    label: 'URL YouTube',
+    hint: 'Contoh: https://youtube.com/@sman1gedeg',
+    group: 'Media sosial',
+  },
   contact_address: { label: 'Alamat lengkap (GEO/NAP)', multiline: true, group: 'GEO lokal' },
   geo_placename: { label: 'Nama tempat / kota', group: 'GEO lokal' },
   geo_region: { label: 'Kode negara/region', hint: 'Contoh: ID-JI atau ID', group: 'GEO lokal' },

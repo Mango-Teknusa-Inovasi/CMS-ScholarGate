@@ -33,6 +33,10 @@ class PublicSettings
         'apple_touch_icon_path',
         'og_image',
         'default_og_image',
+        'social_instagram',
+        'social_facebook',
+        'social_tiktok',
+        'social_youtube',
     ];
 
     /**
