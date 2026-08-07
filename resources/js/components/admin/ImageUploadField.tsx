@@ -52,7 +52,7 @@ export function ImageUploadField({
         maxWidth: 1920,
         endpoint: '/admin/media',
       })
-      onChange(data.path)
+      onChange(data.url || data.path)
       if (data.optimized) {
         setOptimizedNote('Kompres lokal → R2: WebP · resize · strip EXIF')
       } else {

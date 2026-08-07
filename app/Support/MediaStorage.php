@@ -62,6 +62,16 @@ class MediaStorage
         return $folder.'/'.$path;
     }
 
+    public static function publicBaseUrl(string $disk = 'r2'): string
+    {
+        $url = (string) config("filesystems.disks.{$disk}.url", '');
+        if ($url === '') {
+            $url = (string) env($disk === 's3' ? 'AWS_URL' : 'R2_PUBLIC_URL', '');
+        }
+
+        return rtrim($url, '/');
+    }
+
     public static function url(?string $path): ?string
     {
         if (! $path) {
@@ -78,7 +88,7 @@ class MediaStorage
         // Path di DB biasanya relative tanpa folder prefix (uploads/...)
         // atau full key; URL R2/S3 pakai public base + folder + path
         if (in_array($disk, ['r2', 's3'], true)) {
-            $public = rtrim((string) config("filesystems.disks.{$disk}.url", ''), '/');
+            $public = self::publicBaseUrl($disk);
             $key = self::prefixPath($cleanPath);
 
             if ($public !== '') {
@@ -88,7 +98,7 @@ class MediaStorage
             try {
                 return Storage::disk($disk)->url($key);
             } catch (\Throwable) {
-                return $public.'/'.$key;
+                return $key;
             }
         }
 
