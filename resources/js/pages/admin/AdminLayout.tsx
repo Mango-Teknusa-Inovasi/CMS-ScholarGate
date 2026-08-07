@@ -423,6 +423,12 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
       : undefined,
   })
 
+  const { data: publicSettings } = useQuery<Record<string, string>>({
+    queryKey: ['public-settings'],
+    queryFn: async () => (await api.get('/settings/public')).data,
+    staleTime: 1000 * 60 * 5,
+  })
+
   const isSuperAdmin =
     data?.user?.is_super_admin === true || data?.user?.role === 'admin'
 
@@ -476,12 +482,6 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
       </div>
     )
   }
-
-  const { data: publicSettings } = useQuery<Record<string, string>>({
-    queryKey: ['public-settings'],
-    queryFn: async () => (await api.get('/settings/public')).data,
-    staleTime: 1000 * 60 * 5,
-  })
 
   const pageTitle = resolvePageTitle(location.pathname)
   const initials = user.name
