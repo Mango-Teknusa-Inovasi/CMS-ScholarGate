@@ -91,7 +91,7 @@ class ArticleAdminController extends Controller
         return response()->json(['message' => 'Artikel dipindah ke sampah']);
     }
 
-    public function restore(int $id): JsonResponse
+    public function restore(string $id): JsonResponse
     {
         $article = Article::onlyTrashed()->findOrFail($id);
         $article->restore();
@@ -99,7 +99,7 @@ class ArticleAdminController extends Controller
         return response()->json($article->load(['category', 'tags']));
     }
 
-    public function forceDestroy(int $id): JsonResponse
+    public function forceDestroy(string $id): JsonResponse
     {
         $article = Article::onlyTrashed()->findOrFail($id);
         $article->forceDelete();

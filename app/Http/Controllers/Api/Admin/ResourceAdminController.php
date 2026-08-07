@@ -64,7 +64,7 @@ class ResourceAdminController extends Controller
         return response()->json($item, 201);
     }
 
-    public function update(Request $request, string $resource, int $id): JsonResponse
+    public function update(Request $request, string $resource, string $id): JsonResponse
     {
         $model = $this->model($resource);
         /** @var Model $item */
@@ -285,7 +285,7 @@ class ResourceAdminController extends Controller
         return $this->map[$resource];
     }
 
-    private function prepareSlug(string $resource, array &$data, ?int $ignoreId = null): void
+    private function prepareSlug(string $resource, array &$data, ?string $ignoreId = null): void
     {
         if (! in_array($resource, ['categories', 'achievements'], true)) {
             return;

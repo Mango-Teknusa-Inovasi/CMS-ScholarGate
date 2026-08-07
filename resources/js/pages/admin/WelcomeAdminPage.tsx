@@ -9,7 +9,7 @@ import { Skeleton } from '../../components/ui/Skeleton'
 import { useToast } from '../../components/ui/Toast'
 
 type WelcomeBlock = {
-  id: number
+  id: string | number
   key: string
   title: string
   body?: string
@@ -30,10 +30,10 @@ export function WelcomeAdminPage() {
     queryFn: async () => (await api.get<WelcomeBlock[]>('/admin/welcome-blocks')).data,
   })
 
-  const [forms, setForms] = useState<Record<number, WelcomeBlock>>({})
+  const [forms, setForms] = useState<Record<string | number, WelcomeBlock>>({})
 
   useEffect(() => {
-    const map: Record<number, WelcomeBlock> = {}
+    const map: Record<string | number, WelcomeBlock> = {}
     data.forEach((b) => {
       map[b.id] = { ...b }
     })
