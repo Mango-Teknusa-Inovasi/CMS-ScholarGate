@@ -72,8 +72,9 @@ class MediaStorage
             return $path;
         }
 
-        // Branding assets (logo, favicon, apple icon) selalu disajikan lokal
+        // Branding assets (logo, favicon, apple icon) selalu disajikan lokal (dengan auto-restore dari DB jika terhapus git pull)
         if (str_starts_with($path, 'uploads/brand/')) {
+            self::restoreBrandAssetIfMissing($path);
             return asset('storage/'.ltrim(str_replace('/storage/', '', $path), '/'));
         }
 
@@ -120,5 +121,32 @@ class MediaStorage
         $disk = $disk ?: self::diskName();
         $key = in_array($disk, ['r2', 's3'], true) ? self::prefixPath($path) : $path;
         Storage::disk($disk)->delete($key);
+    }
+
+    public static function restoreBrandAssetIfMissing(string $path): void
+    {
+        $cleanPath = ltrim(str_replace('/storage/', '', $path), '/');
+        if (Storage::disk('public')->exists($cleanPath)) {
+            return;
+        }
+
+        try {
+            $all = \App\Models\Setting::allAsArray();
+            foreach ($all as $k => $v) {
+                if (str_ends_with($k, '_b64') && ! empty($v)) {
+                    $rawKey = str_replace('_b64', '', $k);
+                    if (isset($all[$rawKey]) && $all[$rawKey] === $cleanPath) {
+                        $b64 = (string) $v;
+                        if (str_contains($b64, ',')) {
+                            $b64 = explode(',', $b64, 2)[1];
+                        }
+                        Storage::disk('public')->put($cleanPath, base64_decode($b64));
+                        return;
+                    }
+                }
+            }
+        } catch (\Throwable) {
+            // ignore restore errors
+        }
     }
 }
