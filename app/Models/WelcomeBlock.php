@@ -9,14 +9,22 @@ use Illuminate\Database\Eloquent\Model;
 class WelcomeBlock extends Model
 {
     use HasUuids;
+
     protected $fillable = [
         'key', 'title', 'body', 'image_path', 'badge_left',
         'badge_right', 'chat_label', 'is_active',
     ];
 
+    protected $appends = ['image_url'];
+
     protected function casts(): array
     {
         return ['is_active' => 'boolean'];
+    }
+
+    public function getImageUrlAttribute(): ?string
+    {
+        return \App\Support\MediaStorage::url($this->image_path);
     }
 
     protected static function booted(): void

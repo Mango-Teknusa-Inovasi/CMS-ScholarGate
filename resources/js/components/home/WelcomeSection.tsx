@@ -6,8 +6,9 @@ import { SafeHtml } from '../ui/SafeHtml'
 export function WelcomeSection({ welcome }: { welcome: WelcomeBlock | null }) {
   if (!welcome) return null
 
-  const hasPhoto = Boolean(mediaUrl(welcome.image_path))
-  const photo = coverSrc(welcome.image_path, `welcome-${welcome.key}`, 640, 800)
+  const imgTarget = welcome.image_url || welcome.image_path
+  const hasPhoto = Boolean(mediaUrl(imgTarget))
+  const photo = coverSrc(imgTarget, `welcome-${welcome.key}`, 640, 800)
 
   return (
     <section className="container-page py-10 md:py-12">

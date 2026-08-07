@@ -16,6 +16,8 @@ class Achievement extends Model
         'is_featured', 'status', 'achieved_at', 'sort_order',
     ];
 
+    protected $appends = ['cover_url'];
+
     protected function casts(): array
     {
         return [
@@ -23,6 +25,11 @@ class Achievement extends Model
             'achieved_at' => 'datetime',
             'sort_order' => 'integer',
         ];
+    }
+
+    public function getCoverUrlAttribute(): ?string
+    {
+        return \App\Support\MediaStorage::url($this->cover_path);
     }
 
     protected static function booted(): void

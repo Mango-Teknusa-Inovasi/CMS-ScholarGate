@@ -22,6 +22,8 @@ class Article extends Model
         'views', 'published_at', 'preview_token', 'preview_token_expires_at',
     ];
 
+    protected $appends = ['cover_url'];
+
     protected function casts(): array
     {
         return [
@@ -32,6 +34,11 @@ class Article extends Model
             'preview_token_expires_at' => 'datetime',
             'faq_items' => 'array',
         ];
+    }
+
+    public function getCoverUrlAttribute(): ?string
+    {
+        return \App\Support\MediaStorage::url($this->cover_path);
     }
 
     /**

@@ -21,6 +21,8 @@ class Extracurricular extends Model
         'is_active',
     ];
 
+    protected $appends = ['logo_url'];
+
     protected function casts(): array
     {
         return [
@@ -28,5 +30,10 @@ class Extracurricular extends Model
             'is_active' => 'boolean',
             'sort_order' => 'integer',
         ];
+    }
+
+    public function getLogoUrlAttribute(): ?string
+    {
+        return \App\Support\MediaStorage::url($this->logo_path);
     }
 }

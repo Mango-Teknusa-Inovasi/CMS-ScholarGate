@@ -101,7 +101,7 @@ export function ProfilePage() {
                 <div className="relative aspect-[4/5] w-full min-h-[280px] md:min-h-full">
                   <img
                     src={coverSrc(
-                      data.welcome.image_path,
+                      data.welcome.image_url || data.welcome.image_path,
                       data.welcome.key || 'profile-welcome',
                       640,
                       800,

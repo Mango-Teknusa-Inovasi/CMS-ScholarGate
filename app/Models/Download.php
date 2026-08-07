@@ -13,6 +13,8 @@ class Download extends Model
         'download_count', 'is_active', 'published_at',
     ];
 
+    protected $appends = ['file_url'];
+
     protected function casts(): array
     {
         return [
@@ -20,5 +22,10 @@ class Download extends Model
             'download_count' => 'integer',
             'published_at' => 'datetime',
         ];
+    }
+
+    public function getFileUrlAttribute(): ?string
+    {
+        return \App\Support\MediaStorage::url($this->file_path);
     }
 }

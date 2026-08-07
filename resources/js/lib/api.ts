@@ -38,7 +38,7 @@ export async function ensureCsrf() {
 export type Settings = Record<string, string>
 
 export type Category = {
-  id: number
+  id: string | number
   name: string
   slug: string
   color: string
@@ -46,12 +46,13 @@ export type Category = {
 }
 
 export type Article = {
-  id: number
+  id: string | number
   title: string
   slug: string
   excerpt?: string
   body?: string
   cover_path?: string | null
+  cover_url?: string | null
   status: string
   is_featured: boolean
   views: number
@@ -61,66 +62,72 @@ export type Article = {
   focus_keyword?: string | null
   faq_items?: Array<{ question: string; answer: string }> | null
   category?: Category | null
-  author?: { id: number; name: string } | null
-  tags?: Array<{ id: number; name: string; slug?: string }> | null
+  author?: { id: string | number; name: string } | null
+  tags?: Array<{ id: string | number; name: string; slug?: string }> | null
 }
 
 export type Banner = {
-  id: number
+  id: string | number
   title: string
   subtitle?: string
   image_path?: string | null
+  image_url?: string | null
   cta_label?: string
   cta_url?: string
 }
 
 export type ServiceItem = {
-  id: number
+  id: string | number
   title: string
   description?: string
   icon: string
   color: string
   link_url?: string
+  image_url?: string | null
 }
 
 export type WelcomeBlock = {
-  id: number
+  id: string | number
   key: string
   title: string
   body?: string
   image_path?: string | null
+  image_url?: string | null
   badge_left?: string
   badge_right?: string
   chat_label?: string
 }
 
 export type Achievement = {
-  id: number
+  id: string | number
   title: string
   slug: string
   excerpt?: string
   cover_path?: string | null
+  cover_url?: string | null
   badge_label?: string
   is_featured: boolean
   achieved_at?: string
 }
 
 export type GalleryItem = {
-  id: number
+  id: string | number
   title?: string
   image_path?: string | null
+  image_url?: string | null
   caption?: string
 }
 
 export type Partner = {
-  id: number
+  id: string | number
   name: string
   logo_path?: string | null
+  logo_url?: string | null
   url?: string
 }
 
 export type ContactInfo = {
-  id: number
+  id: string | number
   type: string
   label: string
   value: string
@@ -129,7 +136,7 @@ export type ContactInfo = {
 }
 
 export type QuickService = {
-  id: number
+  id: string | number
   title: string
   description?: string
   icon: string
