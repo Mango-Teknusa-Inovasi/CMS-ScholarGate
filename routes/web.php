@@ -19,6 +19,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/robots.txt', [SeoController::class, 'robots']);
 Route::get('/sitemap.xml', [SeoController::class, 'sitemap']);
 Route::get('/llms.txt', [SeoController::class, 'llms']);
+Route::get('/site.webmanifest', [SeoController::class, 'manifest']);
+Route::get('/manifest.json', [SeoController::class, 'manifest']);
 
 // Installer web — rate limit ketat
 Route::middleware('throttle:10,1')->group(function () {

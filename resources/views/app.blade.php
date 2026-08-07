@@ -22,6 +22,7 @@
     @if(!empty($brand['apple']))
         <link rel="apple-touch-icon" sizes="180x180" href="{{ $brand['apple'] }}">
     @endif
+    <link rel="manifest" href="/site.webmanifest">
 
     @if(is_array($seo))
         {{-- Blade {{ }} already escapes — do not pre-escape with e() --}}

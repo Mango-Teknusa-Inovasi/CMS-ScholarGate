@@ -131,4 +131,57 @@ class SeoController extends Controller
 
         return response()->json($this->seo->articleMeta($article));
     }
+
+    public function manifest(): \Illuminate\Http\JsonResponse
+    {
+        $s = $this->seo->siteSettings();
+        $brand = \App\Services\BrandLogoService::brandUrls();
+        $siteName = (string) ($s['site_name'] ?? 'Scholargate');
+        $siteTagline = (string) ($s['site_tagline'] ?? 'Portal Informasi & Layanan');
+
+        $icons = [];
+        if (! empty($brand['apple'])) {
+            $icons[] = [
+                'src' => $brand['apple'],
+                'sizes' => '180x180',
+                'type' => 'image/png',
+                'purpose' => 'any maskable',
+            ];
+        }
+        if (! empty($brand['favicon'])) {
+            $icons[] = [
+                'src' => $brand['favicon'],
+                'sizes' => '32x32',
+                'type' => 'image/png',
+            ];
+        }
+        if (! empty($brand['favicon_16'])) {
+            $icons[] = [
+                'src' => $brand['favicon_16'],
+                'sizes' => '16x16',
+                'type' => 'image/png',
+            ];
+        }
+        if (empty($icons)) {
+            $icons[] = [
+                'src' => '/favicon.svg',
+                'sizes' => 'any',
+                'type' => 'image/svg+xml',
+            ];
+        }
+
+        return response()->json([
+            'name' => $siteName,
+            'short_name' => mb_substr($siteName, 0, 12),
+            'description' => $siteTagline,
+            'start_url' => '/',
+            'display' => 'standalone',
+            'background_color' => '#ffffff',
+            'theme_color' => '#0ea5e9',
+            'icons' => $icons,
+        ], 200, [
+            'Content-Type' => 'application/manifest+json; charset=UTF-8',
+            'Cache-Control' => 'public, max-age=3600',
+        ]);
+    }
 }
