@@ -20,6 +20,18 @@ export default defineConfig({
       'react-router-dom': path.resolve('resources/js/lib/router.tsx'),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', '@inertiajs/react'],
+          'vendor-icons': ['lucide-react'],
+          'vendor-query': ['@tanstack/react-query'],
+          'vendor-motion': ['motion'],
+        },
+      },
+    },
+  },
   server: {
     watch: {
       ignored: ['**/storage/framework/views/**'],
