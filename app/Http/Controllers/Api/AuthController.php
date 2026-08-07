@@ -148,6 +148,58 @@ class AuthController extends Controller
         ], 201);
     }
 
+    /**
+     * Update profil identitas user (nama, email).
+     */
+    public function updateProfile(Request $request): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'email' => ['required', 'email', 'max:255', \Illuminate\Validation\Rule::unique('users', 'email')->ignore($user->id)],
+        ]);
+
+        $user->update([
+            'name' => $data['name'],
+            'email' => $data['email'],
+        ]);
+
+        return response()->json([
+            'user' => $this->userPayload($user->fresh()),
+            'message' => 'Profil berhasil diperbarui.',
+        ]);
+    }
+
+    /**
+     * Ganti password user aktif.
+     */
+    public function updatePassword(Request $request): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        $data = $request->validate([
+            'current_password' => ['required', 'string'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        if (! Hash::check($data['current_password'], (string) $user->getRawOriginal('password'))) {
+            throw ValidationException::withMessages([
+                'current_password' => ['Password saat ini salah.'],
+            ]);
+        }
+
+        $user->update([
+            'password' => $data['password'],
+        ]);
+
+        return response()->json([
+            'message' => 'Password berhasil diperbarui.',
+        ]);
+    }
+
     private function userPayload(?User $user): ?array
     {
         if (! $user) {
