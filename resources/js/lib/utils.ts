@@ -20,7 +20,9 @@ export function formatDate(value?: string | null) {
  */
 export function mediaUrl(path?: string | null) {
   if (!path) return null
-  if (path.startsWith('http') || path.startsWith('data:') || path.startsWith('//')) return path
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:') || path.startsWith('//')) {
+    return path
+  }
 
   const publicBase = (import.meta.env.VITE_R2_PUBLIC_URL as string | undefined)?.replace(/\/$/, '')
   const folder = ((import.meta.env.VITE_R2_FOLDER_PATH as string | undefined) || 'scholargate').replace(
@@ -36,7 +38,6 @@ export function mediaUrl(path?: string | null) {
     return `${publicBase}/${rel}`
   }
 
-  if (path.startsWith('/storage/')) return path
   return `/storage/${rel}`
 }
 

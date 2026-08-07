@@ -72,14 +72,14 @@ class MediaStorage
             return $path;
         }
 
+        $cleanPath = ltrim(str_replace('/storage/', '', $path), '/');
         $disk = self::diskName();
-        $key = $path;
 
         // Path di DB biasanya relative tanpa folder prefix (uploads/...)
         // atau full key; URL R2/S3 pakai public base + folder + path
         if (in_array($disk, ['r2', 's3'], true)) {
             $public = rtrim((string) config("filesystems.disks.{$disk}.url", ''), '/');
-            $key = self::prefixPath($path);
+            $key = self::prefixPath($cleanPath);
 
             if ($public !== '') {
                 return $public.'/'.$key;
@@ -92,7 +92,7 @@ class MediaStorage
             }
         }
 
-        return asset('storage/'.ltrim(str_replace('/storage/', '', $path), '/'));
+        return asset('storage/'.$cleanPath);
     }
 
     public static function delete(?string $path, ?string $disk = null): void
