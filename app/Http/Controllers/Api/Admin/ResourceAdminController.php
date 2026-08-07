@@ -199,7 +199,7 @@ class ResourceAdminController extends Controller
             report($e);
 
             return response()->json([
-                'message' => 'Gagal memproses logo. Pastikan file gambar valid.',
+                'message' => 'Gagal memproses logo: '.$e->getMessage(),
             ], 422);
         }
 
