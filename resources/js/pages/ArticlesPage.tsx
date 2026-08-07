@@ -47,6 +47,7 @@ export function ArticlesPage() {
           params: { q: q || undefined, category: category || undefined, sort, page },
         })
       ).data,
+    placeholderData: (previousData) => previousData,
   })
 
   const applyFilter = (next: Record<string, string | number | undefined>) => {
