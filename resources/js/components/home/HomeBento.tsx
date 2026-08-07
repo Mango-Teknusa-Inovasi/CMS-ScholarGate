@@ -28,6 +28,7 @@ import { BentoBoard, BentoEyebrow, BentoTile, type BentoTone } from '../ui/Bento
 import { Badge } from '../ui/Badge'
 import { SafeHtml } from '../ui/SafeHtml'
 import { HeroCarousel } from './HeroCarousel'
+import { getLucideIcon } from '../ui/DynamicIcon'
 
 const iconMap: Record<string, LucideIcon> = {
   'file-text': FileText,
@@ -154,7 +155,7 @@ export function HomeBento({
 
           {/* Services as colorful mini tiles */}
           {services.slice(0, 6).map((item, i) => {
-            const Icon = iconMap[item.icon] || Sparkles
+            const Icon = getLucideIcon(item.icon)
             const raw = item.link_url && item.link_url !== '#' ? item.link_url : null
             const href = raw ? safeHref(raw) : null
             const tone = serviceTones[i % serviceTones.length]

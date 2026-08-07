@@ -1,26 +1,7 @@
-import {
-  BadgeCheck,
-  Calendar,
-  Download,
-  FileText,
-  HandCoins,
-  Newspaper,
-  Sparkles,
-  type LucideIcon,
-} from 'lucide-react'
 import { Link } from 'react-router-dom'
 import type { ServiceItem } from '../../lib/api'
 import { safeHref } from '../../lib/sanitize'
-
-const iconMap: Record<string, LucideIcon> = {
-  'file-text': FileText,
-  'badge-check': BadgeCheck,
-  calendar: Calendar,
-  'hand-coins': HandCoins,
-  newspaper: Newspaper,
-  download: Download,
-  sparkles: Sparkles,
-}
+import { getLucideIcon } from '../ui/DynamicIcon'
 
 function isInternal(url: string) {
   return url.startsWith('/') && !url.startsWith('//')
@@ -33,7 +14,7 @@ export function ServicesGrid({ services }: { services: ServiceItem[] }) {
     <section className="container-page pb-4 md:pb-6">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {services.map((item) => {
-          const Icon = iconMap[item.icon] || Sparkles
+          const Icon = getLucideIcon(item.icon)
           const rawUrl = item.link_url && item.link_url !== '#' ? item.link_url : null
           const url = rawUrl ? safeHref(rawUrl) ?? null : null
           const body = (
