@@ -25,10 +25,10 @@ class BrandLogoService
      *   settings: array<string, mixed>,
      *   paths: array<string, string>,
      *   urls: array<string, string|null>,
-     *   media_ids: list<int>
+     *   media_ids: list<string>
      * }
      */
-    public function processUpload(UploadedFile $file, ?int $userId = null, ?string $alt = null): array
+    public function processUpload(UploadedFile $file, ?string $userId = null, ?string $alt = null): array
     {
         $mime = strtolower((string) $file->getMimeType());
         if (! ImageOptimizer::needsAppCompression($mime)) {
@@ -253,10 +253,10 @@ class BrandLogoService
         string $mime,
         ?int $width,
         ?int $height,
-        ?int $userId,
+        ?string $userId,
         string $alt,
         string $disk,
-    ): int {
+    ): string {
         $size = 0;
         try {
             $key = in_array($disk, ['r2', 's3'], true) ? MediaStorage::prefixPath($path) : $path;
@@ -279,6 +279,6 @@ class BrandLogoService
             'optimized' => true,
         ]);
 
-        return (int) $media->id;
+        return (string) $media->id;
     }
 }
