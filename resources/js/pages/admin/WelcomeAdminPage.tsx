@@ -111,12 +111,14 @@ export function WelcomeAdminPage() {
                 <ImageUploadField
                   label="Foto kepala / pejabat"
                   value={form.image_path}
-                  onChange={(path) =>
+                  onChange={(path) => {
+                    const updated = { ...form, image_path: path }
                     setForms((f) => ({
                       ...f,
-                      [block.id]: { ...form, image_path: path },
+                      [block.id]: updated,
                     }))
-                  }
+                    save.mutate(updated)
+                  }}
                   guide={welcomeGuide}
                   previewClassName="aspect-[4/5] max-h-64 max-w-[200px]"
                 />
@@ -193,7 +195,7 @@ export function WelcomeAdminPage() {
 
               <button
                 type="button"
-                onClick={() => save.mutate(forms[block.id])}
+                onClick={() => save.mutate(forms[block.id] || block)}
                 disabled={save.isPending}
                 className="mt-4 rounded-[12px] bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(14_165_233/0.25)] transition hover:bg-sky-600 disabled:opacity-60"
               >

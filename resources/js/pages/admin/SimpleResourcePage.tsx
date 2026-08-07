@@ -192,7 +192,7 @@ export function SimpleResourcePage({ title, description, resource, fields }: Pro
                                 confirmLabel: 'Ya, hapus',
                                 tone: 'danger',
                               })
-                              if (ok) remove.mutate(Number(row.id))
+                              if (ok) remove.mutate(String(row.id))
                             }}
                             className="inline-flex items-center gap-1 rounded-[10px] bg-rose-50 px-2.5 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-100"
                           >
