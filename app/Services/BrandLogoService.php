@@ -40,27 +40,21 @@ class BrandLogoService
         $pathName = $file->getPathname();
         $stamp = now()->format('YmdHis');
         $baseDir = 'uploads/brand/'.$stamp;
-        $disk = 'public'; // Brand assets (logo, favicon, PWA icons) disimpan lokal
+        $disk = MediaStorage::diskName();
         $paths = [];
         $mediaIds = [];
         $altBase = $alt ?: pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) ?: 'Logo situs';
 
-        $b64s = [];
-
         // 1) Logo header (horizontal WebP, max 800px wide)
         $logoImg = $this->decodeOriented($pathName);
         $logoImg->scaleDown(width: 800);
-        $logoBin = (string) $logoImg->encodeUsingMediaType('image/webp', quality: 90);
         $paths['site_logo'] = $this->putEncoded(
-            $logoBin,
+            $logoImg->encodeUsingMediaType('image/webp', quality: 90),
             $baseDir.'/logo.webp',
             'image/webp',
             $disk
         );
         $paths['logo_path'] = $paths['site_logo']; // alias legacy
-        $b64s['site_logo_b64'] = base64_encode($logoBin);
-        $b64s['logo_path_b64'] = $b64s['site_logo_b64'];
-
         $mediaIds[] = $this->registerMedia(
             $paths['site_logo'],
             'logo.webp',
@@ -76,15 +70,12 @@ class BrandLogoService
         // 2) Favicon 32×32 PNG (contain, soft white pad — readable di tab)
         $fav32 = $this->decodeOriented($pathName);
         $fav32->contain(32, 32, 'ffffff');
-        $fav32Bin = (string) $fav32->encodeUsingMediaType('image/png');
         $paths['favicon_path'] = $this->putEncoded(
-            $fav32Bin,
+            $fav32->encodeUsingMediaType('image/png'),
             $baseDir.'/favicon-32.png',
             'image/png',
             $disk
         );
-        $b64s['favicon_path_b64'] = base64_encode($fav32Bin);
-
         $mediaIds[] = $this->registerMedia(
             $paths['favicon_path'],
             'favicon-32.png',
@@ -100,27 +91,22 @@ class BrandLogoService
         // 3) Favicon 16×16
         $fav16 = $this->decodeOriented($pathName);
         $fav16->contain(16, 16, 'ffffff');
-        $fav16Bin = (string) $fav16->encodeUsingMediaType('image/png');
         $paths['favicon_16_path'] = $this->putEncoded(
-            $fav16Bin,
+            $fav16->encodeUsingMediaType('image/png'),
             $baseDir.'/favicon-16.png',
             'image/png',
             $disk
         );
-        $b64s['favicon_16_path_b64'] = base64_encode($fav16Bin);
 
         // 4) Apple touch 180×180
         $apple = $this->decodeOriented($pathName);
         $apple->contain(180, 180, 'ffffff');
-        $appleBin = (string) $apple->encodeUsingMediaType('image/png');
         $paths['apple_touch_icon_path'] = $this->putEncoded(
-            $appleBin,
+            $apple->encodeUsingMediaType('image/png'),
             $baseDir.'/apple-touch-icon.png',
             'image/png',
             $disk
         );
-        $b64s['apple_touch_icon_path_b64'] = base64_encode($appleBin);
-
         $mediaIds[] = $this->registerMedia(
             $paths['apple_touch_icon_path'],
             'apple-touch-icon.png',
@@ -138,15 +124,12 @@ class BrandLogoService
         if ($existingOg === '') {
             $og = $this->decodeOriented($pathName);
             $og->contain(1200, 630, 'f7f4ef');
-            $ogBin = (string) $og->encodeUsingMediaType('image/webp', quality: 85);
             $paths['default_og_image'] = $this->putEncoded(
-                $ogBin,
+                $og->encodeUsingMediaType('image/webp', quality: 85),
                 $baseDir.'/og-default.webp',
                 'image/webp',
                 $disk
             );
-            $b64s['default_og_image_b64'] = base64_encode($ogBin);
-
             $mediaIds[] = $this->registerMedia(
                 $paths['default_og_image'],
                 'og-default.webp',
@@ -164,9 +147,6 @@ class BrandLogoService
             if (PublicSettings::isAllowed($key)) {
                 Setting::setValue($key, $path, 'brand');
             }
-        }
-        foreach ($b64s as $key => $b64) {
-            Setting::setValue($key, $b64, 'brand');
         }
 
         $settings = PublicSettings::filterPublic(Setting::allAsArray());
