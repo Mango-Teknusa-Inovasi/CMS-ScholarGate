@@ -145,7 +145,7 @@ class BrandLogoService
 
         foreach ($paths as $key => $path) {
             if (PublicSettings::isAllowed($key)) {
-                Setting::setValue($key, $path, 'brand');
+                Setting::setValue($key, MediaStorage::url($path), 'brand');
             }
         }
 

@@ -41,10 +41,21 @@ class PublicSettings
      */
     public static function filterPublic(array $all): array
     {
+        $imageKeys = [
+            'logo_path', 'site_logo', 'favicon_path', 'favicon_16_path',
+            'apple_touch_icon_path', 'og_image', 'default_og_image',
+        ];
+
         $out = [];
         foreach (self::KEYS as $key) {
             if (array_key_exists($key, $all)) {
-                $out[$key] = $all[$key];
+                $val = $all[$key];
+                if (in_array($key, $imageKeys, true) && is_string($val) && $val !== '') {
+                    if (function_exists('app') && app()->bound('config')) {
+                        $val = \App\Support\MediaStorage::url($val);
+                    }
+                }
+                $out[$key] = $val;
             }
         }
 
