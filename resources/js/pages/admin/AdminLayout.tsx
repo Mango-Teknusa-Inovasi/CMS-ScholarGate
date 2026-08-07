@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { usePage } from '@inertiajs/react'
 import { useQuery } from '@tanstack/react-query'
+import { Helmet } from 'react-helmet-async'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import {
   FileText,
@@ -218,90 +219,75 @@ function SidebarNav({
 }) {
   const reduce = useReducedMotion()
   const visibleGroups = navGroups
-    .map((g) => ({
-      ...g,
-      items: g.items.filter((item) => {
-        if (item.to === '/admin/users' || item.to === '/admin/backups') {
-          return !!isSuperAdmin
-        }
-        return true
-      }),
-    }))
-    .filter((g) => g.items.length > 0)
-
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(visibleGroups.map((g) => [g.id, false])),
-  )
-
-  useEffect(() => {
-    const activeIds = visibleGroups.filter((g) => groupHasActive(pathname, g)).map((g) => g.id)
-    if (activeIds.length === 0) return
-    setOpenGroups((prev) => {
-      const next = { ...prev }
-      for (const id of activeIds) next[id] = true
-      return next
+    .map((group) => {
+      if (isSuperAdmin) return group
+      const filtered = group.items.filter(
+        (item) => item.to !== '/admin/users' && item.to !== '/admin/backups',
+      )
+      return { ...group, items: filtered }
     })
-  }, [pathname, isSuperAdmin])
+    .filter((group) => group.items.length > 0)
+
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
+    const init: Record<string, boolean> = {}
+    visibleGroups.forEach((group) => {
+      init[group.id] = groupHasActive(pathname, group)
+    })
+    return init
+  })
 
   const toggleGroup = (id: string) => {
     setOpenGroups((prev) => ({ ...prev, [id]: !prev[id] }))
   }
 
   return (
-    <nav className="flex flex-col gap-1 px-2.5 py-3" aria-label="Menu admin">
-      <div className="mb-1.5">
+    <nav className="space-y-3 px-2 py-3" aria-label="Navigasi Admin">
+      {/* Primary (Dashboard) */}
+      <div className="space-y-0.5">
         {primaryNav.map((item) => (
           <NavItemLink key={item.to} item={item} onNavigate={onNavigate} />
         ))}
       </div>
 
+      {/* Accordion groups */}
       {visibleGroups.map((group) => {
-        const open = !!openGroups[group.id]
+        const isOpen = openGroups[group.id] ?? false
         const hasActive = groupHasActive(pathname, group)
 
         return (
-          <div key={group.id} className="mb-0.5">
+          <div key={group.id} className="space-y-0.5">
             <button
               type="button"
               onClick={() => toggleGroup(group.id)}
               className={cn(
-                'flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-left',
-                'text-[11px] font-semibold uppercase tracking-[0.08em]',
-                hasActive ? 'text-brand-dark' : 'text-subtle hover:text-body',
+                'flex w-full items-center justify-between rounded-[10px] px-2.5 py-1.5 text-xs font-semibold uppercase tracking-wider transition',
+                hasActive ? 'text-brand-dark' : 'text-subtle hover:text-ink',
               )}
-              aria-expanded={open}
             >
               <span>{group.title}</span>
               <motion.span
-                animate={{ rotate: open ? 0 : -90 }}
-                transition={{ duration: 0.22, ease: easeOutExpo }}
-                className="inline-flex"
+                animate={{ rotate: isOpen ? 90 : 0 }}
+                transition={{ duration: 0.2, ease: easeOutExpo }}
               >
-                <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-60" strokeWidth={2} />
+                <ChevronRight className="h-3.5 w-3.5 opacity-60" />
               </motion.span>
             </button>
 
             <AnimatePresence initial={false}>
-              {open && (
+              {isOpen && (
                 <motion.ul
-                  key={`${group.id}-panel`}
+                  variants={accordionPanel}
+                  initial="closed"
+                  animate="open"
+                  exit="closed"
                   className="overflow-hidden"
-                  variants={reduce ? undefined : accordionPanel}
-                  initial={reduce ? false : 'collapsed'}
-                  animate={reduce ? undefined : 'open'}
-                  exit={reduce ? undefined : 'collapsed'}
                 >
-                  <div className="mt-0.5 flex flex-col gap-0.5 pb-0.5">
+                  <div className="space-y-0.5 pl-1.5 pt-0.5">
                     {group.items.map((item, i) => (
                       <motion.li
                         key={item.to}
                         initial={reduce ? false : { opacity: 0, x: -6 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{
-                          delay: reduce ? 0 : 0.03 + i * 0.03,
-                          duration: 0.28,
-                          ease: easeOutExpo,
-                        }}
                       >
                         <NavItemLink item={item} onNavigate={onNavigate} />
                       </motion.li>
@@ -342,14 +328,16 @@ function SidebarChrome({
 }) {
   const siteTitle = settings?.site_title || settings?.school_name || 'Scholargate'
   const siteLogo = settings?.site_logo || settings?.logo_path || null
-  const siteTagline = settings?.site_tagline || 'Panel CMS'
+  const panelSubtitle = `Panel CMS — ${siteTitle}`
 
   return (
     <>
       <div className="flex items-center justify-between gap-2 border-b border-line px-3.5 py-3.5">
         <div className="min-w-0">
           <Logo name={siteTitle} logoPath={siteLogo} size="sm" to="/admin" />
-          <p className="mt-1 pl-0.5 text-[11px] font-medium text-subtle">{siteTagline}</p>
+          <p className="mt-1 pl-0.5 truncate text-[11px] font-medium text-subtle" title={panelSubtitle}>
+            {panelSubtitle}
+          </p>
         </div>
         {showClose && (
           <button
@@ -483,7 +471,10 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
     )
   }
 
+  const siteTitle = publicSettings?.site_title || publicSettings?.school_name || 'Scholargate'
   const pageTitle = resolvePageTitle(location.pathname)
+  const documentTitle = `${pageTitle} — ${siteTitle}`
+
   const initials = user.name
     .split(' ')
     .map((p: string) => p[0])
@@ -503,6 +494,9 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-page lg:grid lg:grid-cols-[248px_1fr]">
+      <Helmet>
+        <title>{documentTitle}</title>
+      </Helmet>
       <BrandIcons />
       <motion.aside
         className="sticky top-0 hidden h-screen flex-col border-r border-line bg-white lg:flex"
