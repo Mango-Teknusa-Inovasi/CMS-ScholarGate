@@ -72,6 +72,8 @@ export function useGsapParallaxPage(enabled = true) {
       })
     }
 
+    const revealed = new WeakSet<HTMLElement>()
+
     const setup = (force = false) => {
       if (cancelled || !ref.current) return
       const targets = collectTargets(root)
@@ -79,26 +81,25 @@ export function useGsapParallaxPage(enabled = true) {
       if (!force && sig === boundSig.current && targets.length > 0) return
       if (targets.length === 0) return
 
-      boundSig.current = sig
-      killLocalTriggers()
+      const unrevealed = targets.filter((el) => !revealed.has(el))
+      if (unrevealed.length === 0) return
 
-      const revealed = new WeakSet<HTMLElement>()
+      boundSig.current = sig
 
       ctx = gsap.context(() => {
         gsap.set(root, { opacity: 1 })
-        gsap.set(targets, {
+        gsap.set(unrevealed, {
           opacity: 0,
-          y: (i: number) => 56 + Math.min(i, 6) * 10,
-          scale: 0.97,
-          filter: 'blur(6px)',
-          transformOrigin: '50% 12%',
+          y: (i: number) => 24 + Math.min(i, 4) * 6,
+          scale: 0.985,
+          filter: 'blur(4px)',
           willChange: 'transform, opacity, filter',
         })
 
         const inView: HTMLElement[] = []
         const deferred: HTMLElement[] = []
         const vh = window.innerHeight
-        targets.forEach((el) => {
+        unrevealed.forEach((el) => {
           const top = el.getBoundingClientRect().top
           if (top < vh * 0.92) inView.push(el)
           else deferred.push(el)
@@ -107,31 +108,30 @@ export function useGsapParallaxPage(enabled = true) {
         const revealEl = (el: HTMLElement, delay: number) => {
           if (revealed.has(el)) return
           revealed.add(el)
-          const i = targets.indexOf(el)
+          const i = unrevealed.indexOf(el)
 
           gsap.to(el, {
             opacity: 1,
             y: 0,
             scale: 1,
             filter: 'blur(0px)',
-            duration: 0.78,
+            duration: 0.45,
             delay,
-            ease: 'power3.out',
+            ease: 'power2.out',
             overwrite: 'auto',
             onComplete: () => {
               gsap.set(el, { clearProps: 'filter,willChange' })
               attachParallax(el, i)
-              cascadeChildren(el, 0.08)
             },
           })
         }
 
-        // Above the fold: clear cascade (hero → sambutan → articles → …)
+        // Above the fold: smooth cascade
         inView.forEach((el, idx) => {
-          revealEl(el, idx * 0.2)
+          revealEl(el, idx * 0.08)
         })
 
-        // Below fold: one ScrollTrigger per board
+        // Below fold: ScrollTrigger per board
         deferred.forEach((el) => {
           ScrollTrigger.create({
             trigger: el,

@@ -21,12 +21,34 @@ export function AnimatedPage({
     return <div className={className}>{children}</div>
   }
 
+  const isAdmin = location.pathname.startsWith('/admin')
+
   return (
     <AnimatePresence mode="wait" initial={false}>
-      <ParallaxRoute key={location.pathname + location.search} className={className}>
-        {children}
-      </ParallaxRoute>
+      {isAdmin ? (
+        <AdminRoute key={location.pathname + location.search} className={className}>
+          {children}
+        </AdminRoute>
+      ) : (
+        <ParallaxRoute key={location.pathname + location.search} className={className}>
+          {children}
+        </ParallaxRoute>
+      )}
     </AnimatePresence>
+  )
+}
+
+function AdminRoute({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <motion.div
+      className={className}
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -6 }}
+      transition={{ duration: 0.18, ease: easeOutExpo }}
+    >
+      {children}
+    </motion.div>
   )
 }
 
