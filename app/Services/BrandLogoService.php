@@ -40,7 +40,7 @@ class BrandLogoService
         $pathName = $file->getPathname();
         $stamp = now()->format('YmdHis');
         $baseDir = 'uploads/brand/'.$stamp;
-        $disk = MediaStorage::diskName();
+        $disk = 'public'; // Brand assets (logo, favicon, PWA icons) disimpan lokal
         $paths = [];
         $mediaIds = [];
         $altBase = $alt ?: pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) ?: 'Logo situs';

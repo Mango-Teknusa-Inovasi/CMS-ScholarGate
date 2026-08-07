@@ -14,24 +14,13 @@ class MediaStorage
 {
     public static function diskName(): string
     {
-        $disk = (string) config('filesystems.default', 'r2');
-
-        // Wajib object storage di production; local hanya fallback dev jika R2 belum diisi.
-        if ($disk === 'r2' || $disk === 's3') {
-            return $disk;
-        }
+        $disk = (string) config('filesystems.default', 'public');
 
         if (self::r2Configured()) {
             return 'r2';
         }
 
-        if (app()->environment('production')) {
-            throw new \RuntimeException(
-                'FILESYSTEM_DISK harus r2/s3 di production. Isi R2_* di .env (lihat .env.example).'
-            );
-        }
-
-        return $disk ?: 'public';
+        return in_array($disk, ['r2', 's3', 'public', 'local'], true) ? $disk : 'public';
     }
 
     public static function r2Configured(): bool
@@ -81,6 +70,11 @@ class MediaStorage
 
         if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
             return $path;
+        }
+
+        // Branding assets (logo, favicon, apple icon) selalu disajikan lokal
+        if (str_starts_with($path, 'uploads/brand/')) {
+            return asset('storage/'.ltrim(str_replace('/storage/', '', $path), '/'));
         }
 
         $disk = self::diskName();
