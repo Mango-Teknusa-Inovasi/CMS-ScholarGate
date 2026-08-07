@@ -44,9 +44,8 @@ function collectTargets(root: HTMLElement): HTMLElement[] {
 }
 
 /**
- * Sequential section reveal + light scroll parallax.
- * Each [data-layer] / .bento-board enters one-by-one.
- * Re-binds when async content (e.g. home API) mounts boards later.
+ * Lightweight scroll parallax trigger — attaches parallax to section elements smoothly
+ * without hiding or causing page flicker.
  */
 export function useGsapParallaxPage(enabled = true) {
   const ref = useRef<HTMLDivElement | null>(null)
@@ -72,8 +71,6 @@ export function useGsapParallaxPage(enabled = true) {
       })
     }
 
-    const revealed = new WeakSet<HTMLElement>()
-
     const setup = (force = false) => {
       if (cancelled || !ref.current) return
       const targets = collectTargets(root)
@@ -81,65 +78,10 @@ export function useGsapParallaxPage(enabled = true) {
       if (!force && sig === boundSig.current && targets.length > 0) return
       if (targets.length === 0) return
 
-      const unrevealed = targets.filter((el) => !revealed.has(el))
-      if (unrevealed.length === 0) return
-
       boundSig.current = sig
 
       ctx = gsap.context(() => {
-        gsap.set(root, { opacity: 1 })
-        gsap.set(unrevealed, {
-          opacity: 0,
-          y: (i: number) => 24 + Math.min(i, 4) * 6,
-          scale: 0.985,
-          filter: 'blur(4px)',
-          willChange: 'transform, opacity, filter',
-        })
-
-        const inView: HTMLElement[] = []
-        const deferred: HTMLElement[] = []
-        const vh = window.innerHeight
-        unrevealed.forEach((el) => {
-          const top = el.getBoundingClientRect().top
-          if (top < vh * 0.92) inView.push(el)
-          else deferred.push(el)
-        })
-
-        const revealEl = (el: HTMLElement, delay: number) => {
-          if (revealed.has(el)) return
-          revealed.add(el)
-          const i = unrevealed.indexOf(el)
-
-          gsap.to(el, {
-            opacity: 1,
-            y: 0,
-            scale: 1,
-            filter: 'blur(0px)',
-            duration: 0.45,
-            delay,
-            ease: 'power2.out',
-            overwrite: 'auto',
-            onComplete: () => {
-              gsap.set(el, { clearProps: 'filter,willChange' })
-              attachParallax(el, i)
-            },
-          })
-        }
-
-        // Above the fold: smooth cascade
-        inView.forEach((el, idx) => {
-          revealEl(el, idx * 0.08)
-        })
-
-        // Below fold: ScrollTrigger per board
-        deferred.forEach((el) => {
-          ScrollTrigger.create({
-            trigger: el,
-            start: 'top 88%',
-            once: true,
-            onEnter: () => revealEl(el, 0),
-          })
-        })
+        targets.forEach((el, i) => attachParallax(el, i))
       }, root)
 
       requestAnimationFrame(() => ScrollTrigger.refresh())
@@ -147,10 +89,9 @@ export function useGsapParallaxPage(enabled = true) {
 
     setup(true)
 
-    // Home (and similar) swap skeleton → real boards after fetch
     const mo = new MutationObserver(() => {
       window.clearTimeout(debounceTimer)
-      debounceTimer = window.setTimeout(() => setup(false), 80)
+      debounceTimer = window.setTimeout(() => setup(false), 120)
     })
     mo.observe(root, { childList: true, subtree: true })
 
@@ -203,29 +144,6 @@ function attachParallax(el: HTMLElement, index: number) {
   )
 }
 
-function cascadeChildren(el: HTMLElement, baseDelay: number) {
-  const kids = el.querySelectorAll<HTMLElement>(
-    ':scope > [data-stagger-child], :scope > a, :scope > div, :scope > article, :scope > section',
-  )
-  const childList = Array.from(kids)
-    .filter((k) => !k.hasAttribute('data-layer') && !k.classList.contains('bento-board'))
-    .slice(0, 14)
-  if (childList.length < 2) return
-
-  gsap.fromTo(
-    childList,
-    { opacity: 0.25, y: 20 },
-    {
-      opacity: 1,
-      y: 0,
-      duration: 0.52,
-      stagger: 0.065,
-      ease: 'power2.out',
-      delay: baseDelay,
-    },
-  )
-}
-
 /** @deprecated */
 export function useGsapPageEnter<T extends HTMLElement>(
   enabled = true,
@@ -248,9 +166,9 @@ export function useGsapPageEnter<T extends HTMLElement>(
         {
           opacity: 1,
           y: 0,
-          duration: 0.65,
-          stagger: 0.12,
-          ease: 'power3.out',
+          duration: 0.45,
+          stagger: 0.08,
+          ease: 'power2.out',
           scrollTrigger: {
             trigger: root,
             start: 'top 90%',
