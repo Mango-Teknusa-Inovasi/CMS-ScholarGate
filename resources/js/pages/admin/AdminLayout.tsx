@@ -327,6 +327,7 @@ function SidebarChrome({
   showClose,
   onClose,
   isSuperAdmin,
+  settings,
 }: {
   pathname: string
   userName: string
@@ -337,13 +338,18 @@ function SidebarChrome({
   showClose?: boolean
   onClose?: () => void
   isSuperAdmin?: boolean
+  settings?: Record<string, string>
 }) {
+  const siteTitle = settings?.site_title || settings?.school_name || 'Scholargate'
+  const siteLogo = settings?.site_logo || settings?.logo_path || null
+  const siteTagline = settings?.site_tagline || 'Panel CMS'
+
   return (
     <>
       <div className="flex items-center justify-between gap-2 border-b border-line px-3.5 py-3.5">
         <div className="min-w-0">
-          <Logo name="Scholargate" size="sm" to="/admin" />
-          <p className="mt-1 pl-0.5 text-[11px] font-medium text-subtle">Panel CMS</p>
+          <Logo name={siteTitle} logoPath={siteLogo} size="sm" to="/admin" />
+          <p className="mt-1 pl-0.5 text-[11px] font-medium text-subtle">{siteTagline}</p>
         </div>
         {showClose && (
           <button
@@ -471,6 +477,12 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
     )
   }
 
+  const { data: publicSettings } = useQuery<Record<string, string>>({
+    queryKey: ['public-settings'],
+    queryFn: async () => (await api.get('/settings/public')).data,
+    staleTime: 1000 * 60 * 5,
+  })
+
   const pageTitle = resolvePageTitle(location.pathname)
   const initials = user.name
     .split(' ')
@@ -486,6 +498,7 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
     userInitials: initials,
     onLogout: logout,
     isSuperAdmin,
+    settings: publicSettings,
   }
 
   return (
