@@ -235,9 +235,9 @@ export function SettingsAdminPage() {
           </section>
         </div>
 
-        {/* Kanan: kontak + GEO + SEO */}
+        {/* Kanan: kontak + media sosial + GEO + SEO */}
         <div className="space-y-5">
-          {(['Kontak', 'GEO lokal', 'Schema & SEO'] as const).map((group) => (
+          {(['Kontak', 'Media sosial', 'GEO lokal', 'Schema & SEO'] as const).map((group) => (
             <section
               key={group}
               className="rounded-[16px] border border-line bg-white p-5 shadow-[var(--shadow-card)]"
