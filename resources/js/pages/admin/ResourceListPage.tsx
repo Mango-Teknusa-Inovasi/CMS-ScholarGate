@@ -22,7 +22,7 @@ export function ResourceListPage({ config }: Props) {
   })
 
   const remove = useMutation({
-    mutationFn: async (id: number) => api.delete(`/admin/${config.slug}/${id}`),
+    mutationFn: async (id: string | number) => api.delete(`/admin/${config.slug}/${id}`),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin', config.slug] })
       toast.success(`${config.singular} dihapus.`)
@@ -84,7 +84,7 @@ export function ResourceListPage({ config }: Props) {
                     ? (row[imageField.key] as string | undefined)
                     : undefined
                   const img = mediaUrl(imgPath)
-                  const id = Number(row.id)
+                  const id = String(row.id)
                   return (
                     <tr key={String(row.id)} className="hover:bg-page/80">
                       {imageField && (

@@ -30,7 +30,7 @@ export function SimpleResourcePage({ title, description, resource, fields }: Pro
   const { confirm } = useConfirm()
   const toast = useToast()
   const [open, setOpen] = useState(false)
-  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editingId, setEditingId] = useState<string | number | null>(null)
   const [form, setForm] = useState<Record<string, string | boolean | null>>({})
 
   const { data = [], isLoading } = useQuery({
@@ -54,7 +54,7 @@ export function SimpleResourcePage({ title, description, resource, fields }: Pro
   })
 
   const remove = useMutation({
-    mutationFn: async (id: number) => api.delete(`/admin/${resource}/${id}`),
+    mutationFn: async (id: string | number) => api.delete(`/admin/${resource}/${id}`),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin', resource] })
       toast.success('Data dihapus.')
@@ -73,7 +73,7 @@ export function SimpleResourcePage({ title, description, resource, fields }: Pro
   }
 
   const openEdit = (row: Record<string, unknown>) => {
-    setEditingId(Number(row.id))
+    setEditingId(String(row.id))
     const init: Record<string, string | boolean | null> = {}
     fields.forEach((f) => {
       const val = row[f.key]
