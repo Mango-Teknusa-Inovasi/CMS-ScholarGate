@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { motion } from 'motion/react'
 import { cn } from '../../lib/utils'
+import { easeOutExpo, staggerContainer, staggerItem } from '../../lib/motion'
 
 /** Soft pastel fills for cheerful bento tiles */
 export const bentoTones = {
@@ -18,30 +19,6 @@ export const bentoTones = {
 
 export type BentoTone = keyof typeof bentoTones
 
-export const boardVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.05,
-      delayChildren: 0.02,
-    },
-  },
-}
-
-export const tileVariants = {
-  hidden: { opacity: 0, y: 16, scale: 0.985 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: {
-      duration: 0.4,
-      ease: [0.16, 1, 0.3, 1],
-    },
-  },
-}
-
 type BoardProps = {
   children: ReactNode
   className?: string
@@ -51,13 +28,13 @@ type BoardProps = {
   parallax?: number
 }
 
-/** CSS grid board with clean Motion stagger entrance — 2 col mobile, 4 / 6 / 12 desktop */
+/** CSS grid board with exact Admin CMS stagger entrance — 2 col mobile, 4 / 6 / 12 desktop */
 export function BentoBoard({ children, className, layer = true, parallax = 8 }: BoardProps) {
   return (
     <motion.div
-      variants={boardVariants}
+      variants={staggerContainer}
       initial="hidden"
-      animate="visible"
+      animate="show"
       className={cn(
         'bento-board grid auto-rows-[minmax(120px,auto)] grid-cols-2 gap-3 sm:gap-3.5 md:grid-cols-4 md:gap-4 lg:grid-cols-6 xl:grid-cols-12',
         className,
@@ -135,7 +112,8 @@ export function BentoTile({
 
   return (
     <motion.div
-      variants={tileVariants}
+      variants={staggerItem}
+      whileHover={{ y: -2, transition: { duration: 0.2, ease: easeOutExpo } }}
       className={cn(
         'bento-tile group relative overflow-hidden rounded-[22px] border shadow-[var(--shadow-card)] transition duration-300',
         'hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)]',
