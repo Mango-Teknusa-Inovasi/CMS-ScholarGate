@@ -353,7 +353,7 @@ function SidebarChrome({
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto overscroll-contain">
+      <div className="flex-1 overflow-y-auto overscroll-contain custom-scrollbar">
         <SidebarNav pathname={pathname} onNavigate={onNavigate} isSuperAdmin={isSuperAdmin} />
       </div>
 

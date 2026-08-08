@@ -435,18 +435,19 @@ a:hover .media-cover img,
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(139, 92, 246, 0.2); /* matches violet bento tone background hue */
+  background: rgba(15, 23, 42, 0.08); /* sleek neutral slate-900 transparent */
   border-radius: 10px;
   transition: background 0.2s;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(139, 92, 246, 0.4);
+  background: rgba(15, 23, 42, 0.2);
 }
 
 /* Firefox */
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: rgba(139, 92, 246, 0.2) transparent;
+  scrollbar-color: rgba(15, 23, 42, 0.08) transparent;
 }
+
 
