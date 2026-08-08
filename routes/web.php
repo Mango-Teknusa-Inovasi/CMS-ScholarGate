@@ -97,6 +97,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/legal', [$p, 'adminLegal'])->name('legal');
     Route::get('/users', [$p, 'adminUsers'])->name('users');
     Route::get('/backups', [$p, 'adminBackups'])->name('backups');
+    Route::get('/plugins', [$p, 'adminPlugins'])->name('plugins');
+
 
     $resources = [
         'categories', 'menus', 'banners', 'services', 'contacts',

@@ -31,7 +31,9 @@ import {
   UserCog,
   DatabaseBackup,
   Scale,
+  Puzzle,
 } from 'lucide-react'
+
 import { api } from '../../lib/api'
 import { adminLogout, setAdminToken, type AuthUser } from '../../lib/auth'
 import { cn } from '../../lib/utils'
@@ -105,6 +107,7 @@ const navGroups: NavGroup[] = [
     title: 'Sistem',
     items: [
       { to: '/admin/users', label: 'Pengguna', icon: UserCog },
+      { to: '/admin/plugins', label: 'Plugin & Add-on', icon: Puzzle },
       { to: '/admin/settings', label: 'Pengaturan', icon: Settings },
       { to: '/admin/backups', label: 'Backup', icon: DatabaseBackup },
       { to: '/admin/media-guide', label: 'Ukuran gambar', icon: BookImage },
@@ -118,6 +121,7 @@ const pathTitles: Record<string, string> = {
   '/admin/articles/new': 'Tambah artikel',
   '/admin/media': 'Media',
   '/admin/users': 'Pengguna',
+  '/admin/plugins': 'Plugin & Add-on',
   '/admin/categories': 'Kategori',
   '/admin/menus': 'Menu',
   '/admin/banners': 'Banner',

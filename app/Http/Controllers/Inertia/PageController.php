@@ -249,6 +249,12 @@ class PageController extends Controller
         return $this->admin('BackupAdminPage');
     }
 
+    public function adminPlugins(): Response
+    {
+        return $this->admin('PluginsAdminPage');
+    }
+
+
     public function adminResourceList(string $resource): Response
     {
         return $this->admin('ResourceListPage', [

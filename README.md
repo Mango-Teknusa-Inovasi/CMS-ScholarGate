@@ -58,10 +58,12 @@ Unlike monolithic legacy systems, ScholarGate operates as an **Inertia-driven Si
 - **Institutional Branding**: Automatic logo emblem & institution name co-branding display with dynamic favicon generation.
 
 ### 🛡️ Enterprise Admin CMS
+- **WordPress-Style Plugin & Add-On System**: Modular architecture allowing custom add-ons (PPDB Online, E-Library, Notification Systems) to be installed, activated, or uploaded via `.ZIP` without modifying core system code. Features WordPress-like PHP Action/Filter hooks (`Hook::addFilter()`, `Hook::doAction()`).
 - **Granular User Management (RBAC)**: Role-based access control (`Super Admin`, `Editor`, `Member`) with live user search, role filtering, profile editing, and instant password reset functionality.
 - **Media Library & Image Optimization**: Automated client-and-server WebP image conversion and thumbnail generation synced directly with Cloudflare R2 / S3 storage.
 - **Automated Dual Cloud Storage Backup**: Portable JSON/ZIP database backup engine that automatically syncs backups to **Cloudflare R2 Object Storage** and server storage. Supports both **Merge** (CMS content update) and **Replace** (full environment restore) modes.
 - **Settings & Branding Hub**: Live branding editor for school name, tagline, address, social media links (Instagram, Facebook, TikTok, YouTube), and system banners.
+
 
 ### 🔍 Advanced SEO, AEO & GEO Optimization
 - **Dynamic Meta & Social Sharing**: Automatic Open Graph images, Twitter Card meta tags, canonical URLs, and JSON-LD structured data.

@@ -128,6 +128,12 @@ Route::prefix('v1')->group(function () {
                 Route::delete('/backups/{filename}', [BackupAdminController::class, 'destroy'])
                     ->where('filename', '^[A-Za-z0-9._-]+$');
                 Route::post('/backups/restore', [BackupAdminController::class, 'restore']);
+
+                // Plugins / Add-ons — super admin only
+                Route::get('/plugins', [\App\Http\Controllers\Api\Admin\PluginAdminController::class, 'index']);
+                Route::post('/plugins/{slug}/toggle', [\App\Http\Controllers\Api\Admin\PluginAdminController::class, 'toggle']);
+                Route::post('/plugins/upload', [\App\Http\Controllers\Api\Admin\PluginAdminController::class, 'upload']);
+
             });
 
             // Settings & profile

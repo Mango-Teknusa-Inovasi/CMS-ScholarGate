@@ -19,6 +19,8 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(HtmlSanitizer::class);
+        $this->app->singleton(\App\Services\Plugin\HookManager::class);
+        $this->app->singleton(\App\Services\Plugin\PluginManager::class);
 
         // Saat aplikasi belum ter-install, paksa session & cache pakai 'file'
         // agar halaman /install bisa diakses tanpa error DB/session table.
@@ -38,7 +40,12 @@ class AppServiceProvider extends ServiceProvider
         Sanctum::usePersonalAccessTokenModel(\App\Models\PersonalAccessToken::class);
 
         $this->configureRateLimiting();
+
+        if (Installer::isInstalled()) {
+            app(\App\Services\Plugin\PluginManager::class)->bootActivePlugins();
+        }
     }
+
 
     /**
      * Named rate limiters — pakai di routes: throttle:nama
