@@ -20,7 +20,34 @@ class BackupService
     /** Format backup portable (naik versi jika skema berubah). */
     public const FORMAT_VERSION = 2;
 
-    /** @var list<string> Urutan restore (konten). users TIDAK di-restore default. */
+    /** @var list<string> Tabel konten CMS (restore pada mode Merge & Replace). */
+    private array $cmsContentTables = [
+        'categories',
+        'tags',
+        'articles',
+        'article_tag',
+        'banners',
+        'welcome_blocks',
+        'service_items',
+        'achievements',
+        'gallery_items',
+        'partners',
+        'quick_services',
+        'downloads',
+        'profile_pages',
+        'extracurriculars',
+        'media',
+    ];
+
+    /** @var list<string> Tabel pengaturan & sistem (restore pada mode Replace atau full restore). */
+    private array $systemSettingTables = [
+        'settings',
+        'contact_infos',
+        'menu_items',
+        'legal_pages',
+    ];
+
+    /** @var list<string> Semua tabel untuk export backup. */
     private array $tables = [
         'settings',
         'categories',
@@ -47,6 +74,7 @@ class BackupService
     private array $sensitiveTables = [
         'users',
     ];
+
 
     /** Kolom JSON (disimpan sebagai struktur di JSON backup). */
     private array $jsonColumns = [
@@ -105,8 +133,23 @@ class BackupService
         return $dir;
     }
 
+    private function r2Disk()
+    {
+        try {
+            $key = config('filesystems.disks.r2.key');
+            $bucket = config('filesystems.disks.r2.bucket');
+            if (! empty($key) && ! empty($bucket)) {
+                return \Illuminate\Support\Facades\Storage::disk('r2');
+            }
+        } catch (\Throwable) {
+            // Ignore if R2 disk is not configured
+        }
+
+        return null;
+    }
+
     /**
-     * @return array{filename: string, path: string, size: int, created_at: string}
+     * @return array{filename: string, path: string, size: int, created_at: string, storage_location: string}
      */
     public function create(): array
     {
@@ -165,6 +208,19 @@ class BackupService
             $filename = $jsonName;
         }
 
+        $r2Uploaded = false;
+        $r2Disk = $this->r2Disk();
+        if ($r2Disk) {
+            try {
+                $r2Folder = config('filesystems.disks.r2.folder', 'scholargate');
+                $r2Path = trim($r2Folder, '/').'/backups/'.$filename;
+                $r2Disk->put($r2Path, File::get($final));
+                $r2Uploaded = true;
+            } catch (\Throwable) {
+                // Keep local backup if cloud sync fails
+            }
+        }
+
         return [
             'filename' => $filename,
             'path' => $final,
@@ -172,26 +228,64 @@ class BackupService
             'created_at' => now()->toIso8601String(),
             'source_connection' => $driver,
             'portable' => true,
+            'storage_location' => $r2Uploaded ? 'r2_and_local' : 'local',
         ];
     }
 
     /**
-     * @return list<array{filename: string, size: int, created_at: string}>
+     * @return list<array{filename: string, size: int, created_at: string, storage_location: string}>
      */
     public function list(): array
     {
+        $map = [];
+
+        // Local storage files
         $files = File::files($this->backupDir());
-        $out = [];
         foreach ($files as $file) {
-            if (! preg_match('/\.(json|zip)$/i', $file->getFilename())) {
+            $fname = $file->getFilename();
+            if (! preg_match('/\.(json|zip)$/i', $fname)) {
                 continue;
             }
-            $out[] = [
-                'filename' => $file->getFilename(),
+            $map[$fname] = [
+                'filename' => $fname,
                 'size' => $file->getSize(),
                 'created_at' => date('c', $file->getMTime()),
+                'storage_location' => 'local',
             ];
         }
+
+        // Cloudflare R2 Cloud Storage files
+        $r2Disk = $this->r2Disk();
+        if ($r2Disk) {
+            try {
+                $r2Folder = config('filesystems.disks.r2.folder', 'scholargate');
+                $r2Path = trim($r2Folder, '/').'/backups';
+                $r2Files = $r2Disk->files($r2Path);
+                foreach ($r2Files as $rf) {
+                    $fname = basename($rf);
+                    if (! preg_match('/\.(json|zip)$/i', $fname)) {
+                        continue;
+                    }
+                    $size = (int) $r2Disk->size($rf);
+                    $mtime = date('c', $r2Disk->lastModified($rf));
+
+                    if (isset($map[$fname])) {
+                        $map[$fname]['storage_location'] = 'r2_and_local';
+                    } else {
+                        $map[$fname] = [
+                            'filename' => $fname,
+                            'size' => $size,
+                            'created_at' => $mtime,
+                            'storage_location' => 'r2',
+                        ];
+                    }
+                }
+            } catch (\Throwable) {
+                // Ignore R2 list errors
+            }
+        }
+
+        $out = array_values($map);
         usort($out, fn ($a, $b) => strcmp($b['created_at'], $a['created_at']));
 
         return $out;
@@ -200,19 +294,53 @@ class BackupService
     public function absolutePath(string $filename): string
     {
         $filename = basename($filename);
-        $path = $this->backupDir().'/'.$filename;
-        if (! File::exists($path)) {
-            abort(404, 'File backup tidak ditemukan');
+        $localPath = $this->backupDir().'/'.$filename;
+        if (File::exists($localPath)) {
+            return $localPath;
         }
 
-        return $path;
+        // Download from R2 if not present in local storage
+        $r2Disk = $this->r2Disk();
+        if ($r2Disk) {
+            try {
+                $r2Folder = config('filesystems.disks.r2.folder', 'scholargate');
+                $r2Path = trim($r2Folder, '/').'/backups/'.$filename;
+                if ($r2Disk->exists($r2Path)) {
+                    $content = $r2Disk->get($r2Path);
+                    File::put($localPath, $content);
+
+                    return $localPath;
+                }
+            } catch (\Throwable) {
+                // Ignore
+            }
+        }
+
+        abort(404, 'File backup tidak ditemukan');
     }
 
     public function delete(string $filename): void
     {
-        $path = $this->absolutePath($filename);
-        File::delete($path);
+        $filename = basename($filename);
+        $localPath = $this->backupDir().'/'.$filename;
+        if (File::exists($localPath)) {
+            File::delete($localPath);
+        }
+
+        $r2Disk = $this->r2Disk();
+        if ($r2Disk) {
+            try {
+                $r2Folder = config('filesystems.disks.r2.folder', 'scholargate');
+                $r2Path = trim($r2Folder, '/').'/backups/'.$filename;
+                if ($r2Disk->exists($r2Path)) {
+                    $r2Disk->delete($r2Path);
+                }
+            } catch (\Throwable) {
+                // Ignore
+            }
+        }
     }
+
 
     /**
      * Restore portable JSON → DB aktif (pgsql / mysql / mariadb).
@@ -236,12 +364,20 @@ class BackupService
         $rows = 0;
         $skipped = [];
 
-        $restoreList = $this->tables;
+        if ($mode === 'merge') {
+            // Mode merge: HANYA konten CMS (tanpa menimpa pengaturan sistem, kontak, menu, & legal)
+            $restoreList = $this->cmsContentTables;
+        } else {
+            // Mode replace: SEMUA tabel sak seting-setingnya (settings, contact_infos, menu_items, legal_pages, dll)
+            $restoreList = array_merge($this->cmsContentTables, $this->systemSettingTables);
+        }
+
         if ($includeUsers) {
             $restoreList = array_merge($restoreList, $this->sensitiveTables);
         } elseif (! empty($data['tables']['users'])) {
             $skipped[] = 'users (abaikan demi keamanan — set include_users=true jika super admin)';
         }
+
 
         if ($source && $source !== $target) {
             $skipped[] = "cross-db: sumber={$source} → target={$target} (format portable v".($data['version'] ?? 1).')';
