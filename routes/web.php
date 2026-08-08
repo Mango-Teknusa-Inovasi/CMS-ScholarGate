@@ -95,11 +95,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/media-guide', [$p, 'adminMediaGuide'])->name('media-guide');
     Route::get('/settings', [$p, 'adminSettings'])->name('settings');
     Route::get('/legal', [$p, 'adminLegal'])->name('legal');
-
-    Route::middleware('super_admin')->group(function () use ($p) {
-        Route::get('/users', [$p, 'adminUsers'])->name('users');
-        Route::get('/backups', [$p, 'adminBackups'])->name('backups');
-    });
+    Route::get('/users', [$p, 'adminUsers'])->name('users');
+    Route::get('/backups', [$p, 'adminBackups'])->name('backups');
 
     $resources = [
         'categories', 'menus', 'banners', 'services', 'contacts',
