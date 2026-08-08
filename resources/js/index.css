@@ -299,6 +299,9 @@ a:hover .media-cover img,
 .prose-article {
   line-height: 1.75;
   color: var(--color-body);
+}
+
+.prose-article:not(.max-w-none) {
   max-width: 70ch;
 }
 
