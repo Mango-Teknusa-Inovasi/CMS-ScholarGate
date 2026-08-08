@@ -231,7 +231,7 @@ function SidebarNav({
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
     const init: Record<string, boolean> = {}
     visibleGroups.forEach((group) => {
-      init[group.id] = true
+      init[group.id] = groupHasActive(pathname, group)
     })
     return init
   })
@@ -418,22 +418,26 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
   })
 
   const isSuperAdmin =
-    data?.user?.is_super_admin === true || data?.user?.role === 'admin'
+    data?.user?.is_super_admin === true ||
+    data?.user?.role === 'admin' ||
+    data?.user?.role === 'super_admin' ||
+    !data?.user?.role
 
   useEffect(() => {
     setMobileOpen(false)
   }, [location.pathname])
 
-  // Editor tidak boleh buka users / backups
+  // Hanya editor terbatas (role === 'editor') yang tidak boleh buka users / backups
   useEffect(() => {
-    if (!data?.user) return
+    if (isLoading || !data?.user) return
     const path = location.pathname
     const needsSuper =
       path.startsWith('/admin/users') || path.startsWith('/admin/backups')
-    if (needsSuper && !isSuperAdmin) {
+    const isEditorOnly = data.user.role === 'editor' && data.user.is_super_admin !== true
+    if (needsSuper && isEditorOnly) {
       navigate('/admin', { replace: true })
     }
-  }, [data?.user, isSuperAdmin, location.pathname, navigate])
+  }, [data?.user, isLoading, location.pathname, navigate])
 
   const logout = async () => {
     setAdminToken(null)
