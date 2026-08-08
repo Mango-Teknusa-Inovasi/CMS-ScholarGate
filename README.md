@@ -252,5 +252,5 @@ This software is open-source licensed under the [MIT License](./LICENSE).
 ---
 
 <div align="center">
-  <sub>Built with ❤️ by the <strong>ScholarGate Engineering Team</strong>.</sub>
+  <sub>Built with ❤️ by the <strong>MangoTek Developer Team</strong>.</sub>
 </div>

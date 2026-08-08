@@ -12,7 +12,7 @@ If you discover a security vulnerability in ScholarGate, please **do not open a 
 
 Instead, please report it privately:
 
-1. Contact the maintainers directly or email **security@scholargate.test**.
+1. Contact the maintainers directly or email **[support@ppti.me]**.
 2. Include step-by-step instructions or proof-of-concept details.
 3. We will acknowledge receipt within 24–48 hours and work with you to patch the issue promptly.
 
