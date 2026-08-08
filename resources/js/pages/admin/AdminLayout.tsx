@@ -231,7 +231,7 @@ function SidebarNav({
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
     const init: Record<string, boolean> = {}
     visibleGroups.forEach((group) => {
-      init[group.id] = groupHasActive(pathname, group)
+      init[group.id] = true
     })
     return init
   })
