@@ -22,18 +22,18 @@
     "name": "vendor-react"
   },
   "resources/js/app.tsx": {
-    "file": "assets/app-CFzI1_hh.js",
+    "file": "assets/app-Bvo3xTZR.js",
     "name": "app",
     "src": "resources/js/app.tsx",
     "isEntry": true,
     "imports": [
       "_vendor-query-CfZO1aEF.js",
       "_vendor-react-CCGSBL4C.js",
-      "_vendor-icons--XEOgWb6.js",
-      "_vendor-motion-D2bVE4Ot.js"
+      "_vendor-motion-D2bVE4Ot.js",
+      "_vendor-icons--XEOgWb6.js"
     ],
     "css": [
-      "assets/app-B9Fqufu1.css"
+      "assets/app-CCCWhS01.css"
     ]
   }
 }

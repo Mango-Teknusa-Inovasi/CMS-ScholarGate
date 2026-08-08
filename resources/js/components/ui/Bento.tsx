@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { motion } from 'motion/react'
 import { cn } from '../../lib/utils'
 
 /** Soft pastel fills for cheerful bento tiles */
@@ -17,6 +18,30 @@ export const bentoTones = {
 
 export type BentoTone = keyof typeof bentoTones
 
+export const boardVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+      delayChildren: 0.02,
+    },
+  },
+}
+
+export const tileVariants = {
+  hidden: { opacity: 0, y: 16, scale: 0.985 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.4,
+      ease: [0.16, 1, 0.3, 1],
+    },
+  },
+}
+
 type BoardProps = {
   children: ReactNode
   className?: string
@@ -26,10 +51,13 @@ type BoardProps = {
   parallax?: number
 }
 
-/** CSS grid board — 2 col mobile, 4 / 6 / 12 desktop */
+/** CSS grid board with clean Motion stagger entrance — 2 col mobile, 4 / 6 / 12 desktop */
 export function BentoBoard({ children, className, layer = true, parallax = 8 }: BoardProps) {
   return (
-    <div
+    <motion.div
+      variants={boardVariants}
+      initial="hidden"
+      animate="visible"
       className={cn(
         'bento-board grid auto-rows-[minmax(120px,auto)] grid-cols-2 gap-3 sm:gap-3.5 md:grid-cols-4 md:gap-4 lg:grid-cols-6 xl:grid-cols-12',
         className,
@@ -38,7 +66,7 @@ export function BentoBoard({ children, className, layer = true, parallax = 8 }: 
       {...(layer && parallax > 0 ? { 'data-parallax': String(parallax) } : {})}
     >
       {children}
-    </div>
+    </motion.div>
   )
 }
 
@@ -101,13 +129,13 @@ export function BentoTile({
   spanLg,
   spanXl,
   rowSpan = 1,
-  as: Tag = 'div',
   padding = 'md',
 }: TileProps) {
   const mobileSpan = span >= 2 ? 2 : 1
 
   return (
-    <Tag
+    <motion.div
+      variants={tileVariants}
       className={cn(
         'bento-tile group relative overflow-hidden rounded-[22px] border shadow-[var(--shadow-card)] transition duration-300',
         'hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)]',
@@ -133,7 +161,7 @@ export function BentoTile({
       )}
     >
       {children}
-    </Tag>
+    </motion.div>
   )
 }
 
