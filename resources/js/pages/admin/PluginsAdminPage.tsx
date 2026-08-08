@@ -186,3 +186,6 @@ export function PluginsAdminPage() {
     </div>
   )
 }
+
+export default PluginsAdminPage
+

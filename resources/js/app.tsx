@@ -28,8 +28,13 @@ function resolvePage(name: string): ComponentType {
   if (!mod) {
     throw new Error(`Inertia page not found: ${name} (looked for ${path})`)
   }
-  return mod.default
+  const Component = mod.default || (Object.values(mod)[0] as ComponentType)
+  if (!Component) {
+    throw new Error(`Inertia page has no valid component export: ${name}`)
+  }
+  return Component
 }
+
 
 /** Public portal pages that use PublicLayout shell */
 const PUBLIC_LAYOUT_PAGES = new Set([
