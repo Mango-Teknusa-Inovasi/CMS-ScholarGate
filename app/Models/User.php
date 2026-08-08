@@ -43,7 +43,7 @@ class User extends Authenticatable
     /** Super admin — users, backup/restore, ops sensitif */
     public function isSuperAdmin(): bool
     {
-        return $this->role === 'admin';
+        return in_array($this->role, ['admin', 'super_admin'], true);
     }
 
     public function isMember(): bool

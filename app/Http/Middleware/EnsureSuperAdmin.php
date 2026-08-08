@@ -14,7 +14,7 @@ class EnsureSuperAdmin
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $user = $request->user() ?? Auth::guard('sanctum')->user() ?? Auth::user();
+        $user = $request->user() ?? Auth::guard('sanctum')->user() ?? Auth::guard('web')->user() ?? Auth::user();
 
         if (! $user || ! method_exists($user, 'isSuperAdmin') || ! $user->isSuperAdmin()) {
             if ($request->header('X-Inertia') || (! $request->is('api/*') && ! $request->expectsJson())) {

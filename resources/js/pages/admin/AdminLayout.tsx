@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { usePage } from '@inertiajs/react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { Link as InertiaLink, usePage } from '@inertiajs/react'
 import { useQuery } from '@tanstack/react-query'
 import { Helmet } from 'react-helmet-async'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
@@ -156,55 +156,53 @@ function groupHasActive(pathname: string, group: NavGroup): boolean {
 
 function NavItemLink({
   item,
+  pathname,
   onNavigate,
 }: {
   item: NavItem
+  pathname: string
   onNavigate?: () => void
 }) {
   const reduce = useReducedMotion()
+  const isActive = isItemActive(pathname, item)
 
   return (
-    <NavLink
-      to={item.to}
-      end={item.end}
+    <InertiaLink
+      href={item.to}
       onClick={onNavigate}
-      className={({ isActive }) =>
-        cn(
-          'group relative flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[13px] font-medium',
-          isActive
-            ? 'bg-brand-soft text-brand-dark'
-            : 'text-body hover:bg-muted hover:text-ink',
-        )
-      }
-    >
-      {({ isActive }) => (
-        <motion.span
-          className="flex w-full items-center gap-2.5"
-          whileHover={reduce ? undefined : { x: 2 }}
-          whileTap={reduce ? undefined : { scale: 0.985 }}
-          transition={springSnappy}
-        >
-          <motion.span
-            className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-brand"
-            initial={false}
-            animate={{
-              opacity: isActive ? 1 : 0,
-              scaleY: isActive ? 1 : 0.4,
-            }}
-            transition={{ duration: 0.22, ease: easeOutExpo }}
-            aria-hidden
-          />
-          <item.icon
-            className={cn(
-              'h-[17px] w-[17px] shrink-0 transition-opacity',
-              isActive ? 'text-brand-dark opacity-100' : 'opacity-70 group-hover:opacity-100',
-            )}
-            strokeWidth={1.75}
-          />
-          <span className="truncate">{item.label}</span>
-        </motion.span>
+      className={cn(
+        'group relative flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[13px] font-medium',
+        isActive
+          ? 'bg-brand-soft text-brand-dark'
+          : 'text-body hover:bg-muted hover:text-ink',
       )}
-    </NavLink>
+    >
+      <motion.span
+        className="flex w-full items-center gap-2.5"
+        whileHover={reduce ? undefined : { x: 2 }}
+        whileTap={reduce ? undefined : { scale: 0.985 }}
+        transition={springSnappy}
+      >
+        <motion.span
+          className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-brand"
+          initial={false}
+          animate={{
+            opacity: isActive ? 1 : 0,
+            scaleY: isActive ? 1 : 0.4,
+          }}
+          transition={{ duration: 0.22, ease: easeOutExpo }}
+          aria-hidden
+        />
+        <item.icon
+          className={cn(
+            'h-[17px] w-[17px] shrink-0 transition-opacity',
+            isActive ? 'text-brand-dark opacity-100' : 'opacity-70 group-hover:opacity-100',
+          )}
+          strokeWidth={1.75}
+        />
+        <span className="truncate">{item.label}</span>
+      </motion.span>
+    </InertiaLink>
   )
 }
 
@@ -245,7 +243,7 @@ function SidebarNav({
       {/* Primary (Dashboard) */}
       <div className="space-y-0.5">
         {primaryNav.map((item) => (
-          <NavItemLink key={item.to} item={item} onNavigate={onNavigate} />
+          <NavItemLink key={item.to} item={item} pathname={pathname} onNavigate={onNavigate} />
         ))}
       </div>
 
@@ -283,13 +281,13 @@ function SidebarNav({
                   className="overflow-hidden"
                 >
                   <div className="space-y-0.5 pl-1.5 pt-0.5">
-                    {group.items.map((item, i) => (
+                    {group.items.map((item) => (
                       <motion.li
                         key={item.to}
                         initial={reduce ? false : { opacity: 0, x: -6 }}
                         animate={{ opacity: 1, x: 0 }}
                       >
-                        <NavItemLink item={item} onNavigate={onNavigate} />
+                        <NavItemLink item={item} pathname={pathname} onNavigate={onNavigate} />
                       </motion.li>
                     ))}
                   </div>
@@ -367,15 +365,17 @@ function SidebarChrome({
         </div>
 
         <div className="grid grid-cols-2 gap-1">
-          <Link
-            to="/"
+          <a
+            href="/"
             target="_blank"
+            rel="noreferrer"
             onClick={onNavigate}
             className="inline-flex items-center justify-center gap-1.5 rounded-[10px] px-2 py-2 text-xs font-semibold text-body transition hover:bg-white active:scale-[0.98]"
           >
             <ExternalLink className="h-3.5 w-3.5" />
             Portal
-          </Link>
+          </a>
+
           <button
             type="button"
             onClick={onLogout}
@@ -575,14 +575,15 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <Link
-              to="/"
+            <a
+              href="/"
               target="_blank"
+              rel="noreferrer"
               className="hidden items-center gap-1.5 rounded-[12px] border border-line px-3 py-2 text-xs font-semibold text-body transition hover:bg-muted active:scale-[0.98] sm:inline-flex"
             >
               <ExternalLink className="h-3.5 w-3.5" />
               Portal
-            </Link>
+            </a>
             <div className="flex items-center gap-2.5 rounded-[12px] border border-line bg-page px-2.5 py-1.5 sm:px-3 lg:hidden">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-xs font-bold text-white">
                 {initials}
