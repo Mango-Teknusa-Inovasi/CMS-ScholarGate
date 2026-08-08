@@ -65,25 +65,25 @@ export const scaleIn: Variants = {
   },
 }
 
-/** Slower cascade — satu-satu */
+/** Snappy & smooth cascade — persis seperti kartu dashboard admin */
 export const staggerContainer: Variants = {
   hidden: { opacity: 1 },
   show: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.06,
+      staggerChildren: 0.04,
+      delayChildren: 0,
     },
   },
 }
 
 export const staggerItem: Variants = {
-  hidden: { opacity: 0, y: 28, scale: 0.97 },
+  hidden: { opacity: 0, y: 12, scale: 0.985 },
   show: {
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: { duration: 0.55, ease: easeOutExpo },
+    transition: { duration: 0.35, ease: easeOutExpo },
   },
 }
 
