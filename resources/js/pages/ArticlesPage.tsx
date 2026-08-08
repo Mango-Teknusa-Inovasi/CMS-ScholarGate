@@ -201,7 +201,7 @@ export function ArticlesPage() {
 
             <BentoTile tone="violet" spanMd={2} spanLg={2} spanXl={4} padding="md">
               <h3 className="mb-3 text-sm font-bold text-ink">Kategori</h3>
-              <ul className="max-h-40 space-y-1 overflow-y-auto">
+              <ul className="max-h-40 space-y-1 overflow-y-auto custom-scrollbar">
                 {data.sidebar.categories.map((c) => (
                   <li key={c.id}>
                     <button
