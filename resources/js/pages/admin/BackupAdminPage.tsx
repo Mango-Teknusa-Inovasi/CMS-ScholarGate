@@ -86,33 +86,23 @@ export function BackupAdminPage() {
   })
 
   const download = async (filename: string) => {
-    const xsrf = document.cookie
-      .split('; ')
-      .find((r) => r.startsWith('XSRF-TOKEN='))
-      ?.split('=')
-      .slice(1)
-      .join('=')
-    const res = await fetch(`/api/v1/admin/backups/${encodeURIComponent(filename)}/download`, {
-      credentials: 'include',
-      headers: {
-        Accept: 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        ...(xsrf ? { 'X-XSRF-TOKEN': decodeURIComponent(xsrf) } : {}),
-      },
-    })
-    if (!res.ok) {
+    try {
+      const res = await api.get(`/admin/backups/${encodeURIComponent(filename)}/download`, {
+        responseType: 'blob',
+      })
+      const blob = new Blob([res.data])
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      a.click()
+      URL.revokeObjectURL(url)
+      toast.success('Unduhan dimulai.')
+    } catch {
       toast.error('Gagal mengunduh backup.')
-      return
     }
-    const blob = await res.blob()
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = filename
-    a.click()
-    URL.revokeObjectURL(url)
-    toast.success('Unduhan dimulai.')
   }
+
 
   const items = data?.backups || []
 

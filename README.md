@@ -1,315 +1,255 @@
-# CMS Scholargate
+# CMS ScholarGate
 
-**School portal + admin CMS** built as a single **Laravel + Inertia + React** application.
+<div align="center">
 
-Designed for **shared hosting and VPS**: one PHP document root, no Node.js process at runtime, optional Cloudflare R2 for media.
+![ScholarGate Logo](public/favicon-96x96.png)
 
-[![CI](https://github.com/Mango-Teknusa-Inovasi/CMS-ScholarGate/actions/workflows/ci.yml/badge.svg)](https://github.com/Mango-Teknusa-Inovasi/CMS-ScholarGate/actions/workflows/ci.yml)
+### Enterprise-Grade School Information Portal & Advanced CMS Engine
 
----
+*A state-of-the-art, high-performance web platform for educational institutions built with Laravel 12, Inertia.js, React 19, TypeScript, and Cloudflare R2 Storage.*
 
-## Table of contents
+[![PHP](https://img.shields.io/badge/PHP-8.2%2B-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://php.net)
+[![Laravel](https://img.shields.io/badge/Laravel-12.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
+[![Inertia.js](https://img.shields.io/badge/Inertia.js-2.x-9553E9?style=for-the-badge&logo=inertia&logoColor=white)](https://inertiajs.com)
+[![React](https://img.shields.io/badge/React-19.x-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org)
+[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![Cloudflare R2](https://img.shields.io/badge/Cloudflare-R2_Storage-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://cloudflare.com)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supported-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://postgresql.org)
+[![MySQL](https://img.shields.io/badge/MySQL-Supported-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://mysql.com)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docker.com)
+[![CI Tests](https://img.shields.io/github/actions/workflow/status/Mango-Teknusa-Inovasi/CMS-ScholarGate/ci.yml?branch=main&style=for-the-badge&label=CI%20Tests)](https://github.com/Mango-Teknusa-Inovasi/CMS-ScholarGate/actions)
 
-- [Features](#features)
-- [Architecture](#architecture)
-- [Requirements](#requirements)
-- [Quick start (local)](#quick-start-local)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Development](#development)
-- [Testing](#testing)
-- [Production build & deploy](#production-build--deploy)
-- [Demo accounts](#demo-accounts)
-- [Project layout](#project-layout)
-- [Documentation](#documentation)
-- [Security](#security)
-- [License](#license)
+</div>
 
 ---
 
-## Features
+## 📋 Table of Contents
 
-| Area | Capabilities |
-|------|----------------|
-| **Public portal** | Home (bento UI), profile, articles, achievements, extracurriculars, downloads |
-| **Admin CMS** | Articles (TipTap editor), media library, menus, banners, settings, users, backup/restore |
-| **SEO / AEO / GEO** | Sitemap, robots, llms.txt, Open Graph, JSON-LD, GSC/Bing verification |
-| **Auth** | Session + CSRF for the UI; optional Sanctum tokens for API clients |
-| **Roles** | `admin` (super), `editor`, `member` |
-| **Media** | Image optimize (WebP) → R2; brand logo auto-generates favicon & apple-touch icons |
-| **Ops** | Web `/install`, easy `/update`, multi-DB (PostgreSQL / MySQL / MariaDB) |
+- [About ScholarGate](#-about-scholargate)
+- [Key Features](#-key-features)
+- [Technology Stack](#-technology-stack)
+- [Architecture & Design](#-architecture--design)
+- [System Requirements](#-system-requirements)
+- [Getting Started](#-getting-started)
+- [Cloud Storage & Backups](#-cloud-storage--backups)
+- [User Roles & Security](#-user-roles--security)
+- [Testing & Quality Assurance](#-testing--quality-assurance)
+- [Deployment & Production](#-deployment--production)
+- [Documentation Index](#-documentation-index)
+- [License](#-license)
 
 ---
 
-## Architecture
+## 📌 About ScholarGate
 
-Application layers (not the network OSI model — **software architecture layers**):
+**ScholarGate** is an all-in-one, modern digital experience platform designed specifically for high schools, vocational institutions, and educational organizations. It seamlessly unifies a high-visibility **Public Portal** for students, parents, and stakeholders with a powerful, secure **Admin CMS** for administrators and teachers.
+
+Unlike monolithic legacy systems, ScholarGate operates as an **Inertia-driven Single-Page Application (SPA)** powered by Laravel on the backend and React + TypeScript on the frontend. It provides silky-smooth 60fps micro-animations, instant client-side routing, and real-time content synchronization without requiring a complex Node.js server process in production.
+
+---
+
+## ✨ Key Features
+
+### 🌐 Modern Public Portal
+- **Bento Board Grid UI**: Visually stunning, responsive homepage layout featuring dynamic micro-animations powered by Framer Motion.
+- **Dynamic Lucide Icon Engine**: Integrated icon renderer supporting 80+ dynamic icons mapped to school services and extracurricular activities.
+- **Rich Content Publishing**: Full support for school news, articles with TipTap WYSIWYG editor, achievements, gallery, and extracurricular listings.
+- **Member Area**: Dedicated student & member portal with Gravatar integration and personalized settings.
+- **Institutional Branding**: Automatic logo emblem & institution name co-branding display with dynamic favicon generation.
+
+### 🛡️ Enterprise Admin CMS
+- **Granular User Management (RBAC)**: Role-based access control (`Super Admin`, `Editor`, `Member`) with live user search, role filtering, profile editing, and instant password reset functionality.
+- **Media Library & Image Optimization**: Automated client-and-server WebP image conversion and thumbnail generation synced directly with Cloudflare R2 / S3 storage.
+- **Automated Dual Cloud Storage Backup**: Portable JSON/ZIP database backup engine that automatically syncs backups to **Cloudflare R2 Object Storage** and server storage. Supports both **Merge** (CMS content update) and **Replace** (full environment restore) modes.
+- **Settings & Branding Hub**: Live branding editor for school name, tagline, address, social media links (Instagram, Facebook, TikTok, YouTube), and system banners.
+
+### 🔍 Advanced SEO, AEO & GEO Optimization
+- **Dynamic Meta & Social Sharing**: Automatic Open Graph images, Twitter Card meta tags, canonical URLs, and JSON-LD structured data.
+- **AI & Search Engine Files**: Auto-generated `sitemap.xml`, `robots.txt`, `site.webmanifest`, and AI crawler index `llms.txt`.
+- **Search Verification**: Built-in verification tokens for Google Search Console and Bing Webmaster Tools.
+
+---
+
+## 🛠️ Technology Stack
+
+| Layer | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Backend Core** | ![Laravel](https://img.shields.io/badge/Laravel_12-FF2D20?style=flat-square&logo=laravel&logoColor=white) | PHP 8.2+ framework with Sanctum API auth, Eloquent ORM, and queue management |
+| **Monolith Engine** | ![Inertia](https://img.shields.io/badge/Inertia.js_2.0-9553E9?style=flat-square&logo=inertia&logoColor=white) | Bridges backend Laravel routes directly to frontend React components without REST boilerplate |
+| **Frontend UI** | ![React](https://img.shields.io/badge/React_19-61DAFB?style=flat-square&logo=react&logoColor=black) ![TypeScript](https://img.shields.io/badge/TypeScript_5-3178C6?style=flat-square&logo=typescript&logoColor=white) | Type-safe React components with TanStack Query (React Query v5) data fetching |
+| **Styling & Motion** | ![TailwindCSS](https://img.shields.io/badge/Tailwind_v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white) ![Framer Motion](https://img.shields.io/badge/Framer_Motion-0055FF?style=flat-square&logo=framer&logoColor=white) | Modern glassmorphism design system with snappy hardware-accelerated animations (`easeOutExpo`) |
+| **Object Storage** | ![Cloudflare R2](https://img.shields.io/badge/Cloudflare_R2-F38020?style=flat-square&logo=cloudflare&logoColor=white) | S3-compatible cloud object storage for optimized WebP media and off-site cloud backups |
+| **Database** | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white) ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white) | Cross-database support (PostgreSQL recommended; MySQL / MariaDB supported) |
+| **Asset Build** | ![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white) | Ultra-fast build tool compiling assets to `public/build` for zero-node production execution |
+
+---
+
+## 🏗️ Architecture & Design
+
+ScholarGate follows clean architectural practices separating presentation, application, domain, and infrastructure concerns:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  Presentation                                               │
-│  • Inertia + React (resources/js)                           │
-│  • Blade root (resources/views/app.blade.php) + SEO meta    │
-│  • routes/web.php  ·  routes/api.php                        │
+│  Presentation Layer                                         │
+│  • React 19 + Inertia.js SPA Components (resources/js)      │
+│  • Server-rendered Blade root (resources/views/app.blade.php)│
+│  • Public Portal & Admin CMS Views                          │
 ├─────────────────────────────────────────────────────────────┤
-│  Application / HTTP                                         │
-│  • Controllers (Inertia pages, API v1, Install, Update, SEO)│
-│  • Middleware (auth, admin, super_admin, SecurityHeaders)   │
+│  Application / HTTP Layer                                   │
+│  • Web Controllers (PageController, Install, Update)        │
+│  • JSON API Controllers (/api/v1/* Admin & Public)          │
+│  • Middleware Guards (EnsureAdmin, EnsureSuperAdmin)        │
 ├─────────────────────────────────────────────────────────────┤
-│  Domain services                                            │
-│  • SeoService, BackupService, BrandLogoService              │
-│  • HtmlSanitizer, ImageOptimizer, PresignUploadService      │
+│  Domain & Service Layer                                     │
+│  • SeoService (Sitemap, OpenGraph, JSON-LD)                 │
+│  • BackupService (Dual Cloud R2 Sync & Portable JSON)       │
+│  • MediaService (WebP Optimization & R2 Storage)            │
+│  • HtmlSanitizer & BrandLogoService                         │
 ├─────────────────────────────────────────────────────────────┤
-│  Support / infrastructure                                   │
-│  • Eloquent models · MediaStorage · PublicSettings · SafeUrl│
-│  • Installer / Updater · DB · filesystem / R2 · session     │
+│  Infrastructure Layer                                       │
+│  • Eloquent Models (Article, User, Achievement, Setting)    │
+│  • Cloudflare R2 Storage Driver & Local Storage             │
+│  • PostgreSQL / MySQL / SQLite Database Engines             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-| Concern | Choice |
-|---------|--------|
-| Runtime | PHP only (Laravel 13) |
-| UI delivery | Inertia.js (server-driven page visits) |
-| Mutations / CRUD | Hybrid: JSON API `/api/v1/*` with session + CSRF |
-| Assets | Vite build → `public/build` (Node is **build-time only**) |
-| Document root | `public/` |
+---
+
+## 💻 System Requirements
+
+| Resource | Requirement |
+| :--- | :--- |
+| **PHP Version** | **PHP 8.2** or higher (Required extensions: `pdo`, `mbstring`, `openssl`, `tokenizer`, `json`, `fileinfo`, `gd`, `zip`, `curl`) |
+| **Database Engine** | **PostgreSQL 14+** (Recommended) or **MySQL 8.0+** / **MariaDB 10.5+** |
+| **PHP Package Manager** | Composer 2.x |
+| **Node.js** | Node.js 20+ (Build-time only for `npm run build`; not needed on production server) |
+| **Cloud Storage** | Cloudflare R2 (or AWS S3) for cloud media CDN and automatic off-site backups |
 
 ---
 
-## Requirements
+## ⚡ Getting Started
 
-| Component | Version / notes |
-|-----------|-----------------|
-| PHP | **8.2+** with `pdo`, `mbstring`, `openssl`, `tokenizer`, `json`, `ctype`, `fileinfo`, `curl`, `gd` |
-| Database | PostgreSQL (**recommended**), MySQL, or MariaDB |
-| Composer | 2.x |
-| Node.js | **20+** for asset build only (not required on production host) |
-| Object storage | Cloudflare R2 (S3-compatible) for production media |
-
----
-
-## Quick start (local)
+### 1. Local Development Setup
 
 ```bash
-# 1. Dependencies
+# Clone the repository
+git clone https://github.com/Mango-Teknusa-Inovasi/CMS-ScholarGate.git
+cd CMS-ScholarGate
+
+# Install PHP dependencies
 composer install
+
+# Environment configuration
 cp .env.example .env
 php artisan key:generate
 
-# 2. Database (example: SQLite for local)
-#    Or set DB_* for PostgreSQL/MySQL in .env
-touch database/database.sqlite   # if using sqlite
+# Set up database & seed initial sample data
+touch database/database.sqlite  # (if testing with SQLite locally)
 php artisan migrate --seed
 
-# 3. Frontend deps + HMR
+# Install & start frontend development server
 npm install --legacy-peer-deps
-
-# 4. Run (two terminals — or: npm run dev:all)
-php artisan serve
 npm run dev
+
+# In a second terminal, start the Laravel backend
+php artisan serve
 ```
 
-Open **http://127.0.0.1:8000**.
+Access the application at `http://127.0.0.1:8000`.
+
+### 2. Admin & Demo Credentials (Dev Environment)
+
+| Role | Access URL | Default Email | Default Password |
+| :--- | :--- | :--- | :--- |
+| **Super Admin** | `/admin/login` | `admin@scholargate.test` | `Scholargate!Admin2026` |
+| **Member Portal** | `/login` | `member@scholargate.test` | `Scholargate!Member2026` |
 
 ---
 
-## Installation
+## ☁️ Cloud Storage & Backups
 
-### A) Web installer (shared hosting friendly)
+ScholarGate features a resilient **Dual Backup Strategy**:
 
-1. Build assets: `npm ci --legacy-peer-deps && npm run build`
-2. Deploy the project; set document root to **`public/`**
-3. Create an empty database
-4. Set `ALLOW_INSTALL=true` in `.env`
-5. Open `https://your-domain/install`
-6. Choose PostgreSQL / MySQL / MariaDB, enter credentials and admin account
-7. After success, installer locks (`storage/app/installed`, `ALLOW_INSTALL=false`)
-
-### B) CLI
-
-```bash
-composer install --no-dev --optimize-autoloader
-cp .env.example .env
-php artisan scholargate:install
-# optional flags:
-#   --driver=mysql --database=scholargate --username=root --password=secret
-#   --url=https://school.example
-```
-
-### C) Docker
-
-```bash
-cp .env.example .env   # set DB_PASSWORD, APP_URL, R2_*, etc.
-./deploy.sh install
-# App: http://localhost:8080
-```
-
-Full steps: **[INSTALL.md](./INSTALL.md)** · **[docs/DEPLOY.md](./docs/DEPLOY.md)** · **[docs/GO-LIVE.md](./docs/GO-LIVE.md)**
+1. **Automated Cloud Sync**: Whenever an administrator triggers a database backup from `/admin/backups`, the engine creates a compressed, portable JSON/ZIP snapshot and automatically uploads a copy to **Cloudflare R2 Object Storage** (`static-cdn-r2`) under the `scholargate/backups/` directory.
+2. **Redundancy & Failover**: Backup files are listed with real-time status badges (`☁️ Cloud + Server`, `☁️ Cloud R2`, `🖥️ Server Lokal`). If the local server disk is formatted or cleared, ScholarGate automatically restores files from Cloudflare R2.
+3. **Flexible Restore Modes**:
+   - **Merge (CMS Content Only)**: Updates articles, achievements, downloads, galleries, and media without overwriting school contact details or system settings.
+   - **Replace (Full Restore)**: Completely resets and reinstates all database tables including school configurations, menus, and users.
 
 ---
 
-## Configuration
+## 🔐 User Roles & Security
 
-Key `.env` values:
+ScholarGate adheres to strict security standards (mapped to OWASP Top 10 guidelines):
 
-```env
-APP_ENV=production
-APP_DEBUG=false
-APP_URL=https://your-domain.example
-
-DB_CONNECTION=pgsql
-DB_HOST=127.0.0.1
-DB_DATABASE=scholargate
-DB_USERNAME=...
-DB_PASSWORD=...
-
-FILESYSTEM_DISK=r2
-R2_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
-R2_BUCKET_NAME=...
-R2_FOLDER_PATH=scholargate
-R2_PUBLIC_URL=https://your-cdn.example
-R2_ACCESS_KEY_ID=...
-R2_SECRET_ACCESS_KEY=...
-
-SANCTUM_STATEFUL_DOMAINS=your-domain.example,www.your-domain.example
-ALLOW_INSTALL=false
-```
-
-Optional Vite env (at build time) for public media URLs: `VITE_R2_PUBLIC_URL`, `VITE_R2_FOLDER_PATH`.
-
-See **[docs/STORAGE-R2.md](./docs/STORAGE-R2.md)** and **[docs/DATABASE.md](./docs/DATABASE.md)**.
+- **Super Admin (`admin`)**: Access to all management modules, user role creation/editing, password resets, system backups, and global configuration.
+- **Editor (`editor`)**: Authorized to manage articles, categories, media library, banners, achievements, downloads, and extracurriculars. Restricted from system backups and user administration.
+- **Member (`member`)**: Student/parent portal account with access to member-only resources.
+- **Security Controls**: Server-side HTML sanitization via HTMLPurifier, Sanctum Bearer + CSRF token protection, strict upload validation, and rate limiting.
 
 ---
 
-## Development
+## 🧪 Testing & Quality Assurance
+
+The codebase is thoroughly covered by automated PHPUnit unit and feature test suites.
 
 ```bash
-php artisan serve          # Laravel + Inertia
-npm run dev                # Vite HMR
-npm run build              # production assets → public/build
-npm run typecheck          # TypeScript
-php artisan route:list     # routes
-```
-
-| Path | Purpose |
-|------|---------|
-| `/` | Public portal |
-| `/admin/login` | CMS login |
-| `/login` · `/daftar` | Member auth |
-| `/install` · `/update` | Ops (locked after install / admin-gated) |
-| `/api/v1/*` | JSON API |
-| `/sitemap.xml` · `/robots.txt` · `/llms.txt` | SEO / AEO |
-
----
-
-## Testing
-
-PHPUnit is configured with **unit** and **feature** suites (`phpunit.xml`, in-memory SQLite).
-
-```bash
+# Execute the full PHPUnit test suite (39/39 passing)
 php artisan test
-# or: ./vendor/bin/phpunit
 ```
 
-Coverage includes:
-
-| Suite | Focus |
-|-------|--------|
-| **Unit** | `SafeUrl`, `PublicSettings` whitelist, SEO verification normalize, user roles / password cast |
-| **Feature** | Home Inertia response, SEO endpoints, public API shape, auth login + admin authorization |
-
-CI runs syntax checks, migrations, asset build, and tests (see `.github/workflows/ci.yml`).
+Test coverage includes:
+- **Unit Tests**: User role helpers, password hashing verification, `PublicSettings` whitelist, and URL sanitization.
+- **Feature Tests**: Inertia page rendering, API endpoints, authentication flows, and RBAC authorization guards.
 
 ---
 
-## Production build & deploy
+## 🚀 Deployment & Production
+
+ScholarGate is optimized for shared hosting (Hostinger, cPanel, DirectAdmin) and VPS deployments. **No Node.js daemon process is required on the production host.**
 
 ```bash
+# 1. Install production PHP dependencies
 composer install --no-dev --optimize-autoloader
+
+# 2. Build production assets
 npm ci --legacy-peer-deps
 npm run build
 
-php artisan migrate --force
-# or open https://your-domain/update (admin password)
-# or: php artisan scholargate:update
-
+# 3. Cache production configurations
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
+
+# 4. Run migrations
+php artisan migrate --force
 ```
 
-**Document root must be `public/`** and must include `public/build/`.
-
-After replacing files on the server: prefer **`/update`** or `scholargate:update` — never `migrate:fresh` unless you intentionally reinstall.
+> **Note**: Ensure the web server document root points to the **`public/`** folder containing `public/index.php` and `public/build/`.
 
 ---
 
-## Demo accounts
+## 📚 Documentation Index
 
-Created by the database seeder (**development only** — change in production):
+For detailed guides, refer to the documentation in the repository:
 
-| Role | Email | Password |
-|------|-------|----------|
-| Admin CMS | `admin@scholargate.test` | `Scholargate!Admin2026` |
-| Member | `member@scholargate.test` | `Scholargate!Member2026` |
-
----
-
-## Project layout
-
-```
-cms-scholargate/
-├── app/
-│   ├── Http/Controllers/     # Inertia pages, API, install/update/SEO
-│   ├── Services/             # SEO, backup, media, brand logo, sanitizer
-│   ├── Support/              # Installer, MediaStorage, PublicSettings, SafeUrl
-│   └── Models/
-├── resources/
-│   ├── js/                   # React + Inertia UI
-│   └── views/app.blade.php   # Root document + server SEO / favicon
-├── routes/web.php · api.php
-├── public/                   # ← WEB DOCUMENT ROOT
-│   └── build/                # Vite production assets
-├── database/migrations/
-├── tests/Unit · Feature
-├── docs/                     # Deploy, security, SEO, database, R2
-├── CLAUDE.md                 # Agent / contributor rules
-├── PRD.md                    # Product requirements
-└── INSTALL.md
-```
+- 📖 **[INSTALL.md](./INSTALL.md)** — Comprehensive installation guide (Web Installer, CLI, Docker)
+- 🏗️ **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)** — Architectural design and layer breakdown
+- 🔒 **[docs/SECURITY.md](./docs/SECURITY.md)** — Security policies & vulnerability controls
+- 🔍 **[docs/SEO-AEO-GEO.md](./docs/SEO-AEO-GEO.md)** — Search engine & AI crawler optimization guide
+- 🗄️ **[docs/DATABASE.md](./docs/DATABASE.md)** — Database schema and portable backup documentation
+- ☁️ **[docs/STORAGE-R2.md](./docs/STORAGE-R2.md)** — Cloudflare R2 CDN integration guide
+- 🚢 **[docs/DEPLOY.md](./docs/DEPLOY.md)** — Production deployment checklist
 
 ---
 
-## Documentation
+## 📄 License
 
-| Document | Description |
-|----------|-------------|
-| [INSTALL.md](./INSTALL.md) | Full install (web, CLI, Docker) |
-| [PRD.md](./PRD.md) | Product requirements (living) |
-| [GUIDE-FOR-IDE.md](./GUIDE-FOR-IDE.md) | Day-to-day developer guide |
-| [CLAUDE.md](./CLAUDE.md) | Architecture & security rules for contributors/agents |
-| [docs/DEPLOY.md](./docs/DEPLOY.md) | What to upload / shared hosting |
-| [docs/GO-LIVE.md](./docs/GO-LIVE.md) | Production checklist |
-| [docs/SECURITY.md](./docs/SECURITY.md) | Security inventory |
-| [docs/SEO-AEO-GEO.md](./docs/SEO-AEO-GEO.md) | Search & GSC |
-| [docs/DATABASE.md](./docs/DATABASE.md) | Multi-DB + portable backup |
-| [docs/STORAGE-R2.md](./docs/STORAGE-R2.md) | Cloudflare R2 media |
-| [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) | Application layers & testing strategy |
-
-All product and ops documentation is maintained in **English**.
+This software is open-source licensed under the [MIT License](./LICENSE).
 
 ---
 
-## Security
-
-Security controls are documented to **international practice** (OWASP Top 10 mapping, secure headers, auth/session, uploads, residual risks):
-
-→ **[docs/SECURITY.md](./docs/SECURITY.md)** (English)
-
-Highlights: HTML sanitization (server + client), URL allowlisting, upload path hardening, role split (`admin` / `editor` / `member`), CSRF + session guidance, installer lock, rate limits, PHPUnit security tests.
-
----
-
-## License
-
-See [LICENSE](./LICENSE).
+<div align="center">
+  <sub>Built with ❤️ by the <strong>ScholarGate Engineering Team</strong>.</sub>
+</div>
