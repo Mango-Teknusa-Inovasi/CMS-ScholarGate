@@ -4,10 +4,10 @@
 
 ### Enterprise-Grade School Information Portal & Advanced CMS Engine
 
-*A state-of-the-art, high-performance web platform for educational institutions built with Laravel 12, Inertia.js, React 19, TypeScript, and Cloudflare R2 Storage.*
+*A state-of-the-art, high-performance web platform for educational institutions built with Laravel 13, Inertia.js, React 19, TypeScript, and Cloudflare R2 Storage.*
 
 [![PHP](https://img.shields.io/badge/PHP-8.2%2B-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://php.net)
-[![Laravel](https://img.shields.io/badge/Laravel-12.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
+[![Laravel](https://img.shields.io/badge/Laravel-13.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
 [![Inertia.js](https://img.shields.io/badge/Inertia.js-2.x-9553E9?style=for-the-badge&logo=inertia&logoColor=white)](https://inertiajs.com)
 [![React](https://img.shields.io/badge/React-19.x-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org)
@@ -76,7 +76,7 @@ Unlike monolithic legacy systems, ScholarGate operates as an **Inertia-driven Si
 
 | Layer | Technology | Purpose |
 | :--- | :--- | :--- |
-| **Backend Core** | ![Laravel](https://img.shields.io/badge/Laravel_12-FF2D20?style=flat-square&logo=laravel&logoColor=white) | PHP 8.2+ framework with Sanctum API auth, Eloquent ORM, and queue management |
+| **Backend Core** | ![Laravel](https://img.shields.io/badge/Laravel_13-FF2D20?style=flat-square&logo=laravel&logoColor=white) | PHP 8.2+ framework with Sanctum API auth, Eloquent ORM, and queue management |
 | **Monolith Engine** | ![Inertia](https://img.shields.io/badge/Inertia.js_2.0-9553E9?style=flat-square&logo=inertia&logoColor=white) | Bridges backend Laravel routes directly to frontend React components without REST boilerplate |
 | **Frontend UI** | ![React](https://img.shields.io/badge/React_19-61DAFB?style=flat-square&logo=react&logoColor=black) ![TypeScript](https://img.shields.io/badge/TypeScript_5-3178C6?style=flat-square&logo=typescript&logoColor=white) | Type-safe React components with TanStack Query (React Query v5) data fetching |
 | **Styling & Motion** | ![TailwindCSS](https://img.shields.io/badge/Tailwind_v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white) ![Framer Motion](https://img.shields.io/badge/Framer_Motion-0055FF?style=flat-square&logo=framer&logoColor=white) | Modern glassmorphism design system with snappy hardware-accelerated animations (`easeOutExpo`) |
