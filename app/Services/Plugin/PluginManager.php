@@ -16,8 +16,15 @@ class PluginManager
         $base = base_path('plugins');
         File::ensureDirectoryExists($base);
 
-        return $path ? $base.'/'.ltrim($path, '/') : $base;
+        if (! $path) {
+            return $base;
+        }
+
+        $clean = str_replace(['..', '\\', "\0"], '', ltrim($path, '/'));
+
+        return $base.'/'.$clean;
     }
+
 
     /**
      * Scan `/plugins/` directory and discover all installed plugin manifests.

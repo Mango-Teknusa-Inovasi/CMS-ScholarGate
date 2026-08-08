@@ -77,16 +77,70 @@ class PluginAdminController extends Controller
             return response()->json(['message' => 'File plugin.json tidak memiliki field slug yang valid.'], 422);
         }
 
-        $pluginSlug = $manifest['slug'];
-        $targetDir = $this->pluginManager->pluginPath($pluginSlug);
+        $pluginSlug = strtolower(trim((string) $manifest['slug']));
+        if (! preg_match('/^[a-z0-9-]+$/', $pluginSlug)) {
+            $zip->close();
 
-        // Extract zip to plugin folder
+            return response()->json(['message' => 'Slug plugin hanya boleh berisi huruf kecil, angka, dan tanda hubung (-).'], 422);
+        }
+
+        $basePluginsDir = $this->pluginManager->pluginPath();
+        \Illuminate\Support\Facades\File::ensureDirectoryExists($basePluginsDir);
+        $realBaseDir = realpath($basePluginsDir) ?: $basePluginsDir;
+        $targetDir = $realBaseDir.'/'.$pluginSlug;
+
+        // Security Audit Zip Archive Entries (Zip Slip & Malware Protection)
+        $maxFiles = 500;
+        $maxTotalSize = 50 * 1024 * 1024; // 50MB max uncompressed
+        $totalSize = 0;
+        $forbiddenNames = ['.env', '.htaccess', 'web.config', '.phar', '.phtml', '.php5'];
+
+        if ($zip->numFiles > $maxFiles) {
+            $zip->close();
+
+            return response()->json(['message' => 'File ZIP berisi terlalu banyak file (maksimal 500 file).'], 422);
+        }
+
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $stat = $zip->statIndex($i);
+            if (! $stat) {
+                continue;
+            }
+
+            $filename = $stat['name'];
+            $totalSize += $stat['size'];
+
+            if ($totalSize > $maxTotalSize) {
+                $zip->close();
+
+                return response()->json(['message' => 'Total ukuran file ZIP melebihi batas aman (maksimal 50MB).'], 422);
+            }
+
+            // Check Zip Slip path traversal (../ or \ or leading /)
+            if (str_contains($filename, '..') || str_contains($filename, '\\') || str_starts_with($filename, '/')) {
+                $zip->close();
+
+                return response()->json(['message' => 'File ZIP ditolak karena terdeteksi percobaan Path Traversal (Zip Slip).'], 422);
+            }
+
+            // Check forbidden sensitive files (.env, .htaccess, etc)
+            $baseName = strtolower(basename($filename));
+            if (in_array($baseName, $forbiddenNames, true)) {
+                $zip->close();
+
+                return response()->json(['message' => "File ZIP ditolak karena berisi file terlarang ({$baseName})."], 422);
+            }
+        }
+
+        // Safe extraction to isolated plugin directory
+        \Illuminate\Support\Facades\File::ensureDirectoryExists($targetDir);
         $zip->extractTo($targetDir);
         $zip->close();
 
         return response()->json([
             'slug' => $pluginSlug,
-            'message' => "Plugin {$manifest['name']} ({$pluginSlug}) berhasil diunggah.",
+            'message' => "Plugin {$manifest['name']} ({$pluginSlug}) berhasil diverifikasi & diunggah secara aman.",
         ]);
     }
+
 }
