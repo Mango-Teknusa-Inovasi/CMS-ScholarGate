@@ -2,8 +2,6 @@
 
 <div align="center">
 
-![ScholarGate Logo](public/favicon-96x96.png)
-
 ### Enterprise-Grade School Information Portal & Advanced CMS Engine
 
 *A state-of-the-art, high-performance web platform for educational institutions built with Laravel 12, Inertia.js, React 19, TypeScript, and Cloudflare R2 Storage.*
@@ -18,9 +16,10 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supported-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://postgresql.org)
 [![MySQL](https://img.shields.io/badge/MySQL-Supported-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://mysql.com)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docker.com)
-[![CI Tests](https://img.shields.io/github/actions/workflow/status/Mango-Teknusa-Inovasi/CMS-ScholarGate/ci.yml?branch=main&style=for-the-badge&label=CI%20Tests)](https://github.com/Mango-Teknusa-Inovasi/CMS-ScholarGate/actions)
+[![CI Tests](https://img.shields.io/github/actions/workflow/status/ardianryan/CMS-ScholarGate/ci.yml?branch=main&style=for-the-badge&label=CI%20Tests)](https://github.com/ardianryan/CMS-ScholarGate/actions)
 
 </div>
+
 
 ---
 
