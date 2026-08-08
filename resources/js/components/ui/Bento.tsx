@@ -34,7 +34,8 @@ export function BentoBoard({ children, className, layer = true, parallax = 8 }: 
     <motion.div
       variants={staggerContainer}
       initial="hidden"
-      animate="show"
+      whileInView="show"
+      viewport={{ once: true, amount: 0.08, margin: '-10px' }}
       className={cn(
         'bento-board grid auto-rows-[minmax(120px,auto)] grid-cols-2 gap-3 sm:gap-3.5 md:grid-cols-4 md:gap-4 lg:grid-cols-6 xl:grid-cols-12',
         className,
