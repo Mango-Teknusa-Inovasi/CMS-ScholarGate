@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -13,7 +14,7 @@ class EnsureSuperAdmin
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $user = $request->user();
+        $user = $request->user() ?? Auth::guard('sanctum')->user() ?? Auth::user();
 
         if (! $user || ! method_exists($user, 'isSuperAdmin') || ! $user->isSuperAdmin()) {
             if ($request->header('X-Inertia') || (! $request->is('api/*') && ! $request->expectsJson())) {
