@@ -26,3 +26,13 @@
     # Send all other requests to Laravel (API + SPA routes)
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# Force aggressive caching for Vite hashed static assets (js, css, fonts, images)
+<IfModule mod_headers.c>
+    <FilesMatch "\.(js|css|woff2?|eot|ttf|otf|webp|avif|png|jpe?g|gif|ico|svg)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+    <FilesMatch "\.(html|htm|php)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+    </FilesMatch>
+</IfModule>

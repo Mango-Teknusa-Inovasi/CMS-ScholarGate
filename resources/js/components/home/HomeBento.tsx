@@ -272,6 +272,8 @@ export function HomeBento({
                         alt={featuredArticle.title}
                         className="absolute inset-0 h-full w-full object-cover"
                         loading="lazy"
+                        width={1200}
+                        height={700}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-ink/75 via-ink/10 to-transparent" />
                       <div className="absolute inset-x-0 bottom-0 p-4 text-white md:p-6">
@@ -328,6 +330,8 @@ export function HomeBento({
                           alt=""
                           className="h-full w-full object-cover"
                           loading="lazy"
+                          width={320}
+                          height={240}
                         />
                       </div>
                       <div className="min-w-0 flex-1 py-0.5">
@@ -397,6 +401,8 @@ export function HomeBento({
                         alt={featuredAchievement.title}
                         className="h-full w-full object-cover"
                         loading="lazy"
+                        width={900}
+                        height={560}
                       />
                     </div>
                     <div className="flex flex-1 flex-col p-4 md:p-5">
@@ -437,6 +443,8 @@ export function HomeBento({
                           alt=""
                           className="h-full w-full object-cover"
                           loading="lazy"
+                          width={480}
+                          height={270}
                         />
                       </div>
                       {item.badge_label && (
@@ -520,6 +528,8 @@ export function HomeBento({
                         alt={item.title || item.caption || `Galeri ${i + 1}`}
                         className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105"
                         loading="lazy"
+                        width={800}
+                        height={600}
                       />
                       {(item.title || item.caption) && (
                         <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/70 to-transparent p-3 pt-8 text-xs font-semibold text-white opacity-0 transition group-hover:opacity-100 md:text-sm">

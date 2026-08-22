@@ -55,7 +55,7 @@ class SeoController extends Controller
             'Allow: /',
             '',
             'Sitemap: '.$s['app_url'].'/sitemap.xml',
-            'LLMs-Txt: '.$s['app_url'].'/llms.txt',
+            '# LLMs-Txt: '.$s['app_url'].'/llms.txt',
             trim((string) ($s['robots_extra'] ?? '')) ?: null,
             '',
         ], fn ($line) => $line !== null));

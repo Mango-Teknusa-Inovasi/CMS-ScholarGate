@@ -156,6 +156,8 @@ export function ArticlesPage() {
                       alt={data.featured.title}
                       className="absolute inset-0 h-full w-full object-cover"
                       loading="lazy"
+                      width={1400}
+                      height={700}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/20 to-transparent" />
                     <div className="absolute inset-x-0 bottom-0 p-4 text-white md:p-6">
@@ -235,6 +237,8 @@ export function ArticlesPage() {
                       alt=""
                       className="h-full w-full object-cover"
                       loading="lazy"
+                      width={400}
+                      height={280}
                     />
                   </div>
                   <div className="flex min-w-0 flex-1 flex-col p-3.5 md:p-4">
