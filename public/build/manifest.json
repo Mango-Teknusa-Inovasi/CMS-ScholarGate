@@ -22,7 +22,7 @@
     "name": "vendor-react"
   },
   "resources/js/app.tsx": {
-    "file": "assets/app-0KtoVvLw.js",
+    "file": "assets/app-CW00BUvT.js",
     "name": "app",
     "src": "resources/js/app.tsx",
     "isEntry": true,
@@ -33,7 +33,7 @@
       "_vendor-icons-CvtkuJrG.js"
     ],
     "css": [
-      "assets/app-BDs0WOba.css"
+      "assets/app-J0ov1xpf.css"
     ]
   }
 }

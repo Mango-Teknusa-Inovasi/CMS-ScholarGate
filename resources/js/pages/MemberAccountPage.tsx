@@ -9,7 +9,7 @@ import { SeoHead } from '../components/seo/SeoHead'
 import { useToast } from '../components/ui/Toast'
 
 export function MemberAccountPage() {
-  const { user, loading, logout, isLoggedIn, reload } = useMemberAuth()
+  const { user, loading, logout, isLoggedIn, refresh } = useMemberAuth()
   const navigate = useNavigate()
   const toast = useToast()
   const qc = useQueryClient()
@@ -48,7 +48,7 @@ export function MemberAccountPage() {
     onSuccess: (data) => {
       setProfileSuccess(data.message || 'Profil berhasil diperbarui.')
       toast.success(data.message || 'Profil diperbarui.')
-      void reload()
+      void refresh()
       qc.invalidateQueries({ queryKey: ['me'] })
     },
     onError: (err: any) => {
