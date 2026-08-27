@@ -37,6 +37,11 @@ class PublicSettings
         'social_facebook',
         'social_tiktok',
         'social_youtube',
+        'allow_ai_crawlers',
+        'robots_extra',
+        'sitemap_frequency',
+        'sitemap_include_achievements',
+        'sitemap_include_extracurriculars',
     ];
 
     /**

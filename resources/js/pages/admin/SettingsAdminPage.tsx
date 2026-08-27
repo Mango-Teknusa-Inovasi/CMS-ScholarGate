@@ -10,7 +10,14 @@ import { mediaUrl } from '../../lib/utils'
 
 const fieldMeta: Record<
   string,
-  { label: string; hint?: string; multiline?: boolean; group: string }
+  {
+    label: string
+    hint?: string
+    multiline?: boolean
+    type?: 'text' | 'textarea' | 'select'
+    options?: { value: string; label: string }[]
+    group: string
+  }
 > = {
   site_name: { label: 'Nama situs', group: 'Identitas' },
   site_tagline: { label: 'Tagline', group: 'Identitas' },
@@ -65,6 +72,51 @@ const fieldMeta: Record<
     label: 'Bing Webmaster — kode verifikasi',
     group: 'Schema & SEO',
     hint: 'Opsional. Sama: boleh tempel full meta tag msvalidate.01.',
+  },
+  allow_ai_crawlers: {
+    label: 'Izinkan AI / LLM Crawlers (AEO)',
+    type: 'select',
+    options: [
+      { value: '1', label: 'Ya, izinkan perayapan AI (GPTBot, ClaudeBot, dll)' },
+      { value: '0', label: 'Tidak, blokir perayapan AI (Disallow)' },
+    ],
+    hint: 'Mengatur izin baca untuk ChatGPT-User, ClaudeBot, Perplexity, GPTBot, dll.',
+    group: 'Schema & SEO',
+  },
+  robots_extra: {
+    label: 'Aturan robots.txt tambahan',
+    multiline: true,
+    hint: 'Masukkan aturan tambahan baris demi baris jika ada.',
+    group: 'Schema & SEO',
+  },
+  sitemap_frequency: {
+    label: 'Frekuensi pembaruan sitemap',
+    type: 'select',
+    options: [
+      { value: 'daily', label: 'Harian (daily)' },
+      { value: 'weekly', label: 'Mingguan (weekly)' },
+      { value: 'monthly', label: 'Bulanan (monthly)' },
+    ],
+    hint: 'Petunjuk seberapa sering konten diperbarui untuk perayap.',
+    group: 'Schema & SEO',
+  },
+  sitemap_include_achievements: {
+    label: 'Halaman Prestasi di sitemap',
+    type: 'select',
+    options: [
+      { value: '1', label: 'Sertakan' },
+      { value: '0', label: 'Kecualikan' },
+    ],
+    group: 'Schema & SEO',
+  },
+  sitemap_include_extracurriculars: {
+    label: 'Halaman Ekskul di sitemap',
+    type: 'select',
+    options: [
+      { value: '1', label: 'Sertakan' },
+      { value: '0', label: 'Kecualikan' },
+    ],
+    group: 'Schema & SEO',
   },
 }
 
@@ -281,7 +333,20 @@ function Field({
       <label className="mb-1.5 block text-sm font-medium text-ink" htmlFor={fieldKey}>
         {meta.label}
       </label>
-      {meta.multiline ? (
+      {meta.type === 'select' ? (
+        <select
+          id={fieldKey}
+          className="w-full rounded-[12px] border border-line bg-page px-3 py-2.5 text-sm outline-none focus:border-brand focus:bg-white"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        >
+          {meta.options?.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      ) : meta.multiline ? (
         <textarea
           id={fieldKey}
           className="w-full rounded-[12px] border border-line bg-page px-3 py-2.5 text-sm outline-none focus:border-brand focus:bg-white"

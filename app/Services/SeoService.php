@@ -30,6 +30,10 @@ class SeoService
             'google_site_verification' => $s['google_site_verification'] ?? null,
             'bing_site_verification' => $s['bing_site_verification'] ?? null,
             'robots_extra' => $s['robots_extra'] ?? '',
+            'allow_ai_crawlers' => filter_var($s['allow_ai_crawlers'] ?? '1', FILTER_VALIDATE_BOOLEAN),
+            'sitemap_frequency' => $s['sitemap_frequency'] ?? 'daily',
+            'sitemap_include_achievements' => filter_var($s['sitemap_include_achievements'] ?? '1', FILTER_VALIDATE_BOOLEAN),
+            'sitemap_include_extracurriculars' => filter_var($s['sitemap_include_extracurriculars'] ?? '1', FILTER_VALIDATE_BOOLEAN),
             'app_url' => rtrim(config('app.url') ?: url('/'), '/'),
         ];
     }
@@ -368,16 +372,24 @@ class SeoService
     {
         $s = $this->siteSettings();
         $now = now()->toAtomString();
+        $freq = $s['sitemap_frequency'] ?? 'daily';
+
         $urls = [
-            ['loc' => $s['app_url'].'/', 'lastmod' => $now, 'changefreq' => 'daily', 'priority' => '1.0'],
+            ['loc' => $s['app_url'].'/', 'lastmod' => $now, 'changefreq' => $freq, 'priority' => '1.0'],
             ['loc' => $s['app_url'].'/profil', 'lastmod' => $now, 'changefreq' => 'monthly', 'priority' => '0.8'],
-            ['loc' => $s['app_url'].'/artikel', 'lastmod' => $now, 'changefreq' => 'daily', 'priority' => '0.9'],
-            ['loc' => $s['app_url'].'/prestasi', 'lastmod' => $now, 'changefreq' => 'weekly', 'priority' => '0.7'],
-            ['loc' => $s['app_url'].'/ekstrakurikuler', 'lastmod' => $now, 'changefreq' => 'weekly', 'priority' => '0.7'],
-            ['loc' => $s['app_url'].'/download', 'lastmod' => $now, 'changefreq' => 'weekly', 'priority' => '0.6'],
-            ['loc' => $s['app_url'].'/kebijakan-privasi', 'lastmod' => $now, 'changefreq' => 'yearly', 'priority' => '0.3'],
-            ['loc' => $s['app_url'].'/syarat-ketentuan', 'lastmod' => $now, 'changefreq' => 'yearly', 'priority' => '0.3'],
+            ['loc' => $s['app_url'].'/artikel', 'lastmod' => $now, 'changefreq' => $freq, 'priority' => '0.9'],
         ];
+
+        if ($s['sitemap_include_achievements']) {
+            $urls[] = ['loc' => $s['app_url'].'/prestasi', 'lastmod' => $now, 'changefreq' => 'weekly', 'priority' => '0.7'];
+        }
+        if ($s['sitemap_include_extracurriculars']) {
+            $urls[] = ['loc' => $s['app_url'].'/ekstrakurikuler', 'lastmod' => $now, 'changefreq' => 'weekly', 'priority' => '0.7'];
+        }
+
+        $urls[] = ['loc' => $s['app_url'].'/download', 'lastmod' => $now, 'changefreq' => 'weekly', 'priority' => '0.6'];
+        $urls[] = ['loc' => $s['app_url'].'/kebijakan-privasi', 'lastmod' => $now, 'changefreq' => 'yearly', 'priority' => '0.3'];
+        $urls[] = ['loc' => $s['app_url'].'/syarat-ketentuan', 'lastmod' => $now, 'changefreq' => 'yearly', 'priority' => '0.3'];
 
         // Hindari query-string di sitemap (Google lebih suka URL bersih)
         // Kategori tetap bisa di-crawl lewat internal links.
@@ -398,7 +410,7 @@ class SeoService
             ];
         }
 
-        if (class_exists(\App\Models\Achievement::class)) {
+        if ($s['sitemap_include_achievements'] && class_exists(\App\Models\Achievement::class)) {
             try {
                 $achievements = \App\Models\Achievement::published()
                     ->orderByDesc('achieved_at')

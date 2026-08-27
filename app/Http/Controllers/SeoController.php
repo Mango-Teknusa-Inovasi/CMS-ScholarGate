@@ -14,6 +14,9 @@ class SeoController extends Controller
     public function robots(): Response
     {
         $s = $this->seo->siteSettings();
+        $allowAi = $s['allow_ai_crawlers'] ?? true;
+        $aiAction = $allowAi ? 'Allow' : 'Disallow';
+
         $body = implode("\n", array_filter([
             '# Scholargate — SEO / AEO crawl rules',
             'User-agent: *',
@@ -29,30 +32,30 @@ class SeoController extends Controller
             'Disallow: /akun',
             'Disallow: /preview/',
             '',
-            # AI / answer engines — AEO & GEO
+            '# AI / answer engines — AEO & GEO',
             'User-agent: GPTBot',
-            'Allow: /',
+            $aiAction.': /',
             '',
             'User-agent: ChatGPT-User',
-            'Allow: /',
+            $aiAction.': /',
             '',
             'User-agent: Google-Extended',
-            'Allow: /',
+            $aiAction.': /',
             '',
             'User-agent: Googlebot',
             'Allow: /',
             '',
             'User-agent: anthropic-ai',
-            'Allow: /',
+            $aiAction.': /',
             '',
             'User-agent: ClaudeBot',
-            'Allow: /',
+            $aiAction.': /',
             '',
             'User-agent: PerplexityBot',
-            'Allow: /',
+            $aiAction.': /',
             '',
             'User-agent: Bytespider',
-            'Allow: /',
+            $aiAction.': /',
             '',
             'Sitemap: '.$s['app_url'].'/sitemap.xml',
             '# LLMs-Txt: '.$s['app_url'].'/llms.txt',
