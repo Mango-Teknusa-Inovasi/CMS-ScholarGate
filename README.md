@@ -254,3 +254,6 @@ This software is open-source licensed under the [MIT License](./LICENSE).
 <div align="center">
   <sub>Built with ❤️ by the <strong>MangoTek Developer Team</strong>.</sub>
 </div>
+
+
+<!-- Security scan triggered at 2026-09-04 13:03:09 -->
