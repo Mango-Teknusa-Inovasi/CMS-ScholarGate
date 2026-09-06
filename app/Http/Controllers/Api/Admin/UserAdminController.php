@@ -23,7 +23,7 @@ class UserAdminController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8'],
-            'role' => ['nullable', Rule::in(['admin', 'editor'])],
+            'role' => ['nullable', Rule::in(['admin', 'editor', 'member'])],
         ]);
         $data['role'] = $data['role'] ?? 'editor';
         $user = User::create($data);
@@ -37,7 +37,7 @@ class UserAdminController extends Controller
             'name' => ['sometimes', 'string', 'max:255'],
             'email' => ['sometimes', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'password' => ['nullable', 'string', 'min:8'],
-            'role' => ['nullable', Rule::in(['admin', 'editor'])],
+            'role' => ['nullable', Rule::in(['admin', 'editor', 'member'])],
         ]);
 
         if (empty($data['password'])) {

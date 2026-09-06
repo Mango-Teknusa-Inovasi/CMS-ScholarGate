@@ -140,7 +140,7 @@ class ResourceAdminController extends Controller
         }
     }
 
-    public function destroy(string $resource, int $id): JsonResponse
+    public function destroy(string $resource, string $id): JsonResponse
     {
         $model = $this->model($resource);
         $item = $model::query()->findOrFail($id);

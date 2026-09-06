@@ -198,6 +198,7 @@ export function UsersAdminPage() {
             <option value="all">Semua Peran ({data.length})</option>
             <option value="admin">Admin ({data.filter((u) => u.role === 'admin').length})</option>
             <option value="editor">Editor ({data.filter((u) => u.role === 'editor').length})</option>
+            <option value="member">Member Portal ({data.filter((u) => u.role === 'member').length})</option>
           </select>
         </div>
       </div>
@@ -230,6 +231,7 @@ export function UsersAdminPage() {
               <tbody className="divide-y divide-line">
                 {filteredUsers.map((u) => {
                   const isAdminRole = u.role === 'admin'
+                  const isEditorRole = u.role === 'editor'
                   return (
                     <tr key={u.id} className="hover:bg-page/70 transition">
                       <td className="px-5 py-4">
@@ -249,10 +251,12 @@ export function UsersAdminPage() {
                           className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${
                             isAdminRole
                               ? 'bg-purple-100 text-purple-700 border border-purple-200'
-                              : 'bg-blue-100 text-blue-700 border border-blue-200'
+                              : isEditorRole
+                              ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                              : 'bg-emerald-100 text-emerald-700 border border-emerald-200'
                           }`}
                         >
-                          {isAdminRole ? 'Admin CMS' : 'Editor'}
+                          {isAdminRole ? 'Admin CMS' : isEditorRole ? 'Editor' : 'Member Portal'}
                         </span>
                       </td>
                       <td className="hidden px-5 py-4 text-subtle text-xs md:table-cell">
@@ -345,6 +349,7 @@ export function UsersAdminPage() {
                   value={newForm.role}
                   onChange={(e) => setNewForm({ ...newForm, role: e.target.value })}
                 >
+                  <option value="member">Member (Hanya akses akun member publik)</option>
                   <option value="editor">Editor (Bisa kelola artikel, galeri, media)</option>
                   <option value="admin">Admin (Akses penuh termasuk pengguna & backup)</option>
                 </select>
@@ -449,6 +454,7 @@ export function UsersAdminPage() {
                   value={editForm.role}
                   onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
                 >
+                  <option value="member">Member (Hanya akses akun member publik)</option>
                   <option value="editor">Editor (Bisa kelola artikel, galeri, media)</option>
                   <option value="admin">Admin (Akses penuh termasuk pengguna & backup)</option>
                 </select>
