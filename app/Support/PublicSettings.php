@@ -48,6 +48,7 @@ class PublicSettings
     public const ADMIN_KEYS = [
         ...self::KEYS,
         'openai_api_key',
+        'openai_base_url',
         'openai_model',
         'openai_custom_prompt',
         'instagram_scraper_provider',

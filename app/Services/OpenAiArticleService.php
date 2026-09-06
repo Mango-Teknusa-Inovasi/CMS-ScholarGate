@@ -96,27 +96,38 @@ PROMPT;
 }
 SCHEMA;
 
+        $endpoint = self::resolveChatEndpoint();
+
+        $payload = [
+            'model' => $model,
+            'messages' => [
+                ['role' => 'system', 'content' => $systemPrompt],
+                ['role' => 'user', 'content' => $userPrompt],
+            ],
+            'temperature' => 0.7,
+        ];
+
+        if (! str_contains($model, 'reasoner')) {
+            $payload['response_format'] = ['type' => 'json_object'];
+        }
+
         $response = Http::withToken($apiKey)
-            ->timeout(45)
-            ->post('https://api.openai.com/v1/chat/completions', [
-                'model' => $model,
-                'messages' => [
-                    ['role' => 'system', 'content' => $systemPrompt],
-                    ['role' => 'user', 'content' => $userPrompt],
-                ],
-                'response_format' => ['type' => 'json_object'],
-                'temperature' => 0.7,
-            ]);
+            ->withHeaders([
+                'HTTP-Referer' => config('app.url', 'https://sman1gedeg.sch.id'),
+                'X-Title' => 'ScholarGate CMS',
+            ])
+            ->timeout(60)
+            ->post($endpoint, $payload);
 
         if (! $response->successful()) {
             $err = $response->json('error.message') ?? $response->body();
             Log::error('OpenAI generation error: '.$err);
-            throw new \RuntimeException('Gagal memproses artikel dengan OpenAI: '.$err);
+            throw new \RuntimeException('Gagal memproses artikel dengan AI ('.$endpoint.'): '.$err);
         }
 
         $rawContent = $response->json('choices.0.message.content');
         if (! $rawContent) {
-            throw new \RuntimeException('Respon kosong dari OpenAI.');
+            throw new \RuntimeException('Respon kosong dari penyedia AI.');
         }
 
         $parsed = json_decode($rawContent, true);
@@ -127,7 +138,7 @@ SCHEMA;
         }
 
         if (! is_array($parsed)) {
-            throw new \RuntimeException('Gagal mengurai format JSON respon dari OpenAI.');
+            throw new \RuntimeException('Gagal mengurai format JSON respon dari penyedia AI.');
         }
 
         $title = trim((string) ($parsed['title'] ?? ''));
@@ -173,21 +184,45 @@ SCHEMA;
     }
 
     /**
-     * Uji koneksi API OpenAI.
+     * Tentukan URL lengkap endpoint chat completions dari Base URL.
      */
-    public function testConnection(?string $apiKey = null, ?string $model = null): array
+    public static function resolveChatEndpoint(?string $customBase = null): string
+    {
+        $base = trim($customBase ?: (string) Setting::getValue('openai_base_url', env('OPENAI_BASE_URL', 'https://api.openai.com/v1')));
+        if ($base === '') {
+            $base = 'https://api.openai.com/v1';
+        }
+
+        $base = rtrim($base, '/');
+
+        if (str_ends_with($base, '/chat/completions')) {
+            return $base;
+        }
+
+        return $base.'/chat/completions';
+    }
+
+    /**
+     * Uji koneksi API AI (OpenAI / OpenRouter / DeepSeek / provider kompatibel).
+     */
+    public function testConnection(?string $apiKey = null, ?string $model = null, ?string $baseUrl = null): array
     {
         $key = trim($apiKey ?: (string) Setting::getValue('openai_api_key', env('OPENAI_API_KEY', '')));
         if ($key === '') {
-            return ['ok' => false, 'message' => 'API Key OpenAI kosong.'];
+            return ['ok' => false, 'message' => 'API Key belum diisi.'];
         }
 
         $selectedModel = trim($model ?: (string) Setting::getValue('openai_model', 'gpt-4o-mini')) ?: 'gpt-4o-mini';
+        $endpoint = self::resolveChatEndpoint($baseUrl);
 
         try {
             $response = Http::withToken($key)
+                ->withHeaders([
+                    'HTTP-Referer' => config('app.url', 'https://sman1gedeg.sch.id'),
+                    'X-Title' => 'ScholarGate CMS',
+                ])
                 ->timeout(15)
-                ->post('https://api.openai.com/v1/chat/completions', [
+                ->post($endpoint, [
                     'model' => $selectedModel,
                     'messages' => [
                         ['role' => 'user', 'content' => 'Halo, balas dengan kata "OK" jika terhubung.'],
@@ -196,12 +231,12 @@ SCHEMA;
                 ]);
 
             if ($response->successful()) {
-                return ['ok' => true, 'message' => 'Koneksi OpenAI berhasil! (Model: '.$selectedModel.')'];
+                return ['ok' => true, 'message' => 'Koneksi AI berhasil! (Endpoint: '.$endpoint.', Model: '.$selectedModel.')'];
             }
 
-            $errMsg = $response->json('error.message') ?: 'HTTP '.$response->status();
+            $errMsg = $response->json('error.message') ?: 'HTTP '.$response->status().' - '.$response->body();
 
-            return ['ok' => false, 'message' => 'Gagal terhubung ke OpenAI: '.$errMsg];
+            return ['ok' => false, 'message' => 'Gagal terhubung: '.$errMsg];
         } catch (\Throwable $e) {
             return ['ok' => false, 'message' => 'Koneksi error: '.$e->getMessage()];
         }

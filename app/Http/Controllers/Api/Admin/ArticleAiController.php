@@ -62,8 +62,9 @@ class ArticleAiController extends Controller
     {
         $apiKey = $request->string('openai_api_key')->toString() ?: null;
         $model = $request->string('openai_model')->toString() ?: null;
+        $baseUrl = $request->string('openai_base_url')->toString() ?: null;
 
-        $result = $aiService->testConnection($apiKey, $model);
+        $result = $aiService->testConnection($apiKey, $model, $baseUrl);
 
         return response()->json($result, $result['ok'] ? 200 : 422);
     }

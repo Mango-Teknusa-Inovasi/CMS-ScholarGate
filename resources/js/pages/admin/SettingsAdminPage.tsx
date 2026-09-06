@@ -120,11 +120,16 @@ const fieldMeta: Record<
   },
   openai_api_key: {
     label: 'OpenAI API Key',
-    hint: 'Kunci rahasia dari platform.openai.com (misal: sk-proj-...) untuk generator artikel otomatis.',
+    hint: 'Kunci rahasia dari platform.openai.com, openrouter.ai, atau penyedia AI kompatibel lainnya.',
+    group: 'Integrasi AI & Instagram',
+  },
+  openai_base_url: {
+    label: 'API Base URL / Endpoint (OpenAI Compatible)',
+    hint: 'Default: https://api.openai.com/v1. Bisa diganti ke OpenRouter, DeepSeek, Groq, dll.',
     group: 'Integrasi AI & Instagram',
   },
   openai_model: {
-    label: 'Model OpenAI',
+    label: 'Model AI',
     hint: 'Bebas isi model kustom atau klik rekomendasi di bawah. Default: gpt-4o-mini.',
     group: 'Integrasi AI & Instagram',
   },
@@ -163,13 +168,14 @@ export function SettingsAdminPage() {
 
   const handleTestAi = async () => {
     if (!form.openai_api_key) {
-      toast.error('Masukkan OpenAI API Key terlebih dahulu.')
+      toast.error('Masukkan API Key terlebih dahulu.')
       return
     }
     setTestingAi(true)
     try {
       const res = await api.post<{ ok: boolean; message: string }>('/admin/ai/test-connection', {
         openai_api_key: form.openai_api_key,
+        openai_base_url: form.openai_base_url,
         openai_model: form.openai_model,
       })
       if (res.data.ok) {
@@ -178,7 +184,7 @@ export function SettingsAdminPage() {
         toast.error(res.data.message)
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Gagal terhubung ke OpenAI.')
+      toast.error(err.response?.data?.message || 'Gagal terhubung ke API AI.')
     } finally {
       setTestingAi(false)
     }
@@ -366,7 +372,8 @@ export function SettingsAdminPage() {
                     className={
                       fieldMeta[key].multiline ||
                       key === 'contact_address' ||
-                      key === 'openai_custom_prompt'
+                      key === 'openai_custom_prompt' ||
+                      key === 'openai_base_url'
                         ? 'sm:col-span-2'
                         : ''
                     }
@@ -403,7 +410,46 @@ function Field({
       <label className="mb-1.5 block text-sm font-medium text-ink" htmlFor={fieldKey}>
         {meta.label}
       </label>
-      {fieldKey === 'openai_model' ? (
+      {fieldKey === 'openai_base_url' ? (
+        <div className="space-y-2">
+          <input
+            id={fieldKey}
+            list="openai-endpoints-list"
+            className="w-full rounded-[12px] border border-line bg-page px-3 py-2.5 text-sm outline-none focus:border-brand focus:bg-white"
+            placeholder="Default: https://api.openai.com/v1"
+            value={value || ''}
+            onChange={(e) => onChange(e.target.value)}
+          />
+          <datalist id="openai-endpoints-list">
+            <option value="https://api.openai.com/v1" />
+            <option value="https://openrouter.ai/api/v1" />
+            <option value="https://api.deepseek.com/v1" />
+            <option value="https://api.groq.com/openai/v1" />
+          </datalist>
+          <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-subtle">
+            <span className="font-medium text-slate-500">Preset endpoint:</span>
+            {[
+              { id: 'https://api.openai.com/v1', label: 'OpenAI Resmi' },
+              { id: 'https://openrouter.ai/api/v1', label: 'OpenRouter' },
+              { id: 'https://api.deepseek.com/v1', label: 'DeepSeek' },
+              { id: 'https://api.groq.com/openai/v1', label: 'Groq' },
+            ].map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => onChange(p.id)}
+                className={`rounded-md border px-2 py-0.5 text-xs transition ${
+                  (value || 'https://api.openai.com/v1') === p.id
+                    ? 'border-brand bg-brand/10 font-semibold text-brand shadow-2xs'
+                    : 'border-line bg-white hover:border-slate-300 hover:bg-page'
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : fieldKey === 'openai_model' ? (
         <div className="space-y-2">
           <input
             id={fieldKey}
