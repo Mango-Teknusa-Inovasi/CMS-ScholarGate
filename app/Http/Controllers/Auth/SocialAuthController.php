@@ -275,6 +275,11 @@ class SocialAuthController extends Controller
 
         // Establish session login
         Auth::login($user, true);
+        if ($user->isAdmin()) {
+            $user->tokens()->where('name', 'admin-spa')->delete();
+            $token = $user->createToken('admin-spa')->plainTextToken;
+            request()->session()->put('admin_spa_token', $token);
+        }
         request()->session()->regenerate();
         request()->session()->save();
 

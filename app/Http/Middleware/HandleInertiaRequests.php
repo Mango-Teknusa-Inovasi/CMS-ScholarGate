@@ -25,10 +25,21 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+        $token = null;
+        if ($user && $user->isAdmin()) {
+            $token = $request->session()->get('admin_spa_token');
+            if (! $token) {
+                $token = $user->createToken('admin-spa')->plainTextToken;
+                $request->session()->put('admin_spa_token', $token);
+            }
+        }
+
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $this->userPayload($request->user()),
+                'user' => $this->userPayload($user),
+                'token' => $token,
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),

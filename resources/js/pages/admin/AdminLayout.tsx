@@ -397,10 +397,17 @@ function SidebarChrome({
 export function AdminLayout({ children }: { children?: ReactNode }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const page = usePage<{ auth?: { user: AuthUser | null } }>()
+  const page = usePage<{ auth?: { user: AuthUser | null; token?: string | null } }>()
   const sharedUser = page.props.auth?.user ?? null
+  const sharedToken = page.props.auth?.token ?? null
   const [mobileOpen, setMobileOpen] = useState(false)
   const reduce = useReducedMotion()
+
+  useEffect(() => {
+    if (sharedToken) {
+      setAdminToken(sharedToken)
+    }
+  }, [sharedToken])
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['auth-me-admin', sharedUser?.id ?? 'session'],

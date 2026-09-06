@@ -16,14 +16,42 @@ export const api = axios.create({
 })
 
 api.interceptors.request.use((config) => {
+  const isAdminRoute =
+    (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')) ||
+    (config.url && config.url.startsWith('/admin'))
   const adminToken = localStorage.getItem('scholargate_admin_token')
   const memberToken = localStorage.getItem('scholargate_member_token')
-  const token = adminToken && adminToken !== 'session' ? adminToken : memberToken
+
+  const token = isAdminRoute
+    ? adminToken && adminToken !== 'session'
+      ? adminToken
+      : null
+    : adminToken && adminToken !== 'session'
+      ? adminToken
+      : memberToken
+
   if (token && token !== 'session') {
     config.headers.Authorization = `Bearer ${token}`
   }
   return config
 })
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error?.response?.status === 401) {
+      const isAdminRoute =
+        (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')) ||
+        (error.config?.url && error.config.url.startsWith('/admin'))
+      if (isAdminRoute) {
+        localStorage.removeItem('scholargate_admin_token')
+      } else {
+        localStorage.removeItem('scholargate_member_token')
+      }
+    }
+    return Promise.reject(error)
+  },
+)
 
 /** Fetch Sanctum CSRF cookie before login/mutating without prior session */
 export async function ensureCsrf() {
