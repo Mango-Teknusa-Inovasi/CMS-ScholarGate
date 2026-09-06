@@ -45,6 +45,7 @@ class BackupService
         'contact_infos',
         'menu_items',
         'legal_pages',
+        'plugins',
     ];
 
     /** @var list<string> Semua tabel untuk export backup. */
@@ -68,6 +69,7 @@ class BackupService
         'legal_pages',
         'extracurriculars',
         'media',
+        'plugins',
     ];
 
     /** Tabel sensitif — export tanpa password; restore butuh flag + super admin. */
@@ -80,6 +82,7 @@ class BackupService
     private array $jsonColumns = [
         'articles' => ['faq_items'],
         'profile_pages' => ['tabs'],
+        'plugins' => ['manifest', 'settings'],
     ];
 
     /** Kolom boolean (normalisasi 0/1 ↔ true/false). */
@@ -98,6 +101,7 @@ class BackupService
         'extracurriculars' => ['is_active', 'open_in_new_tab'],
         'media' => ['optimized'],
         'legal_pages' => ['is_published'],
+        'plugins' => ['is_active'],
     ];
 
     /** Kolom tanggal/waktu. */
@@ -121,6 +125,7 @@ class BackupService
         'profile_pages' => ['created_at', 'updated_at'],
         'extracurriculars' => ['created_at', 'updated_at'],
         'legal_pages' => ['created_at', 'updated_at'],
+        'plugins' => ['created_at', 'updated_at'],
     ];
 
     private const MAX_JSON_BYTES = 40 * 1024 * 1024; // 40MB
@@ -173,7 +178,13 @@ class BackupService
             if (! Schema::hasTable($table)) {
                 continue;
             }
-            $rows = DB::table($table)->orderBy('id')->get()->map(function ($row) use ($table) {
+            $query = DB::table($table);
+            if (Schema::hasColumn($table, 'id')) {
+                $query->orderBy('id');
+            } elseif ($table === 'article_tag' && Schema::hasColumn($table, 'article_id')) {
+                $query->orderBy('article_id')->orderBy('tag_id');
+            }
+            $rows = $query->get()->map(function ($row) use ($table) {
                 $arr = (array) $row;
                 if ($table === 'users') {
                     unset($arr['password'], $arr['remember_token']);
@@ -386,7 +397,7 @@ class BackupService
         $this->disableForeignKeys();
 
         try {
-            DB::connection()->getPdo()->beginTransaction();
+            DB::beginTransaction();
             try {
                 foreach ($restoreList as $table) {
                     if (! Schema::hasTable($table) || empty($data['tables'][$table])) {
@@ -441,9 +452,9 @@ class BackupService
                 }
 
                 $this->resetPostgresSequences();
-                DB::connection()->getPdo()->commit();
+                DB::commit();
             } catch (\Throwable $e) {
-                DB::connection()->getPdo()->rollBack();
+                DB::rollBack();
                 throw $e;
             }
         } finally {
@@ -778,6 +789,9 @@ class BackupService
     {
         if (isset($row['id'])) {
             return ['id' => $row['id']];
+        }
+        if ($table === 'plugins' && isset($row['slug'])) {
+            return ['slug' => $row['slug']];
         }
         if ($table === 'article_tag' && isset($row['article_id'], $row['tag_id'])) {
             return ['article_id' => $row['article_id'], 'tag_id' => $row['tag_id']];

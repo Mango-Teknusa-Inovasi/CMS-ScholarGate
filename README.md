@@ -58,10 +58,12 @@ Unlike monolithic legacy systems, ScholarGate operates as an **Inertia-driven Si
 - **Institutional Branding**: Automatic logo emblem & institution name co-branding display with dynamic favicon generation.
 
 ### 🛡️ Enterprise Admin CMS
+- **AI-Powered Instagram Auto-Journalism**: Paste an Instagram post/carousel URL to automatically download, optimize images to WebP, register into Media Storage, and generate full journalistic web articles with rich responsive image layouts, SEO tags, and auto-categorization. Supports OpenAI, OpenRouter, 9Router, DeepSeek, and Groq compatible endpoints.
+- **Fast Inline Category & Tag Management**: Create and select categories and tags directly within the article editor without leaving the workflow or navigating to another page.
 - **WordPress-Style Plugin & Add-On System**: Modular architecture allowing custom add-ons (PPDB Online, E-Library, Notification Systems) to be installed, activated, or uploaded via `.ZIP` without modifying core system code. Features WordPress-like PHP Action/Filter hooks (`Hook::addFilter()`, `Hook::doAction()`).
 - **Granular User Management (RBAC)**: Role-based access control (`Super Admin`, `Editor`, `Member`) with live user search, role filtering, profile editing, and instant password reset functionality.
 - **Media Library & Image Optimization**: Automated client-and-server WebP image conversion and thumbnail generation synced directly with Cloudflare R2 / S3 storage.
-- **Automated Dual Cloud Storage Backup**: Portable JSON/ZIP database backup engine that automatically syncs backups to **Cloudflare R2 Object Storage** and server storage. Supports both **Merge** (CMS content update) and **Replace** (full environment restore) modes.
+- **Automated Dual Cloud Storage Backup**: Portable JSON/ZIP database backup engine that automatically syncs backups to **Cloudflare R2 Object Storage** and server storage. Supports both **Merge** (CMS content update) and **Replace** (full environment restore) modes. Includes CLI scripts (`scripts/backup-db.sh` & `scripts/restore-db.sh`).
 - **Settings & Branding Hub**: Live branding editor for school name, tagline, address, social media links (Instagram, Facebook, TikTok, YouTube), and system banners.
 
 

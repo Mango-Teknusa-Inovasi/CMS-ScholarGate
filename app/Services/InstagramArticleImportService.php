@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
+use App\Models\Category;
 use App\Models\Media;
 use App\Support\MediaStorage;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class InstagramArticleImportService
 {
@@ -160,6 +162,18 @@ HTML;
         // Bersihkan token placeholder yang mungkin tidak terpakai
         $bodyHtml = preg_replace('/\{\{IMAGE_\d+\}\}/', '', $bodyHtml);
 
+        $categoryId = null;
+        $categoryName = $aiResult['category'] ?? '';
+        if ($categoryName !== '') {
+            $catSlug = Str::slug($categoryName) ?: 'cat-'.Str::random(4);
+            $category = Category::query()->firstOrCreate(
+                ['slug' => $catSlug],
+                ['name' => $categoryName]
+            );
+            $categoryId = $category->id;
+            $categoryName = $category->name;
+        }
+
         return [
             'title' => $aiResult['title'],
             'slug' => $aiResult['slug'],
@@ -167,6 +181,8 @@ HTML;
             'body' => $bodyHtml,
             'cover_path' => $coverPath,
             'cover_url' => $coverUrl,
+            'category_id' => $categoryId,
+            'category_name' => $categoryName,
             'tags_text' => implode(', ', $aiResult['tags']),
             'focus_keyword' => $aiResult['focus_keyword'],
             'meta_title' => $aiResult['meta_title'],

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Article;
+use App\Models\Category;
 use App\Models\Tag;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -24,14 +25,20 @@ class ArticleAdminController extends Controller
             $query->where('status', $status);
         }
 
-        if ($search = $request->string('q')->toString()) {
+        if (! $trash && ($categoryId = $request->string('category_id')->toString())) {
+            $query->where('category_id', $categoryId);
+        }
+
+        if ($search = $request->string('search')->toString()) {
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
                     ->orWhere('excerpt', 'like', "%{$search}%");
             });
         }
 
-        return response()->json($query->paginate($request->integer('per_page', 15)));
+        $perPage = min(max($request->integer('per_page', 15), 1), 100);
+
+        return response()->json($query->paginate($perPage));
     }
 
     public function store(Request $request): JsonResponse
@@ -39,6 +46,9 @@ class ArticleAdminController extends Controller
         $data = $this->validated($request);
         $tagIds = $this->syncTagIds($request);
         unset($data['tag_ids'], $data['tags']);
+
+        $data['category_id'] = $this->resolveCategoryId($request, $data['category_id'] ?? null);
+        unset($data['category_name']);
 
         $data['user_id'] = $request->user()->id;
         $data['slug'] = $this->uniqueSlug($data['title'], $data['slug'] ?? null);
@@ -65,6 +75,11 @@ class ArticleAdminController extends Controller
         $data = $this->validated($request, $article->id);
         $tagIds = $this->syncTagIds($request);
         unset($data['tag_ids'], $data['tags']);
+
+        if ($request->has('category_id') || $request->has('category_name')) {
+            $data['category_id'] = $this->resolveCategoryId($request, $data['category_id'] ?? null);
+        }
+        unset($data['category_name']);
 
         if (! empty($data['title']) && empty($data['slug'])) {
             $data['slug'] = $this->uniqueSlug($data['title'], $article->slug, $article->id);
@@ -159,7 +174,8 @@ class ArticleAdminController extends Controller
             'faq_items.*.answer' => ['required_with:faq_items', 'string', 'max:5000'],
             'body' => ['nullable', 'string'],
             'cover_path' => ['nullable', 'string'],
-            'category_id' => ['nullable', 'exists:categories,id'],
+            'category_id' => ['nullable', 'string', 'exists:categories,id'],
+            'category_name' => ['nullable', 'string', 'max:100'],
             'status' => ['nullable', 'in:draft,published,archived'],
             'is_featured' => ['nullable', 'boolean'],
             'published_at' => ['nullable', 'date'],
@@ -168,6 +184,26 @@ class ArticleAdminController extends Controller
             'tags' => ['nullable', 'array'],
             'tags.*' => ['string', 'max:100'],
         ]);
+    }
+
+    private function resolveCategoryId(Request $request, ?string $categoryId = null): ?string
+    {
+        if (! empty($categoryId)) {
+            return $categoryId;
+        }
+
+        $name = trim((string) $request->input('category_name', ''));
+        if ($name === '') {
+            return null;
+        }
+
+        $slug = Str::slug($name) ?: 'cat-'.Str::random(4);
+        $category = Category::query()->firstOrCreate(
+            ['slug' => $slug],
+            ['name' => $name]
+        );
+
+        return $category->id;
     }
 
     /**
@@ -200,7 +236,7 @@ class ArticleAdminController extends Controller
         return $ids;
     }
 
-    private function uniqueSlug(string $title, ?string $slug = null, ?int $ignoreId = null): string
+    private function uniqueSlug(string $title, ?string $slug = null, ?string $ignoreId = null): string
     {
         $base = Str::slug($slug ?: $title) ?: 'artikel';
         $candidate = $base;

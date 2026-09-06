@@ -20,6 +20,8 @@ export type InstagramImportResult = {
   body: string
   cover_path: string
   cover_url: string
+  category_id?: string | null
+  category_name?: string | null
   tags_text: string
   focus_keyword: string
   meta_title: string

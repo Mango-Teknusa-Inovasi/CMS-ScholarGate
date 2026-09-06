@@ -10,8 +10,8 @@ import { AdminFormSkeleton } from '../../components/ui/Skeleton'
 import { useToast } from '../../components/ui/Toast'
 import { InstagramImportModal, type InstagramImportResult } from '../../components/admin/InstagramImportModal'
 
-type Category = { id: number; name: string }
-type Tag = { id: number; name: string; slug: string }
+type Category = { id: string | number; name: string }
+type Tag = { id: string | number; name: string; slug: string }
 
 const emptyForm = {
   title: '',
@@ -51,13 +51,40 @@ export function ArticleEditorPage() {
   const [previewBusy, setPreviewBusy] = useState(false)
   const [isIgModalOpen, setIsIgModalOpen] = useState(false)
 
+  const [showAddCategory, setShowAddCategory] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState('')
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false)
+
+  const handleCreateCategory = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
+    const name = newCategoryName.trim()
+    if (!name) return
+    setIsCreatingCategory(true)
+    try {
+      const res = await api.post<Category>('/admin/categories', { name })
+      await qc.invalidateQueries({ queryKey: ['admin-categories'] })
+      setForm((prev) => ({ ...prev, category_id: String(res.data.id) }))
+      setNewCategoryName('')
+      setShowAddCategory(false)
+      toast.success(`Kategori "${res.data.name}" berhasil dibuat!`)
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Gagal membuat kategori baru.')
+    } finally {
+      setIsCreatingCategory(false)
+    }
+  }
+
   const handleInstagramImported = (data: InstagramImportResult) => {
+    if (data.category_id) {
+      qc.invalidateQueries({ queryKey: ['admin-categories'] })
+    }
     setForm((prev) => ({
       ...prev,
       title: data.title,
       slug: data.slug,
       excerpt: data.excerpt,
       body: data.body,
+      category_id: data.category_id ? String(data.category_id) : prev.category_id,
       cover_path: data.cover_path || prev.cover_path,
       tags_text: data.tags_text || prev.tags_text,
       focus_keyword: data.focus_keyword || prev.focus_keyword,
@@ -440,9 +467,52 @@ export function ArticleEditorPage() {
                 <p className="mt-1 text-[11px] text-subtle">Kosongkan = langsung saat terbitkan</p>
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-subtle">
-                  Kategori
-                </label>
+                <div className="mb-1.5 flex items-center justify-between">
+                  <label className="block text-xs font-semibold uppercase tracking-wide text-subtle">
+                    Kategori
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddCategory(!showAddCategory)}
+                    className="text-xs font-medium text-brand hover:underline"
+                  >
+                    {showAddCategory ? 'Batal' : '+ Kategori baru'}
+                  </button>
+                </div>
+
+                {showAddCategory && (
+                  <div className="mb-2.5 rounded-xl border border-brand/20 bg-brand/5 p-2.5">
+                    <p className="mb-1.5 text-xs font-medium text-slate-700 dark:text-slate-300">
+                      Tambah kategori baru:
+                    </p>
+                    <div className="flex gap-1.5">
+                      <input
+                        type="text"
+                        placeholder="Nama kategori..."
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            handleCreateCategory()
+                          }
+                        }}
+                        disabled={isCreatingCategory}
+                        className="flex-1 rounded-lg border border-line bg-white px-2.5 py-1.5 text-xs outline-none focus:border-brand dark:bg-slate-900"
+                        autoFocus
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleCreateCategory()}
+                        disabled={isCreatingCategory || !newCategoryName.trim()}
+                        className="rounded-lg bg-brand px-3 py-1.5 text-xs font-medium text-white transition hover:bg-brand/90 disabled:opacity-50"
+                      >
+                        {isCreatingCategory ? 'Menyimpan...' : 'Simpan'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 <select
                   className="w-full rounded-[12px] border border-line bg-page px-3 py-2.5 text-sm outline-none focus:border-brand focus:bg-white"
                   value={form.category_id}

@@ -183,11 +183,14 @@ Brand logo pipeline (`POST /api/v1/admin/settings/logo`): admin-only, raster onl
 
 | Control | Detail |
 |---------|--------|
-| Privilege | Super admin only |
-| Secrets | Password hashes never exported |
-| Users table | Restored only if `include_users=true` |
-| Formats | Portable JSON v2 / ZIP; size limits |
-| Paths | Backup filenames constrained in routes / service |
+| Privilege | Super admin only (`super_admin` middleware) |
+| Secrets | Password hashes never exported in JSON backups |
+| Users table | Restored only if `include_users=true` (super admin explicit check) |
+| Formats | Portable JSON v2 / ZIP; size limits (max 40MB payload) |
+| Paths | Backup filenames constrained via strict regex (`^[A-Za-z0-9._-]+$`) |
+| Atomicity | Handled within database transaction / savepoints with foreign key safety |
+| Plugins state | Plugin manifests, settings, and activation states securely backed up and restored |
+| CLI Scripts | `scripts/backup-db.sh` & `scripts/restore-db.sh` execute via environment credentials with confirmation barrier |
 | Errors | Fail closed with generic client message; detail in server log |
 
 ---

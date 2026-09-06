@@ -87,6 +87,7 @@ PROMPT;
 {
   "title": "string (Judul berita formal)",
   "slug": "string (kebab-case URL slug)",
+  "category": "string (Nama 1 kategori utama paling relevan, misal: Prestasi, Kegiatan, Pengumuman, Ekstrakurikuler, atau Informasi)",
   "excerpt": "string (ringkasan 1-2 kalimat)",
   "body_html": "string (HTML bersih dengan <p>, <h2>, dan {{IMAGE_X}} placeholder)",
   "tags": ["string", "string"],
@@ -112,30 +113,42 @@ SCHEMA;
             $payload['response_format'] = ['type' => 'json_object'];
         }
 
-        $response = Http::withToken($apiKey)
-            ->withHeaders([
-                'HTTP-Referer' => config('app.url', 'https://sman1gedeg.sch.id'),
-                'X-Title' => 'ScholarGate CMS',
-            ])
-            ->timeout(60)
-            ->post($endpoint, $payload);
+        try {
+            $response = Http::withToken($apiKey)
+                ->withHeaders([
+                    'HTTP-Referer' => config('app.url', 'https://sman1gedeg.sch.id'),
+                    'X-Title' => 'ScholarGate CMS',
+                ])
+                ->timeout(60)
+                ->post($endpoint, $payload);
 
-        if (! $response->successful()) {
-            $err = $response->json('error.message') ?? $response->body();
-            Log::error('OpenAI generation error: '.$err);
-            throw new \RuntimeException('Gagal memproses artikel dengan AI ('.$endpoint.'): '.$err);
-        }
+            if (! $response->successful()) {
+                $errorBody = $response->json('error.message') ?: $response->body();
+                throw new \RuntimeException("OpenAI API merespon error ({$response->status()}): {$errorBody}");
+            }
 
-        $rawContent = self::extractContentFromResponse($response);
-        if (! $rawContent) {
-            throw new \RuntimeException('Respon kosong dari penyedia AI.');
-        }
+            $rawContent = self::extractContentFromResponse($response);
+            if (! $rawContent) {
+                throw new \RuntimeException('Respon OpenAI kosong.');
+            }
 
-        $parsed = json_decode($rawContent, true);
-        if (! is_array($parsed)) {
-            // Coba bersihkan markdown json wrapper jika ada
-            $cleaned = preg_replace('/^```(?:json)?\s*|\s*```$/m', '', trim($rawContent));
-            $parsed = json_decode($cleaned, true);
+            // Bersihkan markdown code block jika model membungkus dengan ```json
+            $cleanJson = preg_replace('/^```(?:json)?\s*/i', '', $rawContent);
+            $cleanJson = preg_replace('/\s*```$/', '', $cleanJson);
+            $cleanJson = trim($cleanJson);
+
+            $parsed = json_decode($cleanJson, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                // Percobaan fallback: temukan string JSON di dalam kurung kurawal
+                if (preg_match('/\{[\s\S]*\}/', $cleanJson, $matches)) {
+                    $parsed = json_decode($matches[0], true);
+                }
+            }
+        } catch (\Throwable $e) {
+            if ($e instanceof \RuntimeException) {
+                throw $e;
+            }
+            throw new \RuntimeException('Koneksi ke AI Provider gagal: '.$e->getMessage(), 0, $e);
         }
 
         if (! is_array($parsed)) {
@@ -153,6 +166,8 @@ SCHEMA;
         } else {
             $slug = Str::slug($slug);
         }
+
+        $category = trim((string) ($parsed['category'] ?? ''));
 
         $excerpt = trim((string) ($parsed['excerpt'] ?? ''));
         if ($excerpt === '') {
@@ -175,6 +190,7 @@ SCHEMA;
         return [
             'title' => $title,
             'slug' => $slug,
+            'category' => $category,
             'excerpt' => $excerpt,
             'body_html' => $bodyHtml,
             'tags' => $tags,
