@@ -62,6 +62,7 @@ class PublicSettings
         'auth_social_oidc_enabled',
         'auth_social_oidc_name',
         'auth_social_oidc_button_text',
+        'openai_display_model_name',
     ];
 
     /** @var list<string> */
@@ -70,6 +71,7 @@ class PublicSettings
         'openai_api_key',
         'openai_base_url',
         'openai_model',
+        'openai_display_model_name',
         'openai_custom_prompt',
         'instagram_scraper_provider',
         'instagram_scraper_api_key',

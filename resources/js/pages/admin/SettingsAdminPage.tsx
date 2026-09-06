@@ -169,6 +169,11 @@ const fieldMeta: Record<
     hint: 'Bebas isi model kustom atau klik rekomendasi di bawah. Default: gpt-4o-mini.',
     group: 'ai',
   },
+  openai_display_model_name: {
+    label: 'Nama Tampilan Model AI (Brand Persona)',
+    hint: 'Nama model/sistem AI publik yang akan selalu dijawab oleh asisten (misal: ScholarGate Intelligence Engine). Model dilarang membocorkan nama provider atau model aslinya.',
+    group: 'ai',
+  },
   openai_custom_prompt: {
     label: 'Instruksi Khusus AI (Custom System Prompt)',
     multiline: true,
@@ -573,6 +578,11 @@ export function SettingsAdminPage() {
                 fieldKey="openai_model"
                 value={form.openai_model || ''}
                 onChange={(v) => setForm({ ...form, openai_model: v })}
+              />
+              <Field
+                fieldKey="openai_display_model_name"
+                value={form.openai_display_model_name || ''}
+                onChange={(v) => setForm({ ...form, openai_display_model_name: v })}
               />
               <Field
                 fieldKey="openai_custom_prompt"

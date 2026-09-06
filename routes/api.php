@@ -37,6 +37,11 @@ Route::prefix('v1')->group(function () {
             ->where('key', 'privacy|terms');
     });
 
+    // Tanya AI / RAG sekolah (rate limited)
+    Route::middleware('throttle:30,1')->group(function () {
+        Route::post('/ai/ask', [ArticleAiController::class, 'ask']);
+    });
+
     // List + search artikel (lebih ketat)
     Route::middleware('throttle:public-search')->group(function () {
         Route::get('/articles', [ArticleController::class, 'index']);
@@ -88,6 +93,7 @@ Route::prefix('v1')->group(function () {
             Route::post('/articles', [ArticleAdminController::class, 'store']);
             Route::post('/articles/generate-from-instagram', [ArticleAiController::class, 'fromInstagram']);
             Route::post('/ai/test-connection', [ArticleAiController::class, 'testConnection']);
+            Route::post('/ai/ask', [ArticleAiController::class, 'ask']);
             Route::post('/articles/bulk-delete', [ArticleAdminController::class, 'bulkDestroy']);
             Route::post('/articles/{id}/restore', [ArticleAdminController::class, 'restore']);
             Route::delete('/articles/{id}/force', [ArticleAdminController::class, 'forceDestroy']);

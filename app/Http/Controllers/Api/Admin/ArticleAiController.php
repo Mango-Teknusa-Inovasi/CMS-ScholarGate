@@ -68,4 +68,40 @@ class ArticleAiController extends Controller
 
         return response()->json($result, $result['ok'] ? 200 : 422);
     }
+
+    /**
+     * RAG AI Q&A query grounded on published school articles with prompt injection defense.
+     */
+    public function ask(Request $request, OpenAiArticleService $aiService): JsonResponse
+    {
+        $request->validate([
+            'query' => ['required', 'string', 'max:1000'],
+            'max_articles' => ['nullable', 'integer', 'min:1', 'max:10'],
+        ], [
+            'query.required' => 'Pertanyaan wajib diisi.',
+            'query.max' => 'Pertanyaan maksimal 1000 karakter.',
+        ]);
+
+        $query = $request->string('query')->toString();
+        $maxArticles = $request->integer('max_articles', 4);
+
+        try {
+            $result = $aiService->answerRagQuery($query, $maxArticles);
+
+            return response()->json([
+                'success' => true,
+                'data' => $result,
+            ]);
+        } catch (\RuntimeException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage() ?: 'Terjadi kesalahan saat memproses pertanyaan ke AI.',
+            ], 500);
+        }
+    }
 }
