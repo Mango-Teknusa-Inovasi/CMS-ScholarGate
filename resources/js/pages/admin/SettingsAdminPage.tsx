@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { CheckCircle2, ImagePlus, Loader2, Trash2 } from 'lucide-react'
+import { CheckCircle2, ImagePlus, Loader2, Sparkles, Trash2 } from 'lucide-react'
 import { api, ensureCsrf } from '../../lib/api'
 import { AdminPageHeader } from '../../components/admin/AdminPageHeader'
 import { ImageUploadField } from '../../components/admin/ImageUploadField'
@@ -118,6 +118,38 @@ const fieldMeta: Record<
     ],
     group: 'Schema & SEO',
   },
+  openai_api_key: {
+    label: 'OpenAI API Key',
+    hint: 'Kunci rahasia dari platform.openai.com (misal: sk-proj-...) untuk generator artikel otomatis.',
+    group: 'Integrasi AI & Instagram',
+  },
+  openai_model: {
+    label: 'Model OpenAI',
+    type: 'select',
+    options: [
+      { value: 'gpt-4o-mini', label: 'GPT-4o Mini (Sangat Cepat & Hemat — Rekomendasi)' },
+      { value: 'gpt-4o', label: 'GPT-4o (Kapasitas Maksimal)' },
+      { value: 'gpt-4-turbo', label: 'GPT-4 Turbo' },
+    ],
+    hint: 'Model yang digunakan untuk menyusun naskah berita sekolah.',
+    group: 'Integrasi AI & Instagram',
+  },
+  openai_custom_prompt: {
+    label: 'Instruksi Khusus AI (Custom System Prompt)',
+    multiline: true,
+    hint: 'Opsional: Berikan panduan gaya bahasa humas sekolah, nilai-nilai, atau penekanan khusus.',
+    group: 'Integrasi AI & Instagram',
+  },
+  instagram_scraper_api_key: {
+    label: 'Instagram Scraper API Key (RapidAPI)',
+    hint: 'Kunci x-rapidapi-key dari RapidAPI.com untuk mengambil data postingan & carousel Instagram.',
+    group: 'Integrasi AI & Instagram',
+  },
+  instagram_scraper_api_host: {
+    label: 'Instagram Scraper API Host',
+    hint: 'Default: instagram-scraper-stable-api.p.rapidapi.com (sesuai API yang dipilih di RapidAPI)',
+    group: 'Integrasi AI & Instagram',
+  },
 }
 
 export function SettingsAdminPage() {
@@ -132,6 +164,31 @@ export function SettingsAdminPage() {
   useEffect(() => {
     if (data) setForm(data)
   }, [data])
+
+  const [testingAi, setTestingAi] = useState(false)
+
+  const handleTestAi = async () => {
+    if (!form.openai_api_key) {
+      toast.error('Masukkan OpenAI API Key terlebih dahulu.')
+      return
+    }
+    setTestingAi(true)
+    try {
+      const res = await api.post<{ ok: boolean; message: string }>('/admin/ai/test-connection', {
+        openai_api_key: form.openai_api_key,
+        openai_model: form.openai_model,
+      })
+      if (res.data.ok) {
+        toast.success(res.data.message)
+      } else {
+        toast.error(res.data.message)
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Gagal terhubung ke OpenAI.')
+    } finally {
+      setTestingAi(false)
+    }
+  }
 
   const save = useMutation({
     mutationFn: async () => api.put('/admin/settings', form),
@@ -287,19 +344,38 @@ export function SettingsAdminPage() {
           </section>
         </div>
 
-        {/* Kanan: kontak + media sosial + GEO + SEO */}
+        {/* Kanan: kontak + media sosial + GEO + SEO + AI */}
         <div className="space-y-5">
-          {(['Kontak', 'Media sosial', 'GEO lokal', 'Schema & SEO'] as const).map((group) => (
+          {(['Kontak', 'Media sosial', 'GEO lokal', 'Schema & SEO', 'Integrasi AI & Instagram'] as const).map((group) => (
             <section
               key={group}
               className="rounded-[16px] border border-line bg-white p-5 shadow-[var(--shadow-card)]"
             >
-              <h2 className="mb-4 text-sm font-bold text-ink">{group}</h2>
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-sm font-bold text-ink">{group}</h2>
+                {group === 'Integrasi AI & Instagram' && (
+                  <button
+                    type="button"
+                    disabled={testingAi || !form.openai_api_key}
+                    onClick={handleTestAi}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-brand/40 bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand transition hover:bg-brand/20 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {testingAi ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                    Uji Koneksi AI
+                  </button>
+                )}
+              </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 {(grouped[group] || []).map((key) => (
                   <div
                     key={key}
-                    className={fieldMeta[key].multiline || key === 'contact_address' ? 'sm:col-span-2' : ''}
+                    className={
+                      fieldMeta[key].multiline ||
+                      key === 'contact_address' ||
+                      key === 'openai_custom_prompt'
+                        ? 'sm:col-span-2'
+                        : ''
+                    }
                   >
                     <Field
                       fieldKey={key}

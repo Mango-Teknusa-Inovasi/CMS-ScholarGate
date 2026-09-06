@@ -100,6 +100,84 @@ class ImageOptimizer
     }
 
     /**
+     * Simpan gambar dari binary/string (misal unduhan dari URL eksternal / CDN Instagram)
+     *
+     * @return array{path: string, filename: string, mime: string, size: int, width: ?int, height: ?int, optimized: bool, disk: string, url: string, mode: string}
+     */
+    public function storeBinary(string $binary, string $originalName = 'image', string $directory = 'uploads', int $maxWidth = 1920, int $quality = 82): array
+    {
+        $disk = MediaStorage::diskName();
+        $tempInputRelative = 'tmp/download/'.Str::uuid().'.bin';
+        Storage::disk('local')->put($tempInputRelative, $binary);
+        $tempInputAbsolute = Storage::disk('local')->path($tempInputRelative);
+
+        try {
+            $image = $this->manager->decodePath($tempInputAbsolute);
+
+            try {
+                $image->orient();
+            } catch (\Throwable) {
+                // ignore
+            }
+
+            if ($image->width() > $maxWidth) {
+                $image->scaleDown(width: $maxWidth);
+            }
+
+            $width = $image->width();
+            $height = $image->height();
+
+            $base = Str::slug(pathinfo($originalName, PATHINFO_FILENAME)) ?: 'image';
+            $base = Str::limit($base, 60, '');
+            $filename = $base.'-'.Str::lower(Str::random(6)).'.webp';
+            $relative = trim($directory, '/').'/'.date('Y/m').'/'.$filename;
+            $key = $this->objectKey($relative, $disk);
+
+            $encoded = $image->encodeUsingMediaType('image/webp', quality: $quality);
+            $outputBinary = (string) $encoded;
+
+            $tmpRelative = 'tmp/optimize/'.date('Y/m').'/'.$filename;
+            Storage::disk('local')->put($tmpRelative, $outputBinary);
+            $tmpAbsolute = Storage::disk('local')->path($tmpRelative);
+
+            try {
+                $stream = fopen($tmpAbsolute, 'r');
+                if ($stream === false) {
+                    throw new \RuntimeException('Gagal membuka file temporary lokal.');
+                }
+
+                try {
+                    Storage::disk($disk)->put($key, $stream, [
+                        'ContentType' => 'image/webp',
+                        'CacheControl' => 'public, max-age=31536000',
+                    ]);
+                } finally {
+                    if (is_resource($stream)) {
+                        fclose($stream);
+                    }
+                }
+            } finally {
+                Storage::disk('local')->delete($tmpRelative);
+            }
+
+            return [
+                'path' => $relative,
+                'filename' => $filename,
+                'mime' => 'image/webp',
+                'size' => strlen($outputBinary),
+                'width' => $width,
+                'height' => $height,
+                'optimized' => true,
+                'disk' => $disk,
+                'url' => MediaStorage::url($relative) ?: '',
+                'mode' => 'local_then_r2',
+            ];
+        } finally {
+            Storage::disk('local')->delete($tempInputRelative);
+        }
+    }
+
+    /**
      * Raster image yang perlu diproses app (resize/WebP/EXIF).
      * SVG & PDF & docs → presign (tidak lewat sini).
      */

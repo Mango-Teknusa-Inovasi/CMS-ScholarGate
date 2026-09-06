@@ -151,7 +151,7 @@ class ResourceAdminController extends Controller
 
     public function settings(): JsonResponse
     {
-        return response()->json(PublicSettings::filterPublic(Setting::allAsArray()));
+        return response()->json(PublicSettings::filterAdmin(Setting::allAsArray()));
     }
 
     public function updateSettings(Request $request): JsonResponse
@@ -174,7 +174,7 @@ class ResourceAdminController extends Controller
             Setting::setValue($key, is_bool($value) ? ($value ? '1' : '0') : (string) $value);
         }
 
-        return response()->json(PublicSettings::filterPublic(Setting::allAsArray()));
+        return response()->json(PublicSettings::filterAdmin(Setting::allAsArray()));
     }
 
     /**

@@ -44,6 +44,17 @@ class PublicSettings
         'sitemap_include_extracurriculars',
     ];
 
+    /** @var list<string> */
+    public const ADMIN_KEYS = [
+        ...self::KEYS,
+        'openai_api_key',
+        'openai_model',
+        'openai_custom_prompt',
+        'instagram_scraper_provider',
+        'instagram_scraper_api_key',
+        'instagram_scraper_api_host',
+    ];
+
     /**
      * @param  array<string, mixed>  $all
      * @return array<string, mixed>
@@ -71,8 +82,35 @@ class PublicSettings
         return $out;
     }
 
+    /**
+     * @param  array<string, mixed>  $all
+     * @return array<string, mixed>
+     */
+    public static function filterAdmin(array $all): array
+    {
+        $imageKeys = [
+            'logo_path', 'site_logo', 'favicon_path', 'favicon_16_path',
+            'apple_touch_icon_path', 'og_image', 'default_og_image',
+        ];
+
+        $out = [];
+        foreach (self::ADMIN_KEYS as $key) {
+            if (array_key_exists($key, $all)) {
+                $val = $all[$key];
+                if (in_array($key, $imageKeys, true) && is_string($val) && $val !== '') {
+                    if (function_exists('app') && app()->bound('config')) {
+                        $val = \App\Support\MediaStorage::url($val);
+                    }
+                }
+                $out[$key] = $val;
+            }
+        }
+
+        return $out;
+    }
+
     public static function isAllowed(string $key): bool
     {
-        return in_array($key, self::KEYS, true);
+        return in_array($key, self::ADMIN_KEYS, true);
     }
 }

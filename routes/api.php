@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\ArticleAdminController;
+use App\Http\Controllers\Api\Admin\ArticleAiController;
 use App\Http\Controllers\Api\Admin\BackupAdminController;
 use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\MediaAdminController;
@@ -85,6 +86,8 @@ Route::prefix('v1')->group(function () {
             // Articles
             Route::get('/articles', [ArticleAdminController::class, 'index']);
             Route::post('/articles', [ArticleAdminController::class, 'store']);
+            Route::post('/articles/generate-from-instagram', [ArticleAiController::class, 'fromInstagram']);
+            Route::post('/ai/test-connection', [ArticleAiController::class, 'testConnection']);
             Route::post('/articles/bulk-delete', [ArticleAdminController::class, 'bulkDestroy']);
             Route::post('/articles/{id}/restore', [ArticleAdminController::class, 'restore']);
             Route::delete('/articles/{id}/force', [ArticleAdminController::class, 'forceDestroy']);

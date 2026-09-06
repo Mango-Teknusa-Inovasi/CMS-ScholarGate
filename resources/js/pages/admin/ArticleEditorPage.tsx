@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Eye, ExternalLink, Save } from 'lucide-react'
+import { ArrowLeft, Eye, ExternalLink, Save, Sparkles } from 'lucide-react'
 import { api } from '../../lib/api'
 import { MEDIA_GUIDES } from '../../lib/mediaGuide'
 import { RichTextEditor } from '../../components/admin/RichTextEditor'
 import { ImageUploadField } from '../../components/admin/ImageUploadField'
 import { AdminFormSkeleton } from '../../components/ui/Skeleton'
 import { useToast } from '../../components/ui/Toast'
+import { InstagramImportModal, type InstagramImportResult } from '../../components/admin/InstagramImportModal'
 
 type Category = { id: number; name: string }
 type Tag = { id: number; name: string; slug: string }
@@ -48,6 +49,22 @@ export function ArticleEditorPage() {
   const toast = useToast()
   const [form, setForm] = useState(emptyForm)
   const [previewBusy, setPreviewBusy] = useState(false)
+  const [isIgModalOpen, setIsIgModalOpen] = useState(false)
+
+  const handleInstagramImported = (data: InstagramImportResult) => {
+    setForm((prev) => ({
+      ...prev,
+      title: data.title,
+      slug: data.slug,
+      excerpt: data.excerpt,
+      body: data.body,
+      cover_path: data.cover_path || prev.cover_path,
+      tags_text: data.tags_text || prev.tags_text,
+      focus_keyword: data.focus_keyword || prev.focus_keyword,
+      meta_title: data.meta_title || prev.meta_title,
+      meta_description: data.meta_description || prev.meta_description,
+    }))
+  }
 
   const { data: categories = [] } = useQuery({
     queryKey: ['admin-categories'],
@@ -198,6 +215,16 @@ export function ArticleEditorPage() {
               <ExternalLink className="h-3.5 w-3.5 opacity-60" />
             </button>
           )}
+          <button
+            type="button"
+            onClick={() => setIsIgModalOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-[12px] border border-pink-500/30 bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-orange-500/10 px-3.5 py-2 text-sm font-semibold text-pink-600 shadow-2xs transition hover:from-purple-500/20 hover:via-pink-500/20 hover:to-orange-500/20 dark:text-pink-400"
+            title="Otomatis buat draf artikel dari link Instagram"
+          >
+            <Sparkles className="h-4 w-4 text-pink-500" />
+            <span className="hidden sm:inline">Import dari Instagram</span>
+            <span className="sm:hidden">IG Import</span>
+          </button>
           <button
             type="button"
             onClick={() => save.mutate(false)}
@@ -527,6 +554,12 @@ export function ArticleEditorPage() {
           </div>
         </aside>
       </div>
+
+      <InstagramImportModal
+        isOpen={isIgModalOpen}
+        onClose={() => setIsIgModalOpen(false)}
+        onSuccess={handleInstagramImported}
+      />
     </div>
   )
 }
