@@ -125,13 +125,7 @@ const fieldMeta: Record<
   },
   openai_model: {
     label: 'Model OpenAI',
-    type: 'select',
-    options: [
-      { value: 'gpt-4o-mini', label: 'GPT-4o Mini (Sangat Cepat & Hemat — Rekomendasi)' },
-      { value: 'gpt-4o', label: 'GPT-4o (Kapasitas Maksimal)' },
-      { value: 'gpt-4-turbo', label: 'GPT-4 Turbo' },
-    ],
-    hint: 'Model yang digunakan untuk menyusun naskah berita sekolah.',
+    hint: 'Bebas isi model kustom atau klik rekomendasi di bawah. Default: gpt-4o-mini.',
     group: 'Integrasi AI & Instagram',
   },
   openai_custom_prompt: {
@@ -409,7 +403,47 @@ function Field({
       <label className="mb-1.5 block text-sm font-medium text-ink" htmlFor={fieldKey}>
         {meta.label}
       </label>
-      {meta.type === 'select' ? (
+      {fieldKey === 'openai_model' ? (
+        <div className="space-y-2">
+          <input
+            id={fieldKey}
+            list="openai-models-list"
+            className="w-full rounded-[12px] border border-line bg-page px-3 py-2.5 text-sm outline-none focus:border-brand focus:bg-white"
+            placeholder="Contoh: gpt-4o-mini, gpt-4o, atau model custom"
+            value={value || ''}
+            onChange={(e) => onChange(e.target.value)}
+          />
+          <datalist id="openai-models-list">
+            <option value="gpt-4o-mini" />
+            <option value="gpt-4o" />
+            <option value="gpt-4-turbo" />
+            <option value="o3-mini" />
+            <option value="chatgpt-4o-latest" />
+          </datalist>
+          <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-subtle">
+            <span className="font-medium text-slate-500">Pilihan cepat:</span>
+            {[
+              { id: 'gpt-4o-mini', label: 'gpt-4o-mini (Hemat)' },
+              { id: 'gpt-4o', label: 'gpt-4o (Pintar)' },
+              { id: 'gpt-4-turbo', label: 'gpt-4-turbo' },
+              { id: 'o3-mini', label: 'o3-mini' },
+            ].map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => onChange(m.id)}
+                className={`rounded-md border px-2 py-0.5 text-xs transition ${
+                  (value || 'gpt-4o-mini') === m.id
+                    ? 'border-brand bg-brand/10 font-semibold text-brand shadow-2xs'
+                    : 'border-line bg-white hover:border-slate-300 hover:bg-page'
+                }`}
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : meta.type === 'select' ? (
         <select
           id={fieldKey}
           className="w-full rounded-[12px] border border-line bg-page px-3 py-2.5 text-sm outline-none focus:border-brand focus:bg-white"
