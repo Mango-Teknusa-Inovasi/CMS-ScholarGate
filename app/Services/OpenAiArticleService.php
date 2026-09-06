@@ -105,6 +105,7 @@ SCHEMA;
                 ['role' => 'user', 'content' => $userPrompt],
             ],
             'temperature' => 0.7,
+            'stream' => false,
         ];
 
         if (! str_contains($model, 'reasoner')) {
@@ -125,7 +126,7 @@ SCHEMA;
             throw new \RuntimeException('Gagal memproses artikel dengan AI ('.$endpoint.'): '.$err);
         }
 
-        $rawContent = $response->json('choices.0.message.content');
+        $rawContent = self::extractContentFromResponse($response);
         if (! $rawContent) {
             throw new \RuntimeException('Respon kosong dari penyedia AI.');
         }
@@ -228,6 +229,7 @@ SCHEMA;
                         ['role' => 'user', 'content' => 'Halo, balas dengan kata "OK" jika terhubung.'],
                     ],
                     'max_tokens' => 10,
+                    'stream' => false,
                 ]);
 
             if ($response->successful()) {
@@ -240,5 +242,57 @@ SCHEMA;
         } catch (\Throwable $e) {
             return ['ok' => false, 'message' => 'Koneksi error: '.$e->getMessage()];
         }
+    }
+
+    /**
+     * Ekstrak konten teks dari respon OpenAI (mendukung format JSON standar maupun SSE stream chunks).
+     */
+    public static function extractContentFromResponse($response): ?string
+    {
+        // 1. Coba format standar OpenAI non-stream
+        $content = $response->json('choices.0.message.content');
+        if (is_string($content) && trim($content) !== '') {
+            return trim($content);
+        }
+
+        // 2. Coba alternatif field format (text / delta)
+        $altText = $response->json('choices.0.text');
+        if (is_string($altText) && trim($altText) !== '') {
+            return trim($altText);
+        }
+
+        $deltaText = $response->json('choices.0.delta.content');
+        if (is_string($deltaText) && trim($deltaText) !== '') {
+            return trim($deltaText);
+        }
+
+        // 3. Fallback: jika provider memaksakan Server-Sent Events (SSE) data: {...}
+        $body = (string) $response->body();
+        if (str_contains($body, 'data:')) {
+            $assembled = '';
+            $lines = explode("\n", $body);
+            foreach ($lines as $line) {
+                $line = trim($line);
+                if (! str_starts_with($line, 'data:')) {
+                    continue;
+                }
+                $jsonStr = trim(substr($line, 5));
+                if ($jsonStr === '' || $jsonStr === '[DONE]') {
+                    continue;
+                }
+                $chunk = json_decode($jsonStr, true);
+                if (isset($chunk['choices'][0]['delta']['content'])) {
+                    $assembled .= $chunk['choices'][0]['delta']['content'];
+                } elseif (isset($chunk['choices'][0]['message']['content'])) {
+                    $assembled .= $chunk['choices'][0]['message']['content'];
+                }
+            }
+
+            if (trim($assembled) !== '') {
+                return trim($assembled);
+            }
+        }
+
+        return null;
     }
 }
