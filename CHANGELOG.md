@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.2.0] - 2026-09-06
+
+### Added
+- **Universal RichText AI Copilot**:
+  - Integrated `AiAssistModal` into all `RichTextEditor` toolbars across the CMS (`Tulis Baru`, `Perbaiki PUEBI & Tata Bahasa`, `Perluas & Detail`, `Ringkas Teks`, `Sesuaikan Nada`).
+- **Specialized AI Content Generators**:
+  - **Article Prompt Generator (`ArticlePromptModal`)**: Generates complete news articles from brief hints/topics with automatic title, slug, excerpt, body HTML, category matching, tags, focus keyword, and SEO meta tags.
+  - **Principal Welcome Speech Generator (`WelcomeAiModal`)**: Generates official speeches for Homepage and Profile pages with tone presets (*Hangat & Mengayomi*, *Visioner*, *Karakter Bangsa*, *Religius*).
+  - **School Profile Tab Generator (`ProfileAiModal`)**: Generates clean semantic HTML content for profile tabs (*Sejarah*, *Visi Misi*, *Budaya Sekolah*, *Fasilitas Unggulan*).
+  - **Championship Achievement Generator (`AchievementAiModal`)**: Generates inspirational sports/academic championship reports, medalist badges, and celebratory quotes from competition metadata.
+- **Wide Two-Column Achievement Editor**:
+  - Redesigned the Prestasi editor in `ResourceEditorPage` with a wide two-column layout (wide canvas for TipTap HTML editor with AI copilot + dedicated sidebar for 16:9 cover image, status, badge, and sort order).
+  - Upgraded `ekstrakurikuler` module description field to use `RichTextEditor` with AI assistant support.
+- **AI Security Hardening & Persona Isolation**:
+  - Strict prompt injection shielding using `filterPromptInjection` and `<untrusted_material>` boundary tags.
+  - Model name masking through configurable `custom_ai_model_name` setting to protect proprietary backend models.
+  - Support for multi-provider endpoints (OpenAI, OpenRouter, DeepSeek, Groq, 9Router).
+- **Tabbed Admin Settings Hub**:
+  - Redesigned `/admin/settings` into dedicated tabs: *Umum*, *AI & RAG Intelligence*, *Social Login (OIDC)*, *Branding*, *SEO/AEO/GEO*, *Cloud Backup*, and *Maintenance*.
+- **Socialite & OpenID Connect (OIDC) Multi-Provider**:
+  - Support for Google, GitHub, Authentik, Keycloak, and custom OIDC providers with customizable login button labels.
+  - Automatic RBAC synchronization and Sanctum API token exchange for social login sessions.
+- **Customizable Article Sidebar Widgets**:
+  - Configurable dynamic sidebar widgets (Pencarian, Kategori, Artikel Populer, Unduhan Cepat, Info Sekolah).
+- **Automated AI Feature Test Suite**:
+  - Added `tests/Feature/AiGeneratorsTest.php` with 100% passing tests for all AI generation and copilot endpoints.
+
+### Fixed
+- Fixed partner (`partners`) deletion failure on UUID primary keys.
+- Fixed member role display and upgrade/downgrade permission mapping in user management.
+- Fixed Sanctum stateful domain resolution for OIDC social login redirects.
+
+---
+
 ## [2.1.0] - 2026-08-08
 
 ### Added

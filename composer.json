@@ -1,9 +1,10 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "mangoteknusa/cms-scholargate",
+    "version": "2.2.0",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "description": "CMS ScholarGate — Enterprise-Grade School Information Portal & Advanced AI CMS Engine",
+    "keywords": ["scholargate", "cms-sekolah", "laravel", "react", "inertia", "ai-assistant", "rag"],
     "license": "MIT",
     "require": {
         "php": "^8.3",

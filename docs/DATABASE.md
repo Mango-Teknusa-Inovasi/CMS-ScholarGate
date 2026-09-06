@@ -60,6 +60,20 @@ For full physical database backups outside the admin panel:
 
 Prefer **PostgreSQL** as the long-term target.
 
+## System Settings Keys Reference
+
+The `settings` table stores dynamic configurations (exposed to admin tabs):
+
+| Key | Type | Description |
+|---|---|---|
+| `openai_api_key` | string | API key for OpenAI / OpenRouter / DeepSeek |
+| `openai_model` | string | Active LLM model ID (default: `gpt-4o-mini`) |
+| `custom_ai_model_name` | string | Publicly disclosed AI assistant brand name (anti-leakage) |
+| `social_google_enabled` | boolean | Toggle Google Socialite login |
+| `social_oidc_enabled` | boolean | Toggle custom OIDC / Keycloak / Authentik login |
+| `social_oidc_button_label` | string | Custom label for OIDC login button |
+| `article_sidebar_widgets` | json | Active article sidebar widgets and ordering |
+
 ## Hosting checklist
 
 - [ ] `pdo_pgsql` **or** `pdo_mysql` enabled

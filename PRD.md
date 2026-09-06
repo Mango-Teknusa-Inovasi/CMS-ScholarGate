@@ -60,12 +60,15 @@ A **school / education portal** with a full **admin CMS**, easy to deploy on **s
 
 ### 4.2 Admin CMS (`/admin`)
 
-- Dashboard, articles (full-page TipTap editor + preview tokens), media library, tags, categories
-- Resources: banners, welcome, menus, services, gallery, partners, contacts, quick services, extracurriculars, downloads
-- Settings: identity, GEO, GSC/Bing, branding (**logo upload auto-generates favicon + apple-touch + optional OG**)
-- Users (super admin)
-- Backup / restore JSON|ZIP (super admin)
-- Media size guide
+- Dashboard, articles (full-page TipTap editor + preview tokens + AI writer from prompt), media library, tags, categories
+- **Universal RichText AI Copilot**: Toolbar integration on all TipTap editors (Draft, PUEBI polish, expand, summarize, tone shift)
+- **Specialized AI Generators**: Article prompt generator, welcome speech generator, profile tab generator, and achievement news generator
+- **Wide Achievement Editor**: Two-column layout with broad TipTap workspace + metadata/cover sidebar
+- Resources: banners, welcome, menus, services, gallery, partners, contacts, quick services, extracurriculars (HTML rich text), downloads
+- Settings: tabbed interface (Umum, AI & RAG, Social Login OIDC, Branding, SEO/AEO/GEO, Cloud Backup, Maintenance)
+- Users (super admin) with full RBAC (`admin`, `editor`, `member`) and OIDC sync
+- Backup / restore JSON|ZIP (super admin) with Cloudflare R2 auto-sync
+- Media size guide & WebP optimizer
 
 ### 4.3 Platform
 

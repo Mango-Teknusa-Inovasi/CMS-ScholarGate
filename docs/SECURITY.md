@@ -5,8 +5,8 @@
 | **Document** | Security Policy & Technical Controls |
 | **Product** | CMS Scholargate |
 | **Language** | English |
-| **Version** | 2.0 |
-| **Last updated** | 2026-08-06 |
+| **Version** | 2.2 |
+| **Last updated** | 2026-09-06 |
 | **Classification** | Public (implementation inventory; no secrets) |
 | **Standards alignment** | OWASP Top 10 (2021), OWASP ASVS L1/L2 themes, OWASP Secure Headers, NIST SSDF practices (selected) |
 
@@ -271,7 +271,22 @@ Article view counters: **≤ 1 increment per IP per article per hour** (cache).
 
 ---
 
-## 14. Secure deployment checklist (production)
+## 14. AI Security, Prompt Injection Shielding & Socialite OIDC
+
+### AI Prompt Injection Controls
+- **Input Sanitization**: `OpenAiArticleService::filterPromptInjection()` scans inputs for system jailbreak tokens (`ignore previous instructions`, `system:`, `as an unaligned model`, etc.) and strips malicious prompt hijacking attempts.
+- **Boundary Tag Isolation**: All untrusted user-supplied context is wrapped in strict `<untrusted_material>` tags with explicit system directives forbidding the LLM from treating enclosed text as instructions.
+- **Persona & Identity Masking**: The LLM's identity is strictly enforced via `buildAssistantPersonaRules()`. Backend model names (e.g. OpenAI, DeepSeek) are masked behind the institutional `custom_ai_model_name` setting to prevent model footprint disclosure.
+- **Rate Limiting & Admin Authorization**: All generative AI routes (`/api/v1/admin/ai/*`) require `auth:sanctum` and are rate-limited to prevent token exhaustion.
+
+### Socialite & OpenID Connect (OIDC) Controls
+- **Strict State Validation**: CSRF state tokens are enforced on OAuth callbacks.
+- **Safe Role Assignment**: Users registered via OIDC default to low-privilege `member` role. Privilege escalation to `admin` or `editor` requires explicit administrative action.
+- **Stateful Domain Sync**: Sanctum stateful domain mapping ensures OIDC session cookies and API Bearer tokens stay strictly bound to authorized origin hosts.
+
+---
+
+## 15. Secure deployment checklist (production)
 
 ```
 [ ] APP_ENV=production

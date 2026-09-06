@@ -1,8 +1,9 @@
 {
   "name": "cms-scholargate",
+  "version": "2.2.0",
   "private": true,
   "type": "module",
-  "description": "Scholargate CMS — Laravel + Inertia + React monolith",
+  "description": "Scholargate CMS — Laravel + Inertia + React monolith with AI Intelligence Suite",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
