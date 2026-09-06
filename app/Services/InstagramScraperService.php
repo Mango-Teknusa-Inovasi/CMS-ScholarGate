@@ -77,11 +77,16 @@ class InstagramScraperService
      */
     private function fetchFromRapidApi(string $host, string $apiKey, string $shortcode, string $fullUrl): array
     {
-        // Prioritas endpoint umum di RapidAPI (termasuk instagram-scraper-stable-api)
+        $encodedUrl = urlencode($fullUrl);
+        // Prioritas endpoint RapidAPI (spesifik untuk instagram-scraper-stable-api dan scraper umum)
         $endpoints = [
+            "/get_media_data.php?reel_post_code_or_url={$encodedUrl}&type=post",
+            "/get_media_data.php?reel_post_code_or_url={$shortcode}&type=post",
+            "/get_media_data.php?reel_post_code_or_url={$encodedUrl}&type=reel",
+            "/get_reel_title.php?reel_post_code_or_url={$encodedUrl}&type=post",
             "/post_info?shortcode={$shortcode}",
             "/get_post?code_or_id_or_url={$shortcode}",
-            "/media?url=".urlencode($fullUrl),
+            "/media?url={$encodedUrl}",
             "/media_info?shortcode={$shortcode}",
         ];
 
