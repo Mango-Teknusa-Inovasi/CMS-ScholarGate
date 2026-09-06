@@ -153,7 +153,7 @@ export function ArticleEditorPage() {
         body: form.body,
         cover_path: form.cover_path || null,
         status: publish ? 'published' : form.status,
-        category_id: form.category_id ? Number(form.category_id) : null,
+        category_id: form.category_id ? String(form.category_id).trim() : null,
         is_featured: form.is_featured,
         published_at: form.published_at
           ? new Date(form.published_at).toISOString()
