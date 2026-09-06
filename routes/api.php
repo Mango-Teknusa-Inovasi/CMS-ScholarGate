@@ -94,6 +94,11 @@ Route::prefix('v1')->group(function () {
             Route::post('/articles/generate-from-instagram', [ArticleAiController::class, 'fromInstagram']);
             Route::post('/ai/test-connection', [ArticleAiController::class, 'testConnection']);
             Route::post('/ai/ask', [ArticleAiController::class, 'ask']);
+            Route::post('/ai/generate-article-prompt', [ArticleAiController::class, 'fromPrompt']);
+            Route::post('/ai/generate-welcome', [ArticleAiController::class, 'welcome']);
+            Route::post('/ai/generate-profile', [ArticleAiController::class, 'profile']);
+            Route::post('/ai/generate-achievement', [ArticleAiController::class, 'achievement']);
+            Route::post('/ai/assist-text', [ArticleAiController::class, 'assistText']);
             Route::post('/articles/bulk-delete', [ArticleAdminController::class, 'bulkDestroy']);
             Route::post('/articles/{id}/restore', [ArticleAdminController::class, 'restore']);
             Route::delete('/articles/{id}/force', [ArticleAdminController::class, 'forceDestroy']);

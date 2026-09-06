@@ -104,4 +104,185 @@ class ArticleAiController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Generate draf artikel berita lengkap dari topik / petunjuk singkat.
+     */
+    public function fromPrompt(Request $request, OpenAiArticleService $service): JsonResponse
+    {
+        $request->validate([
+            'topic' => ['required', 'string', 'max:500'],
+            'key_points' => ['nullable', 'string', 'max:2000'],
+            'tone' => ['nullable', 'string', 'in:formal_news,achievement,casual,educational'],
+            'category_hint' => ['nullable', 'string', 'max:100'],
+        ], [
+            'topic.required' => 'Topik atau petunjuk artikel wajib diisi.',
+            'topic.max' => 'Topik maksimal 500 karakter.',
+        ]);
+
+        try {
+            $data = $service->generateArticleFromPrompt([
+                'topic' => $request->string('topic')->toString(),
+                'key_points' => $request->string('key_points')->toString(),
+                'tone' => $request->string('tone', 'formal_news')->toString(),
+                'category_hint' => $request->string('category_hint')->toString(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Draf artikel berhasil disusun oleh AI!',
+                'data' => $data,
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage() ?: 'Gagal menyusun artikel AI.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Generate naskah sambutan resmi Kepala Sekolah / Pejabat.
+     */
+    public function welcome(Request $request, OpenAiArticleService $service): JsonResponse
+    {
+        $request->validate([
+            'speaker' => ['nullable', 'string', 'max:200'],
+            'theme' => ['required', 'string', 'max:500'],
+            'tone' => ['nullable', 'string', 'in:warm_inspirational,visionary,formal_national,religious'],
+            'target' => ['nullable', 'string', 'in:home,profile'],
+        ], [
+            'theme.required' => 'Tema atau poin utama sambutan wajib diisi.',
+        ]);
+
+        try {
+            $data = $service->generateWelcomeMessage([
+                'speaker' => $request->string('speaker', 'Kepala Sekolah')->toString(),
+                'theme' => $request->string('theme')->toString(),
+                'tone' => $request->string('tone', 'warm_inspirational')->toString(),
+                'target' => $request->string('target', 'home')->toString(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Naskah sambutan berhasil disusun oleh AI!',
+                'data' => $data,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage() ?: 'Gagal menyusun naskah sambutan AI.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Generate narasi profil sekolah (Sejarah, Visi Misi, Budaya, Fasilitas).
+     */
+    public function profile(Request $request, OpenAiArticleService $service): JsonResponse
+    {
+        $request->validate([
+            'tab_label' => ['required', 'string', 'max:100'],
+            'hints' => ['nullable', 'string', 'max:2000'],
+            'style' => ['nullable', 'string', 'in:history,vision_mission,culture,facilities,general'],
+        ], [
+            'tab_label.required' => 'Label tab atau nama bagian profil wajib diisi.',
+        ]);
+
+        try {
+            $data = $service->generateProfileSection([
+                'tab_label' => $request->string('tab_label')->toString(),
+                'hints' => $request->string('hints')->toString(),
+                'style' => $request->string('style', 'general')->toString(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Konten profil sekolah berhasil disusun oleh AI!',
+                'data' => $data,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage() ?: 'Gagal menyusun konten profil AI.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Generate berita liputan prestasi siswa / sekolah.
+     */
+    public function achievement(Request $request, OpenAiArticleService $service): JsonResponse
+    {
+        $request->validate([
+            'competition' => ['required', 'string', 'max:250'],
+            'level' => ['nullable', 'string', 'max:100'],
+            'participant' => ['required', 'string', 'max:250'],
+            'rank' => ['nullable', 'string', 'max:100'],
+            'organizer' => ['nullable', 'string', 'max:200'],
+            'notes' => ['nullable', 'string', 'max:2000'],
+        ], [
+            'competition.required' => 'Nama kejuaraan atau lomba wajib diisi.',
+            'participant.required' => 'Nama siswa atau tim peraih prestasi wajib diisi.',
+        ]);
+
+        try {
+            $data = $service->generateAchievementArticle([
+                'competition' => $request->string('competition')->toString(),
+                'level' => $request->string('level', 'Nasional')->toString(),
+                'participant' => $request->string('participant')->toString(),
+                'rank' => $request->string('rank', 'Juara 1')->toString(),
+                'organizer' => $request->string('organizer')->toString(),
+                'notes' => $request->string('notes')->toString(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Liputan prestasi berhasil disusun oleh AI!',
+                'data' => $data,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage() ?: 'Gagal menyusun liputan prestasi AI.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Asisten teks AI universal untuk RichTextEditor (Draft, Polish PUEBI, Expand, Summarize, Change Tone).
+     */
+    public function assistText(Request $request, OpenAiArticleService $service): JsonResponse
+    {
+        $request->validate([
+            'action' => ['required', 'string', 'in:draft,polish,expand,summarize,change_tone'],
+            'text' => ['nullable', 'string', 'max:10000'],
+            'prompt' => ['nullable', 'string', 'max:2000'],
+            'tone' => ['nullable', 'string', 'max:100'],
+        ], [
+            'action.required' => 'Aksi AI wajib dipilih.',
+            'action.in' => 'Aksi AI tidak valid.',
+        ]);
+
+        try {
+            $data = $service->assistText([
+                'action' => $request->string('action')->toString(),
+                'text' => $request->string('text')->toString(),
+                'prompt' => $request->string('prompt')->toString(),
+                'tone' => $request->string('tone', 'formal')->toString(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'data' => $data,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage() ?: 'Gagal memproses asisten teks AI.',
+            ], 500);
+        }
+    }
 }

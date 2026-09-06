@@ -13,7 +13,7 @@ import { useToast } from '../../components/ui/Toast'
 export type FieldDef = {
   key: string
   label: string
-  type?: 'text' | 'textarea' | 'number' | 'checkbox' | 'image'
+  type?: 'text' | 'textarea' | 'richtext' | 'number' | 'checkbox' | 'image'
   /** Override preview aspect for image fields */
   previewClassName?: string
 }

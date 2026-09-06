@@ -7,6 +7,8 @@ export type ResourceConfig = {
   description?: string
   fields: FieldDef[]
   listPath: string
+  wideLayout?: boolean
+  aiGenerator?: 'achievement'
 }
 
 export const RESOURCE_CONFIGS: Record<string, ResourceConfig> = {
@@ -107,8 +109,10 @@ export const RESOURCE_CONFIGS: Record<string, ResourceConfig> = {
     slug: 'achievements',
     title: 'Prestasi',
     singular: 'prestasi',
-    description: 'Cover ideal 1600×900 (16:9).',
+    description: 'Cover ideal 1600×900 (16:9). Tulis liputan prestasi atau gunakan AI untuk menyusun berita penghargaan secara otomatis.',
     listPath: '/admin/achievements',
+    wideLayout: true,
+    aiGenerator: 'achievement',
     fields: [
       {
         key: 'cover_path',
@@ -119,7 +123,7 @@ export const RESOURCE_CONFIGS: Record<string, ResourceConfig> = {
       { key: 'title', label: 'Judul' },
       { key: 'slug', label: 'Slug (opsional)' },
       { key: 'excerpt', label: 'Ringkasan', type: 'textarea' },
-      { key: 'body', label: 'Isi (HTML)', type: 'textarea' },
+      { key: 'body', label: 'Liputan Prestasi (HTML)', type: 'richtext' },
       { key: 'badge_label', label: 'Badge' },
       { key: 'status', label: 'Status (published/draft)' },
       { key: 'is_featured', label: 'Featured', type: 'checkbox' },
@@ -178,7 +182,7 @@ export const RESOURCE_CONFIGS: Record<string, ResourceConfig> = {
         previewClassName: 'aspect-square max-h-40',
       },
       { key: 'title', label: 'Nama kegiatan' },
-      { key: 'description', label: 'Deskripsi', type: 'textarea' },
+      { key: 'description', label: 'Deskripsi Lengkap (HTML)', type: 'richtext' },
       { key: 'schedule', label: 'Jadwal' },
       { key: 'coach', label: 'Pembina' },
       {

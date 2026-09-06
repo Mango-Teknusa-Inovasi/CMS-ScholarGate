@@ -15,7 +15,7 @@ import { TableHeader } from '@tiptap/extension-table-header'
 import Youtube from '@tiptap/extension-youtube'
 import CharacterCount from '@tiptap/extension-character-count'
 import { Iframe } from './tiptap/IframeExtension'
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { usePrompt } from '../ui/PromptModal'
 import { useToast } from '../ui/Toast'
 import {
@@ -38,6 +38,7 @@ import {
   Minus,
   Quote,
   Redo2,
+  Sparkles,
   Strikethrough,
   Table as TableIcon,
   Underline as UnderlineIcon,
@@ -46,6 +47,7 @@ import {
 } from 'lucide-react'
 import { api } from '../../lib/api'
 import { cn } from '../../lib/utils'
+import { AiAssistModal } from './AiAssistModal'
 
 type Props = {
   value: string
@@ -88,6 +90,7 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Prop
   const fileRef = useRef<HTMLInputElement>(null)
   const { prompt } = usePrompt()
   const toast = useToast()
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false)
 
   const editor = useEditor({
     extensions: [
@@ -359,6 +362,17 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Prop
           <TableIcon className="h-4 w-4" />
         </ToolbarBtn>
 
+        <span className="mx-1 h-5 w-px bg-line" />
+        <button
+          type="button"
+          onClick={() => setIsAiModalOpen(true)}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-purple-500/30 bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-indigo-500/10 px-2.5 py-1 text-xs font-semibold text-purple-700 shadow-2xs transition hover:from-purple-500/20 hover:via-pink-500/20 hover:to-indigo-500/20 dark:text-purple-300"
+          title="Buka Asisten AI untuk menyusun, memperbaiki (PUEBI), atau memperluas teks"
+        >
+          <Sparkles className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
+          <span>Bantuan AI</span>
+        </button>
+
         <input
           ref={fileRef}
           type="file"
@@ -375,11 +389,34 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Prop
       <EditorContent editor={editor} />
 
       <div className="flex justify-between border-t border-line bg-page px-3 py-1.5 text-xs text-subtle">
-        <span>Editor teks berformat — tebal, tautan, tabel, gambar, video</span>
+        <span>Editor teks berformat — tebal, tautan, tabel, gambar, video, asisten AI</span>
         <span>
           {words} kata · {chars} karakter
         </span>
       </div>
+
+      <AiAssistModal
+        isOpen={isAiModalOpen}
+        onClose={() => setIsAiModalOpen(false)}
+        initialText={
+          editor.state.selection.from !== editor.state.selection.to
+            ? editor.state.doc.textBetween(
+                editor.state.selection.from,
+                editor.state.selection.to,
+                ' ',
+              )
+            : editor.getText()
+        }
+        onApply={(html, mode) => {
+          if (mode === 'replace') {
+            editor.commands.setContent(html)
+            onChange(html)
+          } else {
+            editor.commands.insertContent(html)
+            onChange(editor.getHTML())
+          }
+        }}
+      />
     </div>
   )
 }

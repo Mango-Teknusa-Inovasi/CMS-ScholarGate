@@ -9,6 +9,7 @@ import { ImageUploadField } from '../../components/admin/ImageUploadField'
 import { AdminFormSkeleton } from '../../components/ui/Skeleton'
 import { useToast } from '../../components/ui/Toast'
 import { InstagramImportModal, type InstagramImportResult } from '../../components/admin/InstagramImportModal'
+import { ArticlePromptModal, type ArticlePromptResult } from '../../components/admin/ArticlePromptModal'
 
 type Category = { id: string | number; name: string }
 type Tag = { id: string | number; name: string; slug: string }
@@ -50,6 +51,7 @@ export function ArticleEditorPage() {
   const [form, setForm] = useState(emptyForm)
   const [previewBusy, setPreviewBusy] = useState(false)
   const [isIgModalOpen, setIsIgModalOpen] = useState(false)
+  const [isPromptModalOpen, setIsPromptModalOpen] = useState(false)
 
   const [showAddCategory, setShowAddCategory] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
@@ -87,6 +89,29 @@ export function ArticleEditorPage() {
       category_id: data.category_id ? String(data.category_id) : prev.category_id,
       cover_path: data.cover_path || prev.cover_path,
       tags_text: data.tags_text || prev.tags_text,
+      focus_keyword: data.focus_keyword || prev.focus_keyword,
+      meta_title: data.meta_title || prev.meta_title,
+      meta_description: data.meta_description || prev.meta_description,
+    }))
+  }
+
+  const handlePromptGenerated = (data: ArticlePromptResult) => {
+    let matchedCatId = form.category_id
+    if (data.category && categories.length > 0) {
+      const found = categories.find((c) => c.name.toLowerCase() === data.category.toLowerCase())
+      if (found) {
+        matchedCatId = String(found.id)
+      }
+    }
+
+    setForm((prev) => ({
+      ...prev,
+      title: data.title,
+      slug: data.slug,
+      excerpt: data.excerpt,
+      body: data.body_html,
+      category_id: matchedCatId,
+      tags_text: Array.isArray(data.tags) ? data.tags.join(', ') : prev.tags_text,
       focus_keyword: data.focus_keyword || prev.focus_keyword,
       meta_title: data.meta_title || prev.meta_title,
       meta_description: data.meta_description || prev.meta_description,
@@ -242,6 +267,16 @@ export function ArticleEditorPage() {
               <ExternalLink className="h-3.5 w-3.5 opacity-60" />
             </button>
           )}
+          <button
+            type="button"
+            onClick={() => setIsPromptModalOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-[12px] border border-brand/30 bg-gradient-to-r from-brand/10 via-sky-500/10 to-indigo-500/10 px-3.5 py-2 text-sm font-semibold text-brand shadow-2xs transition hover:from-brand/20 hover:via-sky-500/20 hover:to-indigo-500/20"
+            title="Tulis draf artikel berita baru dari topik atau petunjuk singkat dengan AI"
+          >
+            <Sparkles className="h-4 w-4 text-brand" />
+            <span className="hidden sm:inline">Tulis Artikel AI</span>
+            <span className="sm:hidden">Tulis AI</span>
+          </button>
           <button
             type="button"
             onClick={() => setIsIgModalOpen(true)}
@@ -629,6 +664,13 @@ export function ArticleEditorPage() {
         isOpen={isIgModalOpen}
         onClose={() => setIsIgModalOpen(false)}
         onSuccess={handleInstagramImported}
+      />
+
+      <ArticlePromptModal
+        isOpen={isPromptModalOpen}
+        onClose={() => setIsPromptModalOpen(false)}
+        categories={categories}
+        onGenerated={handlePromptGenerated}
       />
     </div>
   )

@@ -661,4 +661,652 @@ PROMPT;
             throw new \RuntimeException('Koneksi ke AI Provider gagal: '.$e->getMessage(), 0, $e);
         }
     }
+
+    /**
+     * Generate draf artikel berita lengkap hanya dari topik atau petunjuk singkat.
+     *
+     * @param  array{topic: string, key_points?: string, tone?: string, category_hint?: string}  $params
+     * @return array{
+     *     title: string,
+     *     slug: string,
+     *     category: string,
+     *     excerpt: string,
+     *     body_html: string,
+     *     tags: array<string>,
+     *     focus_keyword: string,
+     *     meta_title: string,
+     *     meta_description: string
+     * }
+     */
+    public function generateArticleFromPrompt(array $params): array
+    {
+        $apiKey = trim((string) Setting::getValue('openai_api_key', env('OPENAI_API_KEY', '')));
+        if ($apiKey === '') {
+            throw new \RuntimeException('OpenAI API Key belum dikonfigurasi.');
+        }
+
+        $model = trim((string) Setting::getValue('openai_model', 'gpt-4o-mini')) ?: 'gpt-4o-mini';
+        $displayModel = self::getDisplayModelName();
+        $personaRules = self::buildAssistantPersonaRules($displayModel);
+        $customPrompt = trim((string) Setting::getValue('openai_custom_prompt', ''));
+
+        $topic = trim((string) ($params['topic'] ?? ''));
+        if ($topic === '') {
+            throw new \InvalidArgumentException('Topik atau petunjuk artikel wajib diisi.');
+        }
+
+        $keyPoints = trim((string) ($params['key_points'] ?? ''));
+        $tone = (string) ($params['tone'] ?? 'formal_news');
+        $categoryHint = trim((string) ($params['category_hint'] ?? ''));
+
+        $filterTopic = self::filterPromptInjection($topic);
+        $filterPoints = self::filterPromptInjection($keyPoints);
+        $safeTopic = $filterTopic['sanitized_text'];
+        $safePoints = $filterPoints['sanitized_text'];
+
+        $toneDescription = match ($tone) {
+            'achievement' => 'Gaya berita prestasi membanggakan, penuh apresiasi kepada siswa/guru dan membawa nama baik sekolah.',
+            'casual' => 'Gaya bahasa liputan santai, hangat, akrab generasi muda, dan komunikatif untuk kegiatan ekstrakurikuler/OSIS.',
+            'educational' => 'Gaya artikel edukasi & inspiratif yang kaya wawasan, terstruktur, serta memberikan tips/wawasan bernilai bagi pembaca.',
+            default => 'Gaya jurnalisme berita sekolah formal, objektif, berwibawa, dan baku (PUEBI/KBBI).',
+        };
+
+        $systemPrompt = <<<PROMPT
+{$personaRules}
+
+Anda adalah redaktur dan jurnalis senior untuk CMS ScholarGate website resmi sekolah.
+Tugas Anda: Mengembangkan topik atau petunjuk ide singkat dari pengguna menjadi draf artikel berita sekolah yang utuh, mendalam, profesional, dan ramah SEO Google News & AEO.
+
+[PANDUAN PENULISAN]:
+1. Buat judul berita yang menarik, berbobot, berwibawa, dan tidak clickbait (maksimal 75 karakter).
+2. Tulis lead artikel (excerpt) 1-2 kalimat padat yang memancing minat pembaca.
+3. Kembangkan isi artikel (body_html) menjadi 3-5 paragraf berbobot dalam format HTML bersih (gunakan tag <p>, <h2> untuk subjudul bahasan penting).
+4. Nada bahasa: {$toneDescription}
+5. Berikan rekomendasi Kategori utama, 3-5 Tags relevan, Focus Keyword SEO, Meta Title, dan Meta Description (140-160 karakter).
+6. Kembalikan HANYA format JSON yang valid sesuai skema yang diminta.
+PROMPT;
+
+        if ($customPrompt !== '') {
+            $systemPrompt .= "\n\nInstruksi Tambahan dari Sekolah:\n".$customPrompt;
+        }
+
+        $userPrompt = "Topik Artikel:\n<untrusted_material>\n{$safeTopic}\n</untrusted_material>\n\n";
+        if ($safePoints !== '') {
+            $userPrompt .= "Poin Kunci / Garis Besar:\n<untrusted_material>\n{$safePoints}\n</untrusted_material>\n\n";
+        }
+        if ($categoryHint !== '') {
+            $userPrompt .= "Kategori Acuan: {$categoryHint}\n\n";
+        }
+
+        $userPrompt .= <<<'SCHEMA'
+Buat draf artikel dalam format JSON persis seperti ini:
+{
+  "title": "string (Judul berita formal)",
+  "slug": "string (kebab-case URL slug)",
+  "category": "string (Kategori utama, misal: Kegiatan, Prestasi, Informasi, atau Pengumuman)",
+  "excerpt": "string (ringkasan 1-2 kalimat)",
+  "body_html": "string (HTML bersih dengan <p>, <h2>)",
+  "tags": ["string", "string"],
+  "focus_keyword": "string (kata kunci utama SEO)",
+  "meta_title": "string (Judul SEO)",
+  "meta_description": "string (Deskripsi SEO 140-160 karakter)"
+}
+SCHEMA;
+
+        $endpoint = self::resolveChatEndpoint();
+        $payload = [
+            'model' => $model,
+            'messages' => [
+                ['role' => 'system', 'content' => $systemPrompt],
+                ['role' => 'user', 'content' => $userPrompt],
+            ],
+            'temperature' => 0.7,
+            'stream' => false,
+        ];
+
+        if (! str_contains($model, 'reasoner')) {
+            $payload['response_format'] = ['type' => 'json_object'];
+        }
+
+        try {
+            $response = Http::withToken($apiKey)
+                ->withHeaders([
+                    'HTTP-Referer' => config('app.url', 'https://sman1gedeg.sch.id'),
+                    'X-Title' => 'ScholarGate CMS',
+                ])
+                ->timeout(60)
+                ->post($endpoint, $payload);
+
+            if (! $response->successful()) {
+                $errorBody = $response->json('error.message') ?: $response->body();
+                throw new \RuntimeException("AI Provider merespon error ({$response->status()}): {$errorBody}");
+            }
+
+            $rawContent = self::extractContentFromResponse($response);
+            if (! $rawContent) {
+                throw new \RuntimeException('Respon dari AI kosong.');
+            }
+
+            $cleanJson = preg_replace('/^```(?:json)?\s*/i', '', $rawContent);
+            $cleanJson = preg_replace('/\s*```$/', '', (string) $cleanJson);
+            $cleanJson = trim((string) $cleanJson);
+
+            $parsed = json_decode($cleanJson, true);
+            if (! is_array($parsed) && preg_match('/\{[\s\S]*\}/', $cleanJson, $matches)) {
+                $parsed = json_decode($matches[0], true);
+            }
+
+            if (! is_array($parsed)) {
+                throw new \RuntimeException('Gagal mengurai respon JSON dari AI.');
+            }
+
+            $title = trim((string) ($parsed['title'] ?? $topic));
+            $slug = Str::slug(trim((string) ($parsed['slug'] ?? '')) ?: $title);
+            $category = trim((string) ($parsed['category'] ?? ($categoryHint ?: 'Kegiatan')));
+            $excerpt = trim((string) ($parsed['excerpt'] ?? Str::limit($topic, 150)));
+            $bodyHtml = trim((string) ($parsed['body_html'] ?? '<p>'.nl2br(e($topic)).'</p>'));
+            $tags = is_array($parsed['tags'] ?? null)
+                ? array_values(array_filter(array_map('trim', $parsed['tags'])))
+                : ['Kegiatan', 'Sekolah'];
+            $focusKeyword = trim((string) ($parsed['focus_keyword'] ?? $topic));
+            $metaTitle = trim((string) ($parsed['meta_title'] ?? $title));
+            $metaDesc = trim((string) ($parsed['meta_description'] ?? $excerpt));
+
+            return [
+                'title' => $title,
+                'slug' => $slug,
+                'category' => $category,
+                'excerpt' => $excerpt,
+                'body_html' => $bodyHtml,
+                'tags' => $tags,
+                'focus_keyword' => $focusKeyword,
+                'meta_title' => $metaTitle,
+                'meta_description' => $metaDesc,
+            ];
+        } catch (\Throwable $e) {
+            if ($e instanceof \RuntimeException) {
+                throw $e;
+            }
+            throw new \RuntimeException('Gagal menyusun artikel AI: '.$e->getMessage(), 0, $e);
+        }
+    }
+
+    /**
+     * Generate naskah sambutan resmi Kepala Sekolah / Pejabat untuk homepage atau profil.
+     *
+     * @param  array{speaker?: string, theme?: string, tone?: string, target?: string}  $params
+     * @return array{
+     *     title: string,
+     *     badge_left: string,
+     *     badge_right: string,
+     *     chat_label: string,
+     *     body_html: string
+     * }
+     */
+    public function generateWelcomeMessage(array $params): array
+    {
+        $apiKey = trim((string) Setting::getValue('openai_api_key', env('OPENAI_API_KEY', '')));
+        if ($apiKey === '') {
+            throw new \RuntimeException('OpenAI API Key belum dikonfigurasi.');
+        }
+
+        $model = trim((string) Setting::getValue('openai_model', 'gpt-4o-mini')) ?: 'gpt-4o-mini';
+        $displayModel = self::getDisplayModelName();
+        $personaRules = self::buildAssistantPersonaRules($displayModel);
+
+        $speaker = trim((string) ($params['speaker'] ?? 'Kepala Sekolah'));
+        $theme = trim((string) ($params['theme'] ?? 'Menyambut Tahun Ajaran Baru & Transformasi Digital'));
+        $tone = (string) ($params['tone'] ?? 'warm_inspirational');
+        $target = (string) ($params['target'] ?? 'home');
+
+        $filterSpeaker = self::filterPromptInjection($speaker);
+        $filterTheme = self::filterPromptInjection($theme);
+        $safeSpeaker = $filterSpeaker['sanitized_text'];
+        $safeTheme = $filterTheme['sanitized_text'];
+
+        $toneDescription = match ($tone) {
+            'visionary' => 'Visioner, penuh motivasi berprestasi, inovasi pendidikan modern, dan berwawasan masa depan.',
+            'formal_national' => 'Resmi, bermartabat, menekankan nilai Pancasila, kebangsaan, integritas, dan disiplin.',
+            'religious' => 'Santun, sarat doa restu, penuh nilai akhlak mulia, dan religius humanis.',
+            default => 'Hangat, mengayomi, bersahabat, menyambut siswa, guru, serta wali murid dengan penuh kebanggaan dan harapan.',
+        };
+
+        $systemPrompt = <<<PROMPT
+{$personaRules}
+
+Anda adalah staf ahli komunikasi kepemimpinan sekolah dan editor sambutan resmi.
+Tugas Anda: Menyusun naskah sambutan resmi Kepala Sekolah/Pimpinan untuk {$target} website sekolah.
+
+[PANDUAN PENULISAN]:
+1. Sambutan harus memikat, berwibawa, menyentuh, dan terstruktur rapi.
+2. Buat judul sambutan yang berwibawa (contoh: "Mewujudkan Generasi Unggul dan Berkarakter di Era Digital").
+3. Badge kiri: tahun ajaran atau slogan institusi (contoh: "Tahun Ajaran 2026/2027").
+4. Badge kanan: pilar keunggulan (contoh: "Berkarakter & Berprestasi").
+5. Label chat/kutipan pendek: 1 kalimat mutiara khas kepala sekolah (contoh: "Pendidikan adalah lentera masa depan.").
+6. Isi sambutan (body_html): 3-4 paragraf HTML bersih menggunakan tag <p> dan penekanan <strong> jika perlu.
+   - Paragraf 1: Salam pembuka hangat dan rasa syukur.
+   - Paragraf 2: Visi pengembangan sekolah, pembelajaran, atau kurikulum merdeka.
+   - Paragraf 3: Harapan, kolaborasi dengan orang tua/masyarakat, dan ajakan berprestasi.
+   - Paragraf 4: Salam penutup penuh berkah dan optimisme.
+7. Nada bahasa: {$toneDescription}
+8. Kembalikan HANYA format JSON yang valid sesuai skema yang diminta.
+PROMPT;
+
+        $userPrompt = "Pemberi Sambutan:\n<untrusted_material>\n{$safeSpeaker}\n</untrusted_material>\n\n";
+        $userPrompt .= "Tema / Poin Sambutan:\n<untrusted_material>\n{$safeTheme}\n</untrusted_material>\n\n";
+        $userPrompt .= <<<'SCHEMA'
+Buat sambutan dalam format JSON persis seperti ini:
+{
+  "title": "string (Judul sambutan berwibawa)",
+  "badge_left": "string (Badge kiri, misal: Tahun Ajaran 2026/2027)",
+  "badge_right": "string (Badge kanan, misal: Unggul & Berkarakter)",
+  "chat_label": "string (Kutipan singkat 1 kalimat)",
+  "body_html": "string (Naskah sambutan lengkap dalam tag <p>)"
+}
+SCHEMA;
+
+        $endpoint = self::resolveChatEndpoint();
+        $payload = [
+            'model' => $model,
+            'messages' => [
+                ['role' => 'system', 'content' => $systemPrompt],
+                ['role' => 'user', 'content' => $userPrompt],
+            ],
+            'temperature' => 0.7,
+            'stream' => false,
+        ];
+
+        if (! str_contains($model, 'reasoner')) {
+            $payload['response_format'] = ['type' => 'json_object'];
+        }
+
+        try {
+            $response = Http::withToken($apiKey)
+                ->withHeaders([
+                    'HTTP-Referer' => config('app.url', 'https://sman1gedeg.sch.id'),
+                    'X-Title' => 'ScholarGate CMS',
+                ])
+                ->timeout(45)
+                ->post($endpoint, $payload);
+
+            if (! $response->successful()) {
+                $errorBody = $response->json('error.message') ?: $response->body();
+                throw new \RuntimeException("AI Provider error ({$response->status()}): {$errorBody}");
+            }
+
+            $rawContent = self::extractContentFromResponse($response);
+            $cleanJson = preg_replace('/^```(?:json)?\s*/i', '', (string) $rawContent);
+            $cleanJson = preg_replace('/\s*```$/', '', (string) $cleanJson);
+            $cleanJson = trim((string) $cleanJson);
+
+            $parsed = json_decode($cleanJson, true);
+            if (! is_array($parsed) && preg_match('/\{[\s\S]*\}/', $cleanJson, $matches)) {
+                $parsed = json_decode($matches[0], true);
+            }
+
+            if (! is_array($parsed)) {
+                throw new \RuntimeException('Gagal mengurai respon sambutan dari AI.');
+            }
+
+            return [
+                'title' => trim((string) ($parsed['title'] ?? 'Sambutan Kepala Sekolah')),
+                'badge_left' => trim((string) ($parsed['badge_left'] ?? 'Tahun Ajaran 2026/2027')),
+                'badge_right' => trim((string) ($parsed['badge_right'] ?? 'Unggul & Berkarakter')),
+                'chat_label' => trim((string) ($parsed['chat_label'] ?? 'Selamat Datang di Portal Resmi Sekolah')),
+                'body_html' => trim((string) ($parsed['body_html'] ?? '<p>Selamat datang di portal resmi sekolah kami.</p>')),
+            ];
+        } catch (\Throwable $e) {
+            if ($e instanceof \RuntimeException) {
+                throw $e;
+            }
+            throw new \RuntimeException('Gagal menyusun sambutan AI: '.$e->getMessage(), 0, $e);
+        }
+    }
+
+    /**
+     * Generate narasi profil sekolah (Sejarah, Visi Misi, Budaya, Fasilitas).
+     *
+     * @param  array{tab_label?: string, hints?: string, style?: string}  $params
+     * @return array{tab_label: string, content_html: string}
+     */
+    public function generateProfileSection(array $params): array
+    {
+        $apiKey = trim((string) Setting::getValue('openai_api_key', env('OPENAI_API_KEY', '')));
+        if ($apiKey === '') {
+            throw new \RuntimeException('OpenAI API Key belum dikonfigurasi.');
+        }
+
+        $model = trim((string) Setting::getValue('openai_model', 'gpt-4o-mini')) ?: 'gpt-4o-mini';
+        $displayModel = self::getDisplayModelName();
+        $personaRules = self::buildAssistantPersonaRules($displayModel);
+
+        $tabLabel = trim((string) ($params['tab_label'] ?? 'Sejarah & Profil Singkat'));
+        $hints = trim((string) ($params['hints'] ?? ''));
+        $style = (string) ($params['style'] ?? 'general');
+
+        $filterLabel = self::filterPromptInjection($tabLabel);
+        $filterHints = self::filterPromptInjection($hints);
+        $safeLabel = $filterLabel['sanitized_text'];
+        $safeHints = $filterHints['sanitized_text'];
+
+        $styleGuide = match ($style) {
+            'vision_mission' => 'Format terstruktur dengan pembagian Visi (1 kalimat agung), Misi (daftar berbutir <ul><li> yang terukur), dan Tujuan Strategis.',
+            'history' => 'Format narasi sejarah kronologis dengan subjudul <h2> milestone perkembangan, dari awal berdirinya hingga pencapaian masa kini.',
+            'culture' => 'Format nilai budaya sekolah, profil pelajar Pancasila, kebiasaan baik (senyum, salam, sapa), dan etos integritas.',
+            'facilities' => 'Format deskripsi lingkungan belajar, sarana laboratorium, perpustakaan digital, sarana olahraga, dan fasilitas penunjang.',
+            default => 'Format penjelasan profil institusi resmi yang elegan, rapi, dan informatif.',
+        };
+
+        $systemPrompt = <<<PROMPT
+{$personaRules}
+
+Anda adalah penyusun dokumen profil institusi pendidikan formal (sekolah).
+Tugas Anda: Menyusun konten halaman profil resmi sekolah untuk tab "{$safeLabel}".
+
+[PANDUAN PENULISAN]:
+1. Format isi (content_html) dalam HTML bersih dan elegan: gunakan tag <h2> untuk sub-bab, <p> untuk narasi berbobot, dan <ul><li> untuk daftar butir penting.
+2. Hindari teks kosong atau hiperbola berlebihan. Sajikan data/fakta secara elegan dan kredibel.
+3. Pedoman gaya: {$styleGuide}
+4. Kembalikan HANYA format JSON yang valid sesuai skema berikut.
+PROMPT;
+
+        $userPrompt = "Label Tab Profil: {$safeLabel}\n";
+        if ($safeHints !== '') {
+            $userPrompt .= "Petunjuk / Fakta Sekolah:\n<untrusted_material>\n{$safeHints}\n</untrusted_material>\n\n";
+        }
+        $userPrompt .= <<<'SCHEMA'
+Buat konten profil dalam format JSON persis seperti ini:
+{
+  "tab_label": "string (Label tab profil yang rapi)",
+  "content_html": "string (HTML bersih dengan <h2>, <p>, <ul><li>)"
+}
+SCHEMA;
+
+        $endpoint = self::resolveChatEndpoint();
+        $payload = [
+            'model' => $model,
+            'messages' => [
+                ['role' => 'system', 'content' => $systemPrompt],
+                ['role' => 'user', 'content' => $userPrompt],
+            ],
+            'temperature' => 0.6,
+            'stream' => false,
+        ];
+
+        if (! str_contains($model, 'reasoner')) {
+            $payload['response_format'] = ['type' => 'json_object'];
+        }
+
+        try {
+            $response = Http::withToken($apiKey)
+                ->withHeaders([
+                    'HTTP-Referer' => config('app.url', 'https://sman1gedeg.sch.id'),
+                    'X-Title' => 'ScholarGate CMS',
+                ])
+                ->timeout(45)
+                ->post($endpoint, $payload);
+
+            if (! $response->successful()) {
+                $errorBody = $response->json('error.message') ?: $response->body();
+                throw new \RuntimeException("AI Provider error ({$response->status()}): {$errorBody}");
+            }
+
+            $rawContent = self::extractContentFromResponse($response);
+            $cleanJson = preg_replace('/^```(?:json)?\s*/i', '', (string) $rawContent);
+            $cleanJson = preg_replace('/\s*```$/', '', (string) $cleanJson);
+            $cleanJson = trim((string) $cleanJson);
+
+            $parsed = json_decode($cleanJson, true);
+            if (! is_array($parsed) && preg_match('/\{[\s\S]*\}/', $cleanJson, $matches)) {
+                $parsed = json_decode($matches[0], true);
+            }
+
+            if (! is_array($parsed)) {
+                throw new \RuntimeException('Gagal mengurai respon profil dari AI.');
+            }
+
+            return [
+                'tab_label' => trim((string) ($parsed['tab_label'] ?? $tabLabel)),
+                'content_html' => trim((string) ($parsed['content_html'] ?? '<p>'.nl2br(e($hints ?: $tabLabel)).'</p>')),
+            ];
+        } catch (\Throwable $e) {
+            if ($e instanceof \RuntimeException) {
+                throw $e;
+            }
+            throw new \RuntimeException('Gagal menyusun konten profil AI: '.$e->getMessage(), 0, $e);
+        }
+    }
+
+    /**
+     * Generate liputan prestasi siswa/sekolah untuk menu Prestasi.
+     *
+     * @param  array{competition?: string, level?: string, participant?: string, rank?: string, organizer?: string, notes?: string}  $params
+     * @return array{
+     *     title: string,
+     *     slug: string,
+     *     badge_label: string,
+     *     excerpt: string,
+     *     body_html: string
+     * }
+     */
+    public function generateAchievementArticle(array $params): array
+    {
+        $apiKey = trim((string) Setting::getValue('openai_api_key', env('OPENAI_API_KEY', '')));
+        if ($apiKey === '') {
+            throw new \RuntimeException('OpenAI API Key belum dikonfigurasi.');
+        }
+
+        $model = trim((string) Setting::getValue('openai_model', 'gpt-4o-mini')) ?: 'gpt-4o-mini';
+        $displayModel = self::getDisplayModelName();
+        $personaRules = self::buildAssistantPersonaRules($displayModel);
+
+        $competition = trim((string) ($params['competition'] ?? ''));
+        $level = trim((string) ($params['level'] ?? 'Nasional'));
+        $participant = trim((string) ($params['participant'] ?? ''));
+        $rank = trim((string) ($params['rank'] ?? 'Juara 1'));
+        $organizer = trim((string) ($params['organizer'] ?? ''));
+        $notes = trim((string) ($params['notes'] ?? ''));
+
+        $filterComp = self::filterPromptInjection($competition);
+        $filterPart = self::filterPromptInjection($participant);
+        $filterNotes = self::filterPromptInjection($notes);
+
+        $systemPrompt = <<<PROMPT
+{$personaRules}
+
+Anda adalah jurnalis prestasi sekolah resmi (CMS ScholarGate).
+Tugas Anda: Menyusun liputan berita prestasi siswa/sekolah yang bangga, apresiatif, berbobot, dan menginspirasi siswa lain.
+
+[PANDUAN PENULISAN]:
+1. Buat judul berita prestasi yang gagah dan membanggakan (contoh: "Raih Medali Emas, Siswa SMAN 1 Gedeg Juara 1 Olimpiade Sains Nasional 2026").
+2. Buat badge label singkat (contoh: "Tingkat Nasional 🏆" atau "Juara 1 Provinsi").
+3. Buat excerpt (ringkasan 1-2 kalimat) yang menonjolkan capaian prestasi.
+4. Tulis body_html (3-4 paragraf HTML bersih dengan tag <p>, <h2>):
+   - Paragraf 1: Berita utama pencapaian prestasi, waktu/lokasi, dan penyelenggara.
+   - Paragraf 2: Perjuangan dan persiapan siswa/tim serta bimbingan guru pembina.
+   - Paragraf 3: Apresiasi kepala sekolah dan harapan menjadi inspirasi bagi siswa lain.
+5. Kembalikan HANYA format JSON sesuai skema yang diminta.
+PROMPT;
+
+        $userPrompt = "Nama Lomba / Kejuaraan: {$filterComp['sanitized_text']}\n";
+        $userPrompt .= "Tingkat: {$level}\n";
+        $userPrompt .= "Nama Siswa / Tim: {$filterPart['sanitized_text']}\n";
+        $userPrompt .= "Peringkat / Medali: {$rank}\n";
+        if ($organizer !== '') {
+            $userPrompt .= "Penyelenggara: {$organizer}\n";
+        }
+        if ($filterNotes['sanitized_text'] !== '') {
+            $userPrompt .= "Catatan Tambahan:\n<untrusted_material>\n{$filterNotes['sanitized_text']}\n</untrusted_material>\n\n";
+        }
+
+        $userPrompt .= <<<'SCHEMA'
+Buat liputan prestasi dalam format JSON persis seperti ini:
+{
+  "title": "string (Judul berita prestasi bangga)",
+  "slug": "string (kebab-case URL slug)",
+  "badge_label": "string (Label badge, misal: Tingkat Nasional 🏆)",
+  "excerpt": "string (ringkasan 1-2 kalimat)",
+  "body_html": "string (HTML lengkap dengan <p>, <h2>)"
+}
+SCHEMA;
+
+        $endpoint = self::resolveChatEndpoint();
+        $payload = [
+            'model' => $model,
+            'messages' => [
+                ['role' => 'system', 'content' => $systemPrompt],
+                ['role' => 'user', 'content' => $userPrompt],
+            ],
+            'temperature' => 0.7,
+            'stream' => false,
+        ];
+
+        if (! str_contains($model, 'reasoner')) {
+            $payload['response_format'] = ['type' => 'json_object'];
+        }
+
+        try {
+            $response = Http::withToken($apiKey)
+                ->withHeaders([
+                    'HTTP-Referer' => config('app.url', 'https://sman1gedeg.sch.id'),
+                    'X-Title' => 'ScholarGate CMS',
+                ])
+                ->timeout(45)
+                ->post($endpoint, $payload);
+
+            if (! $response->successful()) {
+                $errorBody = $response->json('error.message') ?: $response->body();
+                throw new \RuntimeException("AI Provider error ({$response->status()}): {$errorBody}");
+            }
+
+            $rawContent = self::extractContentFromResponse($response);
+            $cleanJson = preg_replace('/^```(?:json)?\s*/i', '', (string) $rawContent);
+            $cleanJson = preg_replace('/\s*```$/', '', (string) $cleanJson);
+            $cleanJson = trim((string) $cleanJson);
+
+            $parsed = json_decode($cleanJson, true);
+            if (! is_array($parsed) && preg_match('/\{[\s\S]*\}/', $cleanJson, $matches)) {
+                $parsed = json_decode($matches[0], true);
+            }
+
+            if (! is_array($parsed)) {
+                throw new \RuntimeException('Gagal mengurai respon prestasi dari AI.');
+            }
+
+            $title = trim((string) ($parsed['title'] ?? "Prestasi {$rank} {$competition}"));
+            $slug = Str::slug(trim((string) ($parsed['slug'] ?? '')) ?: $title);
+
+            return [
+                'title' => $title,
+                'slug' => $slug,
+                'badge_label' => trim((string) ($parsed['badge_label'] ?? "{$rank} {$level}")),
+                'excerpt' => trim((string) ($parsed['excerpt'] ?? "Siswa berhasil meraih {$rank} dalam ajang {$competition}.")),
+                'body_html' => trim((string) ($parsed['body_html'] ?? '<p>Selamat atas raihan prestasi membanggakan ini.</p>')),
+            ];
+        } catch (\Throwable $e) {
+            if ($e instanceof \RuntimeException) {
+                throw $e;
+            }
+            throw new \RuntimeException('Gagal menyusun liputan prestasi AI: '.$e->getMessage(), 0, $e);
+        }
+    }
+
+    /**
+     * Asisten teks AI universal untuk RichTextEditor (Draft, Polish PUEBI, Expand, Summarize, Change Tone).
+     *
+     * @param  array{action: string, text?: string, prompt?: string, tone?: string}  $params
+     * @return array{result_html: string, action: string}
+     */
+    public function assistText(array $params): array
+    {
+        $apiKey = trim((string) Setting::getValue('openai_api_key', env('OPENAI_API_KEY', '')));
+        if ($apiKey === '') {
+            throw new \RuntimeException('OpenAI API Key belum dikonfigurasi.');
+        }
+
+        $model = trim((string) Setting::getValue('openai_model', 'gpt-4o-mini')) ?: 'gpt-4o-mini';
+        $displayModel = self::getDisplayModelName();
+        $personaRules = self::buildAssistantPersonaRules($displayModel);
+
+        $action = (string) ($params['action'] ?? 'polish');
+        $rawText = trim((string) ($params['text'] ?? ''));
+        $rawPrompt = trim((string) ($params['prompt'] ?? ''));
+        $tone = (string) ($params['tone'] ?? 'formal');
+
+        $filterText = self::filterPromptInjection($rawText);
+        $filterPrompt = self::filterPromptInjection($rawPrompt);
+        $safeText = $filterText['sanitized_text'];
+        $safePrompt = $filterPrompt['sanitized_text'];
+
+        $actionDirective = match ($action) {
+            'draft' => 'Tulis draf konten baru yang lengkap, berbobot, dan menarik berdasarkan petunjuk/instruksi pengguna. Format dalam HTML bersih (<p>, <h2>, <ul><li>).',
+            'polish' => 'Perbaiki ejaan, tata bahasa, tanda baca sesuai PUEBI/KBBI, dan perhalus kalimat agar mengalir enak dibaca tanpa mengubah makna inti.',
+            'expand' => 'Kembangkan dan perluas teks yang diberikan menjadi lebih detail, kaya informasi, dan berbobot dengan penjelasan yang relevan.',
+            'summarize' => 'Buat ringkasan yang padat, akurat, dan langsung ke inti pembahasan dari teks yang diberikan.',
+            'change_tone' => "Ubah nada/gaya bahasa tulisan menjadi bergaya '{$tone}', tetap rapi dan komunikatif.",
+            default => 'Bantu perbaiki dan sempurnakan teks di bawah ini.',
+        };
+
+        $systemPrompt = <<<PROMPT
+{$personaRules}
+
+Anda adalah asisten penulisan profesional terintegrasi di RichTextEditor CMS ScholarGate.
+Tugas Anda: {$actionDirective}
+
+[ATURAN FORMAT OUTPUT]:
+- Kembalikan HANYA teks HTML bersih (gunakan tag <p>, <h2>, <h3>, <ul>, <li>, <strong>, <em> jika diperlukan).
+- JANGAN membungkus respon Anda dengan ```html ... ``` atau pengantar seperti "Berikut adalah hasilnya:".
+- Langsung keluarkan markup HTML yang siap disisipkan ke editor.
+PROMPT;
+
+        $userPrompt = '';
+        if ($safePrompt !== '') {
+            $userPrompt .= "Instruksi Pengguna:\n<untrusted_material>\n{$safePrompt}\n</untrusted_material>\n\n";
+        }
+        if ($safeText !== '') {
+            $userPrompt .= "Teks Asli / Masukan:\n<untrusted_material>\n{$safeText}\n</untrusted_material>\n\n";
+        }
+        $userPrompt .= "Terapkan aksi: {$action}. Keluarkan hasil HTML bersih sekarang.";
+
+        $endpoint = self::resolveChatEndpoint();
+        $payload = [
+            'model' => $model,
+            'messages' => [
+                ['role' => 'system', 'content' => $systemPrompt],
+                ['role' => 'user', 'content' => $userPrompt],
+            ],
+            'temperature' => 0.5,
+            'stream' => false,
+        ];
+
+        try {
+            $response = Http::withToken($apiKey)
+                ->withHeaders([
+                    'HTTP-Referer' => config('app.url', 'https://sman1gedeg.sch.id'),
+                    'X-Title' => 'ScholarGate CMS',
+                ])
+                ->timeout(45)
+                ->post($endpoint, $payload);
+
+            if (! $response->successful()) {
+                $errorBody = $response->json('error.message') ?: $response->body();
+                throw new \RuntimeException("AI Provider error ({$response->status()}): {$errorBody}");
+            }
+
+            $rawContent = (string) self::extractContentFromResponse($response);
+            $cleanHtml = preg_replace('/^```(?:html)?\s*/i', '', $rawContent);
+            $cleanHtml = preg_replace('/\s*```$/', '', (string) $cleanHtml);
+            $cleanHtml = trim((string) $cleanHtml);
+
+            return [
+                'result_html' => $cleanHtml,
+                'action' => $action,
+            ];
+        } catch (\Throwable $e) {
+            if ($e instanceof \RuntimeException) {
+                throw $e;
+            }
+            throw new \RuntimeException('Gagal memproses bantuan AI: '.$e->getMessage(), 0, $e);
+        }
+    }
 }

@@ -1,6 +1,6 @@
 {
-  "_vendor-icons-CAcRu3hE.js": {
-    "file": "assets/vendor-icons-CAcRu3hE.js",
+  "_vendor-icons-X9Z4bLv8.js": {
+    "file": "assets/vendor-icons-X9Z4bLv8.js",
     "name": "vendor-icons",
     "imports": [
       "_vendor-react-CCGSBL4C.js"
@@ -22,7 +22,7 @@
     "name": "vendor-react"
   },
   "resources/js/app.tsx": {
-    "file": "assets/app-Dnt5wFvj.js",
+    "file": "assets/app-BqjWPdfB.js",
     "name": "app",
     "src": "resources/js/app.tsx",
     "isEntry": true,
@@ -30,10 +30,10 @@
       "_vendor-query-CfZO1aEF.js",
       "_vendor-react-CCGSBL4C.js",
       "_vendor-motion-D2bVE4Ot.js",
-      "_vendor-icons-CAcRu3hE.js"
+      "_vendor-icons-X9Z4bLv8.js"
     ],
     "css": [
-      "assets/app-D1cgDwTD.css"
+      "assets/app-f32ybLIC.css"
     ]
   }
 }

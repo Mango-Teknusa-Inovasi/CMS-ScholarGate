@@ -2,11 +2,14 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { usePage } from '@inertiajs/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Save } from 'lucide-react'
+import { ArrowLeft, Save, Sparkles } from 'lucide-react'
 import { api } from '../../lib/api'
 import { guideForField } from '../../lib/mediaGuide'
 import { RESOURCE_CONFIGS, type ResourceConfig } from '../../admin/resourceConfigs'
+import type { FieldDef } from '../../pages/admin/SimpleResourcePage'
 import { ImageUploadField } from '../../components/admin/ImageUploadField'
+import { RichTextEditor } from '../../components/admin/RichTextEditor'
+import { AchievementAiModal, type AchievementAiResult } from '../../components/admin/AchievementAiModal'
 import { Skeleton } from '../../components/ui/Skeleton'
 
 type Props = { config: ResourceConfig }
@@ -18,6 +21,7 @@ export function ResourceEditorPage({ config }: Props) {
   const qc = useQueryClient()
   const [form, setForm] = useState<Record<string, string | boolean | null>>({})
   const [ready, setReady] = useState(isNew)
+  const [isAchievementAiOpen, setIsAchievementAiOpen] = useState(false)
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin', config.slug, id],
@@ -65,6 +69,18 @@ export function ResourceEditorPage({ config }: Props) {
     },
   })
 
+  const handleAchievementGenerated = (res: AchievementAiResult) => {
+    setForm((prev) => ({
+      ...prev,
+      title: res.title || prev.title,
+      slug: res.slug || prev.slug,
+      badge_label: res.badge_label || prev.badge_label,
+      excerpt: res.excerpt || prev.excerpt,
+      body: res.body_html || prev.body,
+      status: prev.status || 'published',
+    }))
+  }
+
   if ((!isNew && isLoading) || !ready) {
     return (
       <div className="space-y-4">
@@ -73,6 +89,91 @@ export function ResourceEditorPage({ config }: Props) {
       </div>
     )
   }
+
+  const renderField = (f: FieldDef) => {
+    if (f.type === 'image') {
+      const guide = guideForField(config.slug, f.key)
+      return (
+        <ImageUploadField
+          key={f.key}
+          label={f.label}
+          value={(form[f.key] as string) || null}
+          onChange={(path) => setForm((prev) => ({ ...prev, [f.key]: path }))}
+          guide={guide}
+          previewClassName={f.previewClassName || 'aspect-video max-h-56'}
+        />
+      )
+    }
+    if (f.type === 'checkbox') {
+      return (
+        <label
+          key={f.key}
+          className="flex items-center gap-2.5 rounded-[12px] border border-line bg-page px-3 py-2.5 text-sm"
+        >
+          <input
+            type="checkbox"
+            className="h-4 w-4 rounded border-line text-brand"
+            checked={Boolean(form[f.key])}
+            onChange={(e) => setForm((prev) => ({ ...prev, [f.key]: e.target.checked }))}
+          />
+          <span className="font-medium text-ink">{f.label}</span>
+        </label>
+      )
+    }
+    if (f.type === 'richtext') {
+      return (
+        <div key={f.key}>
+          <label className="mb-1.5 block text-sm font-semibold text-ink">{f.label}</label>
+          <RichTextEditor
+            value={String(form[f.key] ?? '')}
+            onChange={(html) => setForm((prev) => ({ ...prev, [f.key]: html }))}
+            placeholder={`Tulis ${f.label.toLowerCase()} di sini…`}
+          />
+        </div>
+      )
+    }
+    return (
+      <div key={f.key}>
+        <label className="mb-1.5 block text-sm font-medium text-ink">{f.label}</label>
+        {f.type === 'textarea' ? (
+          <textarea
+            className="w-full rounded-[12px] border border-line bg-page px-3 py-2.5 text-sm outline-none focus:border-brand focus:bg-white"
+            rows={4}
+            value={String(form[f.key] ?? '')}
+            onChange={(e) => setForm((prev) => ({ ...prev, [f.key]: e.target.value }))}
+          />
+        ) : (
+          <input
+            type={f.type === 'number' ? 'number' : 'text'}
+            className="w-full rounded-[12px] border border-line bg-page px-3 py-2.5 text-sm outline-none focus:border-brand focus:bg-white"
+            value={String(form[f.key] ?? '')}
+            onChange={(e) => setForm((prev) => ({ ...prev, [f.key]: e.target.value }))}
+          />
+        )}
+      </div>
+    )
+  }
+
+  const isSideField = (f: FieldDef) => {
+    if (f.type === 'image' || f.type === 'checkbox') return true
+    const sideKeys = [
+      'status',
+      'badge_label',
+      'sort_order',
+      'schedule',
+      'coach',
+      'icon',
+      'url',
+      'open_in_new_tab',
+      'link_url',
+      'link_label',
+      'color',
+    ]
+    return sideKeys.includes(f.key)
+  }
+
+  const mainFields = config.fields.filter((f) => !isSideField(f))
+  const sideFields = config.fields.filter((f) => isSideField(f))
 
   return (
     <div>
@@ -95,7 +196,18 @@ export function ResourceEditorPage({ config }: Props) {
             </h1>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {config.aiGenerator === 'achievement' && (
+            <button
+              type="button"
+              onClick={() => setIsAchievementAiOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-[12px] border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-brand/10 to-sky-500/10 px-3.5 py-2 text-xs font-semibold text-amber-800 shadow-2xs transition hover:brightness-105 dark:text-amber-300"
+              title="Buat rilis berita prestasi otomatis dengan AI"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+              <span>Liputan Prestasi AI</span>
+            </button>
+          )}
           <Link
             to={config.listPath}
             className="rounded-[12px] border border-line bg-white px-4 py-2.5 text-sm font-medium hover:bg-muted"
@@ -120,67 +232,42 @@ export function ResourceEditorPage({ config }: Props) {
         </p>
       )}
 
-      <div className="mx-auto max-w-3xl space-y-4 rounded-[16px] border border-line bg-white p-5 shadow-[var(--shadow-card)] md:p-6">
-        {config.fields.map((f) => {
-          if (f.type === 'image') {
-            const guide = guideForField(config.slug, f.key)
-            return (
-              <ImageUploadField
-                key={f.key}
-                label={f.label}
-                value={(form[f.key] as string) || null}
-                onChange={(path) => setForm({ ...form, [f.key]: path })}
-                guide={guide}
-                previewClassName={f.previewClassName || 'aspect-video max-h-56'}
-              />
-            )
-          }
-          if (f.type === 'checkbox') {
-            return (
-              <label
-                key={f.key}
-                className="flex items-center gap-2.5 rounded-[12px] border border-line bg-page px-3 py-2.5 text-sm"
-              >
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 rounded border-line text-brand"
-                  checked={Boolean(form[f.key])}
-                  onChange={(e) => setForm({ ...form, [f.key]: e.target.checked })}
-                />
-                <span className="font-medium text-ink">{f.label}</span>
-              </label>
-            )
-          }
-          return (
-            <div key={f.key}>
-              <label className="mb-1.5 block text-sm font-medium text-ink">{f.label}</label>
-              {f.type === 'textarea' ? (
-                <textarea
-                  className="w-full rounded-[12px] border border-line bg-page px-3 py-2.5 text-sm outline-none focus:border-brand focus:bg-white"
-                  rows={4}
-                  value={String(form[f.key] ?? '')}
-                  onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
-                />
-              ) : (
-                <input
-                  type={f.type === 'number' ? 'number' : 'text'}
-                  className="w-full rounded-[12px] border border-line bg-page px-3 py-2.5 text-sm outline-none focus:border-brand focus:bg-white"
-                  value={String(form[f.key] ?? '')}
-                  onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
-                />
-              )}
+      {config.wideLayout ? (
+        <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+          {/* Main content column (wide) */}
+          <div className="min-w-0 space-y-4">
+            <div className="space-y-4 rounded-[16px] border border-line bg-white p-5 shadow-[var(--shadow-card)] md:p-6">
+              {mainFields.map(renderField)}
             </div>
-          )
-        })}
+          </div>
 
-        {save.isError && (
-          <p className="rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">
-            Gagal menyimpan. Periksa isian lalu coba lagi.
-          </p>
-        )}
-      </div>
+          {/* Sidebar column */}
+          <div className="space-y-4">
+            <div className="space-y-4 rounded-[16px] border border-line bg-white p-5 shadow-[var(--shadow-card)] md:p-6">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-subtle">
+                Pengaturan & Atribut
+              </h3>
+              {sideFields.map(renderField)}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="mx-auto max-w-3xl space-y-4 rounded-[16px] border border-line bg-white p-5 shadow-[var(--shadow-card)] md:p-6">
+          {config.fields.map(renderField)}
+        </div>
+      )}
 
-      <div className="mx-auto mt-4 flex max-w-3xl justify-end gap-2">
+      {save.isError && (
+        <p className="mt-4 rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          Gagal menyimpan. Periksa isian lalu coba lagi.
+        </p>
+      )}
+
+      <div
+        className={`mt-4 flex justify-end gap-2 ${
+          config.wideLayout ? '' : 'mx-auto max-w-3xl'
+        }`}
+      >
         <Link
           to={config.listPath}
           className="rounded-[12px] border border-line bg-white px-4 py-2.5 text-sm font-medium"
@@ -196,6 +283,14 @@ export function ResourceEditorPage({ config }: Props) {
           {save.isPending ? 'Menyimpan…' : 'Simpan'}
         </button>
       </div>
+
+      {config.aiGenerator === 'achievement' && (
+        <AchievementAiModal
+          isOpen={isAchievementAiOpen}
+          onClose={() => setIsAchievementAiOpen(false)}
+          onGenerated={handleAchievementGenerated}
+        />
+      )}
     </div>
   )
 }

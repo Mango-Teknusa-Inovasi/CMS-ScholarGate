@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Sparkles } from 'lucide-react'
 import { api } from '../../lib/api'
 import { RichTextEditor } from '../../components/admin/RichTextEditor'
 import { AdminPageHeader } from '../../components/admin/AdminPageHeader'
 import { Skeleton } from '../../components/ui/Skeleton'
 import { useToast } from '../../components/ui/Toast'
 import { useConfirm } from '../../components/ui/ConfirmModal'
+import { ProfileAiModal, type ProfileAiResult } from '../../components/admin/ProfileAiModal'
 
 type Tab = { key: string; label: string; content_html: string }
 
@@ -32,6 +33,7 @@ export function ProfileContentAdminPage() {
     tabs: [],
   })
   const [activeTab, setActiveTab] = useState(0)
+  const [isProfileAiOpen, setIsProfileAiOpen] = useState(false)
 
   useEffect(() => {
     if (data) {
@@ -160,17 +162,28 @@ export function ProfileContentAdminPage() {
 
         {tab ? (
           <div className="space-y-3 p-5">
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <input
-                className="flex-1 rounded-[12px] border border-line px-3 py-2 text-sm"
+                className="flex-1 min-w-[200px] rounded-[12px] border border-line px-3 py-2 text-sm outline-none focus:border-brand"
                 value={tab.label}
                 onChange={(e) => updateTab(activeTab, { label: e.target.value })}
-                placeholder="Label tab"
+                placeholder="Label tab (misal: Sejarah, Visi Misi)"
               />
               <button
                 type="button"
+                onClick={() => setIsProfileAiOpen(true)}
+                className="inline-flex items-center gap-1.5 rounded-[12px] border border-brand/30 bg-gradient-to-r from-brand/10 via-sky-500/10 to-indigo-500/10 px-3 py-2 text-xs font-semibold text-brand shadow-2xs transition hover:from-brand/20 hover:via-sky-500/20 hover:to-indigo-500/20"
+                title="Generate isi tab profil dengan AI"
+              >
+                <Sparkles className="h-3.5 w-3.5 text-brand" />
+                <span className="hidden sm:inline">Generate Profil AI</span>
+                <span className="sm:hidden">AI</span>
+              </button>
+              <button
+                type="button"
                 onClick={() => void removeTab(activeTab)}
-                className="rounded-[12px] bg-rose-50 px-3 text-rose-600"
+                className="rounded-[12px] bg-rose-50 px-3 text-rose-600 hover:bg-rose-100"
+                title="Hapus tab"
               >
                 <Trash2 className="h-4 w-4" />
               </button>
@@ -183,8 +196,20 @@ export function ProfileContentAdminPage() {
         ) : (
           <p className="p-6 text-sm text-subtle">Belum ada tab. Klik + Tab untuk menambah.</p>
         )}
+      {tab && (
+        <ProfileAiModal
+          isOpen={isProfileAiOpen}
+          onClose={() => setIsProfileAiOpen(false)}
+          currentLabel={tab.label}
+          onGenerated={(res) => {
+            updateTab(activeTab, {
+              label: res.tab_label || tab.label,
+              content_html: res.content_html,
+            })
+          }}
+        />
+      )}
       </div>
-
     </div>
   )
 }

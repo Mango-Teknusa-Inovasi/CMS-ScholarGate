@@ -7,6 +7,8 @@ import { AdminPageHeader } from '../../components/admin/AdminPageHeader'
 import { ImageUploadField } from '../../components/admin/ImageUploadField'
 import { Skeleton } from '../../components/ui/Skeleton'
 import { useToast } from '../../components/ui/Toast'
+import { Sparkles } from 'lucide-react'
+import { WelcomeAiModal, type WelcomeAiResult } from '../../components/admin/WelcomeAiModal'
 
 type WelcomeBlock = {
   id: string | number
@@ -31,6 +33,29 @@ export function WelcomeAdminPage() {
   })
 
   const [forms, setForms] = useState<Record<string | number, WelcomeBlock>>({})
+  const [aiModalBlock, setAiModalBlock] = useState<{
+    id: string | number
+    key: string
+    label: string
+  } | null>(null)
+
+  const handleWelcomeGenerated = (data: WelcomeAiResult) => {
+    if (!aiModalBlock) return
+    setForms((prev) => {
+      const current = prev[aiModalBlock.id] || {}
+      return {
+        ...prev,
+        [aiModalBlock.id]: {
+          ...current,
+          title: data.title,
+          badge_left: data.badge_left,
+          badge_right: data.badge_right,
+          chat_label: data.chat_label,
+          body: data.body_html,
+        } as WelcomeBlock,
+      }
+    })
+  }
 
   useEffect(() => {
     const map: Record<string | number, WelcomeBlock> = {}
@@ -92,19 +117,30 @@ export function WelcomeAdminPage() {
                   <h2 className="font-bold text-ink">{label}</h2>
                   <p className="text-xs text-subtle">Key: {block.key}</p>
                 </div>
-                <label className="flex items-center gap-2 rounded-[12px] border border-line bg-page px-3 py-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={form.is_active}
-                    onChange={(e) =>
-                      setForms((f) => ({
-                        ...f,
-                        [block.id]: { ...form, is_active: e.target.checked },
-                      }))
-                    }
-                  />
-                  Aktif
-                </label>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setAiModalBlock({ id: block.id, key: block.key, label })}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-purple-500/30 bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-indigo-500/10 px-3 py-1.5 text-xs font-semibold text-purple-700 shadow-2xs transition hover:from-purple-500/20 hover:via-pink-500/20 hover:to-indigo-500/20 dark:text-purple-300"
+                    title="Generate naskah sambutan lengkap dengan AI"
+                  >
+                    <Sparkles className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
+                    <span>Generate Sambutan AI</span>
+                  </button>
+                  <label className="flex items-center gap-2 rounded-[12px] border border-line bg-page px-3 py-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={form.is_active}
+                      onChange={(e) =>
+                        setForms((f) => ({
+                          ...f,
+                          [block.id]: { ...form, is_active: e.target.checked },
+                        }))
+                      }
+                    />
+                    Aktif
+                  </label>
+                </div>
               </div>
 
               <div className="mb-4">
@@ -205,6 +241,14 @@ export function WelcomeAdminPage() {
           )
         })}
       </div>
+
+      <WelcomeAiModal
+        isOpen={Boolean(aiModalBlock)}
+        onClose={() => setAiModalBlock(null)}
+        targetKey={aiModalBlock?.key || 'home'}
+        targetLabel={aiModalBlock?.label || 'Homepage'}
+        onGenerated={handleWelcomeGenerated}
+      />
     </div>
   )
 }
