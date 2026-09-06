@@ -20,8 +20,8 @@
 </div>
 
 > [!TIP]
-> 🇮🇩 **Dokumentasi Lengkap dalam Bahasa Indonesia**:  
-> Seluruh panduan instalasi, konfigurasi AI Intelligence, arsitektur sistem, pembuatan plugin, hingga deployment yang disusun lengkap dalam **Bahasa Indonesia** dialihkan dan dapat dibaca di **[GitHub Wiki Resmi CMS ScholarGate](https://github.com/Mango-Teknusa-Inovasi/CMS-ScholarGate/wiki)**.
+> 🇮🇩 **Documentation in Bahasa Indonesia**:  
+> For comprehensive guides, AI Suite configuration, system architecture, plugin development, and deployment tutorials written in **Bahasa Indonesia**, please visit the official **[CMS ScholarGate GitHub Wiki](https://github.com/Mango-Teknusa-Inovasi/CMS-ScholarGate/wiki)**.
 
 ---
 
@@ -306,10 +306,10 @@ Each release includes:
 
 ## 📚 Documentation Index
 
-> 🇮🇩 **Pusat Dokumentasi Terpadu (Bahasa Indonesia)**:  
-> Untuk mempelajari panduan praktis, arsitektur, dan referensi sistem secara interaktif dalam Bahasa Indonesia, silakan jelajahi **[GitHub Wiki Resmi CMS ScholarGate](https://github.com/Mango-Teknusa-Inovasi/CMS-ScholarGate/wiki)**.
+> 🇮🇩 **Documentation in Bahasa Indonesia**:  
+> To read complete tutorials, architectures, and system references written in Bahasa Indonesia, please explore the official **[CMS ScholarGate GitHub Wiki](https://github.com/Mango-Teknusa-Inovasi/CMS-ScholarGate/wiki)**.
 
-- 🌐 **[GitHub Wiki Resmi (Bahasa Indonesia)](https://github.com/Mango-Teknusa-Inovasi/CMS-ScholarGate/wiki)** — Panduan lengkap dari Introduction, AI Suite, hingga Kontak & Dukungan
+- 🌐 **[Official GitHub Wiki (Bahasa Indonesia)](https://github.com/Mango-Teknusa-Inovasi/CMS-ScholarGate/wiki)** — Complete end-to-end documentation from Introduction to Contact & Support
 - 📖 **[INSTALL.md](./INSTALL.md)** — Installation guide (Web Installer, CLI, VPS, Docker)
 - 📝 **[CHANGELOG.md](./CHANGELOG.md)** — Release history and detailed changelog
 - 🔌 **[docs/PLUGINS.md](./docs/PLUGINS.md)** — Plugin development guide, hooks system & distribution

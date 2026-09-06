@@ -1,52 +1,51 @@
-# Panduan Pembuatan Plugin — CMS ScholarGate
+# Plugin Development Guide — CMS ScholarGate
 
-Dokumen ini menjelaskan arsitektur, standar struktur, sistem hook (Action & Filter), database migration, serta langkah-langkah pembuatan dan distribusi plugin untuk **CMS ScholarGate**.
-
----
-
-## 1. Filosofi & Arsitektur Plugin
-
-CMS ScholarGate mengadopsi arsitektur plugin modular (mirip ekosistem WordPress / Laravel Packages). Tujuan utama sistem plugin adalah:
-- **Zero Core Modification**: Menambahkan fungsionalitas baru (seperti PPDB Online, E-Library, Sistem Kelulusan, Notifikasi WhatsApp/Telegram) tanpa mengubah satupun baris kode inti (*core code*) CMS.
-- **Isolasi Penuh**: Setiap plugin memiliki folder mandiri di dalam direktori `plugins/<slug>/`.
-- **Hot-Toggleable**: Plugin dapat diaktifkan atau dinonaktifkan secara instan melalui Admin Dashboard (`/admin/plugins`) atau REST API.
-- **Aman**: Pengunggahan plugin via `.ZIP` dilindungi dari kerentanan *Zip Slip*, file berbahaya (`.env`, `.phar`, `.htaccess`), serta batas kuota file & ukuran uncompressed.
+This document provides a comprehensive guide to building, structuring, migrating, and distributing modular plugins for **CMS ScholarGate**.
 
 ---
 
-## 2. Struktur Direktori Plugin
+## 1. Philosophy & Architecture
 
-Setiap plugin wajib ditempatkan di dalam direktori `plugins/<plugin-slug>/` dengan struktur standar berikut:
+CMS ScholarGate adopts a modular, package-like plugin architecture (similar to WordPress and modern Laravel packages):
+- **Zero Core Modification**: Add custom institutional capabilities (e.g. PPDB Online, Digital Library, Graduation Checking, WhatsApp/Telegram notifications) without modifying a single line of core CMS code.
+- **Complete Isolation**: Each plugin lives in its own self-contained directory under `plugins/<plugin-slug>/`.
+- **Hot-Toggleable**: Plugins can be dynamically activated or deactivated instantly via the Admin Dashboard (`/admin/plugins`) or REST API.
+- **Hardened Security**: Plugin `.ZIP` uploads are protected against *Zip Slip* (path traversal), malicious files (`.env`, `.phar`, `.htaccess`), and uncompressed quota limits.
+
+---
+
+## 2. Plugin Directory Structure
+
+Every plugin must be placed in `plugins/<plugin-slug>/` following this standard directory structure:
 
 ```text
 plugins/
 └── ppdb-online/
-    ├── plugin.json               # [Wajib] Manifest metadata plugin
+    ├── plugin.json               # [Required] Plugin metadata manifest
     ├── routes/
-    │   ├── web.php               # [Opsional] Rute web (middleware 'web')
-    │   └── api.php               # [Opsional] Rute API (middleware 'api', otomatis prefix '/api/v1')
+    │   ├── web.php               # [Optional] Web routes (middleware 'web')
+    │   └── api.php               # [Optional] API routes (middleware 'api', prefixed with '/api/v1')
     ├── database/
-    │   └── migrations/           # [Opsional] Migrasi tabel database plugin
+    │   └── migrations/           # [Optional] Plugin database migrations
     ├── src/
     │   ├── PpdbServiceProvider.php
     │   └── Controllers/
     │       └── PpdbController.php
-    └── README.md                 # [Opsional] Dokumentasi internal plugin
+    └── README.md                 # [Optional] Plugin internal documentation
 ```
 
 ---
 
-## 3. Spesifikasi Manifest (`plugin.json`)
+## 3. Manifest Specification (`plugin.json`)
 
-File `plugin.json` adalah file manifest konfigurasi yang **wajib ada** di root folder setiap plugin.
+The `plugin.json` file is the required manifest located at the root of every plugin directory:
 
-### Contoh `plugin.json`:
 ```json
 {
   "name": "PPDB Online 2026",
   "slug": "ppdb-online",
   "version": "1.0.0",
-  "description": "Modul Penerimaan Peserta Didik Baru Terintegrasi untuk SMA Negeri 1 Gedeg.",
+  "description": "Integrated Student Admissions Module for ScholarGate CMS.",
   "author": "Mango Teknusa Inovasi",
   "author_url": "https://mangoteknusa.com",
   "provider": "Plugins\\PpdbOnline\\PpdbServiceProvider",
@@ -54,26 +53,26 @@ File `plugin.json` adalah file manifest konfigurasi yang **wajib ada** di root f
 }
 ```
 
-### Penjelasan Field Manifest:
-| Field | Tipe | Wajib | Keterangan |
+### Manifest Fields:
+| Field | Type | Required | Description |
 |---|---|---|---|
-| `name` | string | **Ya** | Nama tampilan plugin yang muncul di daftar admin. |
-| `slug` | string | **Ya** | Identifier unik (hanya huruf kecil `a-z`, angka `0-9`, dan tanda hubung `-`). Harus sama dengan nama foldernya. |
-| `version` | string | **Ya** | Nomor versi semver (contoh: `1.0.0`). |
-| `description` | string | Tidak | Deskripsi fungsi dan kegunaan plugin. |
-| `author` | string | Tidak | Nama pengembang atau institusi pembuat. |
-| `author_url` | string | Tidak | Tautan website atau portofolio pembuat. |
-| `provider` | string | Tidak | Namespace Service Provider Laravel jika plugin membutuhkan dependency injection atau custom bindings. |
-| `icon` | string | Tidak | Nama icon Lucide untuk badge visual di dashboard. |
+| `name` | string | **Yes** | Display name shown in the Admin CMS interface. |
+| `slug` | string | **Yes** | Unique identifier (lowercase alphanumeric `a-z`, `0-9`, and hyphens `-` only). Must match the folder name. |
+| `version` | string | **Yes** | Semantic version string (e.g., `1.0.0`). |
+| `description` | string | No | Short explanation of the plugin's functionality. |
+| `author` | string | No | Author or organization name. |
+| `author_url` | string | No | Website or repository link of the author. |
+| `provider` | string | No | Optional Laravel ServiceProvider class for dependency injection and bindings. |
+| `icon` | string | No | Lucide icon name for visual display in the admin panel. |
 
 ---
 
-## 4. Routing Plugin (Web & API)
+## 4. Plugin Routing (Web & API)
 
-CMS ScholarGate secara otomatis memuat file rute dari plugin yang berstatus **aktif**:
+CMS ScholarGate automatically registers route files for any plugin that is marked as **Active**:
 
-### Rute Web (`routes/web.php`)
-Secara otomatis dimasukkan ke dalam middleware group `web` (mendukung cookie, session, dan proteksi CSRF):
+### Web Routes (`routes/web.php`)
+Loaded into the `web` middleware group (sessions, cookies, and CSRF protection):
 ```php
 <?php
 
@@ -81,13 +80,13 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/ppdb', function () {
     return inertia('Ppdb/Index', [
-        'title' => 'Pendaftaran PPDB 2026',
+        'title' => 'PPDB Online Admissions 2026',
     ]);
 });
 ```
 
-### Rute API (`routes/api.php`)
-Secara otomatis dimasukkan ke dalam middleware group `api` dengan prefix `/api/v1/`:
+### API Routes (`routes/api.php`)
+Loaded into the `api` middleware group with the automatic prefix `/api/v1/`:
 ```php
 <?php
 
@@ -99,42 +98,40 @@ Route::get('/ppdb/status', function () {
         'quota' => 360,
     ]);
 });
+// Accessible at: GET /api/v1/ppdb/status
 ```
-*Endpoint di atas dapat diakses langsung melalui `GET /api/v1/ppdb/status`.*
 
 ---
 
-## 5. Aturan Isolasi Database & Konvensi Prefix Tabel (Lepas-Pasang Aman)
+## 5. Database Isolation & Table Prefixing (Safe Lifecycle)
 
-CMS ScholarGate menerapkan prinsip isolasi data yang ketat seperti arsitektur plugin modern (WordPress / Laravel Packages) untuk menjamin database inti tetap bersih, stabil, dan aman saat plugin dilepas-pasang.
+To ensure the core database remains pristine, stable, and decoupled, ScholarGate enforces strict database isolation rules:
 
-### 🛡️ Aturan Utama (Golden Rule)
-1. **DILARANG Mengubah Tabel Inti CMS**:
-   - Plugin **tidak boleh** menjalankan `Schema::table('articles', ...)` atau `Schema::table('users', ...)` untuk menambah atau mengubah kolom pada tabel inti.
-   - *Mengapa?* Menambah kolom pada tabel inti membuat skema menjadi kotor (*dirty schema*), menimbulkan konflik jika ada 2 plugin berbeda menambah kolom serupa, dan meninggalkan kolom *zombie* yang merusak integritas data saat plugin dicopot.
-2. **WAJIB Menggunakan Prefix Tabel Plugin**:
-   - Seluruh tabel database yang dibuat oleh plugin **wajib** diawali dengan nama slug plugin atau prefix unik, misalnya:
+### 🛡️ The Golden Rule: Never Modify Core Tables
+1. **NO ALTER TABLE on Core Entities**:
+   - Plugins **must not** run `Schema::table('articles', ...)` or `Schema::table('users', ...)`.
+   - Modifying core tables creates *dirty schemas*, risks collisions between plugins, and leaves orphaned *zombie columns* when plugins are removed.
+2. **MANDATORY Table Prefixing**:
+   - All tables created by a plugin **must** be prefixed with the plugin's slug or unique namespace:
      - Plugin `ppdb-online` $\to$ `ppdb_registrations`, `ppdb_documents`, `ppdb_settings`
      - Plugin `elibrary` $\to$ `elibrary_books`, `elibrary_loans`
-   - Dengan prefix ini, seluruh tabel plugin terisolasi 100% dan tidak akan pernah bertabrakan dengan tabel core CMS ataupun plugin lainnya.
+   - This ensures 100% isolation with zero collisions against core CMS tables or other add-ons.
 
 ---
 
-### 🔄 Siklus Hidup Lepas-Pasang (Plugin Lifecycle)
+### 🔄 Plugin Lifecycle (Activate, Deactivate, Uninstall)
 
-ScholarGate membedakan dengan jelas antara **Menonaktifkan (Deactivate)** dan **Menghapus Bersih (Uninstall/Delete)**:
-
-| Aksi | Status Database | Status Berkas & Rute | Kapan Digunakan |
+| Action | Database State | Files & Routes | When to Use |
 |---|---|---|---|
-| **Aktifkan (Activate)** | Tabel ber-prefix dibuat otomatis via `up()` migration | Rute, hook, dan controller aktif di memori | Saat modul ingin mulai digunakan sekolah |
-| **Nonaktifkan (Deactivate)** | **Tabel & data fisik tetap utuh** (*preserved*) | Rute, hook, dan controller diputus dari memori | Saat modul dihentikan sementara (misal: PPDB ditutup) tanpa takut kehilangan data riwayat |
-| **Hapus Bersih (Uninstall/Delete)** | Seluruh tabel ber-prefix di-drop via `down()` migration | Berkas fisik `plugins/<slug>/` dan data DB dihapus bersih | Saat modul dicopot permanen dari sistem |
+| **Activate** | Prefixed tables created via `up()` migration | Routes, hooks, and controllers loaded into memory | When the school enables the feature |
+| **Deactivate** | **Tables and physical data preserved** | Routes, hooks, and controllers detached from memory | Temporary maintenance or off-season (prevents data loss) |
+| **Uninstall / Delete** | All prefixed tables dropped via `down()` rollback | Files deleted and DB record purged cleanly | Complete removal of the add-on |
 
 ---
 
-### 📝 Contoh File Migrasi Berstandar Isolasi
+### 📝 Example Migration Following Isolation Standards
 
-Tempatkan file migrasi di `plugins/<slug>/database/migrations/`:
+Place migration files in `plugins/<slug>/database/migrations/`:
 ```php
 <?php
 
@@ -144,7 +141,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
     /**
-     * Jalankan migrasi: buat tabel khusus dengan prefix plugin.
+     * Run migrations: create dedicated prefixed tables.
      */
     public function up(): void
     {
@@ -161,14 +158,14 @@ return new class extends Migration {
         Schema::create('ppdb_documents', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('registration_id')->constrained('ppdb_registrations')->cascadeOnDelete();
-            $table->string('document_type'); // misal: kartu_keluarga, ijazah
+            $table->string('document_type');
             $table->string('file_path');
             $table->timestamps();
         });
     }
 
     /**
-     * Rollback migrasi: drop seluruh tabel ber-prefix saat di-uninstall.
+     * Rollback migrations: drop all prefixed tables cleanly.
      */
     public function down(): void
     {
@@ -180,109 +177,101 @@ return new class extends Migration {
 
 ---
 
-### 💡 Bagaimana jika Plugin Butuh Menghubungkan Data ke Artikel atau Pengguna?
-Jika plugin Anda membutuhkan data relasi ke entitas core (seperti Siswa/User atau Artikel Berita):
-- **Gunakan Tabel Relasi Ber-Prefix**: Buat tabel relasi seperti `ppdb_applicant_users` yang memuat foreign key `user_id` mengarah ke tabel `users`.
-- **Gunakan Filter Hook**: Gunakan `Hook::applyFilter('article_content', ...)` untuk menyisipkan tombol atau formulir ke dalam konten artikel tanpa perlu mengubah struktur tabel `articles`.
-- **Gunakan Pengaturan JSON**: Konfigurasi modul disimpan di kolom JSON `manifest` pada tabel `plugins` atau di tabel `settings` dengan key `plugin_{slug}_{key}`.
+### 💡 Attaching Plugin Data to Users or Articles
+If your plugin needs to associate data with core entities:
+- **Use Dedicated Relational Tables**: Create a relation table like `ppdb_applicant_users` linking `user_id` to `ppdb_registrations.id`.
+- **Use Filter Hooks**: Use `Hook::applyFilter('article_content', ...)` to inject custom widgets or registration banners dynamically without altering the `articles` schema.
+- **Use JSON Settings**: Store plugin configuration in the `manifest` JSON column of `plugins` or namespaced in `settings` with key `plugin_{slug}_{key}`.
 
 ---
 
-## 6. Sistem Hook (Actions & Filters)
+## 6. Hook System (Actions & Filters)
 
-ScholarGate menyediakan fasad `App\Support\Hook` untuk berkomunikasi antar-komponen tanpa keterikatan erat (*loose coupling*).
+ScholarGate provides the `App\Support\Hook` facade for clean, decoupled inter-module communication:
 
 ### Action Hook (Event Listener)
-Digunakan untuk mengeksekusi kode saat peristiwa tertentu terjadi:
 ```php
 use App\Support\Hook;
 
-// Mendaftarkan action listener
+// Register an action listener
 Hook::addAction('article_published', function ($article) {
-    // Kirim notifikasi WhatsApp atau Telegram saat artikel diterbitkan
-    \Log::info("Artikel baru terbit: {$article->title}");
+    \Log::info("New article published: {$article->title}");
 }, priority: 10);
 
-// Memicu action hook (biasanya di core CMS atau plugin lain)
+// Trigger an action
 Hook::doAction('article_published', $article);
 ```
 
 ### Filter Hook (Data Transformer)
-Digunakan untuk memodifikasi atau menyaring data sebelum ditampilkan atau diproses:
 ```php
 use App\Support\Hook;
 
-// Mendaftarkan filter untuk menambahkan watermark atau catatan kaki
+// Transform content before display
 Hook::addFilter('article_content', function (string $content) {
-    return $content . '<p class="text-xs text-subtle">Dipublikasikan melalui Portal Resmi Sekolah.</p>';
+    return $content . '<p class="text-xs text-subtle">Published via Official School Portal.</p>';
 }, priority: 10);
 
-// Menerapkan filter hook
+// Apply the filter
 $content = Hook::applyFilter('article_content', $rawContent);
 ```
 
 ---
 
-## 7. Packaging & Distribusi Plugin (.ZIP)
+## 7. Packaging & Distributing Plugins (.ZIP)
 
-Untuk mendistribusikan plugin ke pengguna lain:
-1. Pastikan file `plugin.json` berada di root zip atau di dalam 1 level folder utama:
+1. Compress the plugin folder into a `.ZIP` archive:
    ```bash
    cd plugins/
    zip -r ppdb-online.zip ppdb-online/
    ```
-2. **Aturan Keamanan Pengunggahan**:
-   - Ukuran maksimum file ZIP: **20 MB**.
-   - Maksimum file di dalam ZIP: **500 file**.
-   - Ukuran total uncompressed: maksimum **50 MB**.
-   - Dilarang memuat file: `.env`, `.htaccess`, `web.config`, `.phar`, `.phtml`.
-   - File dengan path traversal (`../`) akan otomatis ditolak.
-3. Administrator dapat mengunggah file `.ZIP` langsung melalui menu:
-   **Admin CMS** $\to$ **Plugins** $\to$ **Unggah Plugin (.ZIP)**.
+2. **Security Audit Rules**:
+   - Maximum upload size: **20 MB**.
+   - Maximum file count: **500 files**.
+   - Maximum uncompressed size: **50 MB**.
+   - Forbidden files: `.env`, `.htaccess`, `web.config`, `.phar`, `.phtml`.
+   - Path traversal attempts (`../`) are automatically rejected.
+3. Upload directly via the Admin CMS: **Admin $\to$ Plugins $\to$ Upload Plugin (.ZIP)**.
 
 ---
 
-## 8. Contoh Tutorial: Membuat Plugin "Pengumuman Kelulusan"
+## 8. Quick Tutorial: Building a "Graduation Checker" Plugin
 
-Berikut adalah panduan cepat membuat plugin pengumuman kelulusan:
-
-### Langkah 1: Buat Folder & Manifest
-Buat folder `plugins/kelulusan-online/` dan file `plugin.json`:
+### Step 1: Create Folder & Manifest
+Create `plugins/graduation-checker/plugin.json`:
 ```json
 {
-  "name": "Pengumuman Kelulusan Siswa",
-  "slug": "kelulusan-online",
+  "name": "Graduation Checker",
+  "slug": "graduation-checker",
   "version": "1.0.0",
-  "description": "Cek status kelulusan siswa secara mandiri menggunakan NISN.",
-  "author": "Tim IT Sekolah",
+  "description": "Self-service student graduation status inquiry by NISN.",
+  "author": "School IT Team",
   "icon": "Award"
 }
 ```
 
-### Langkah 2: Buat Rute Pengecekan
-Buat file `plugins/kelulusan-online/routes/api.php`:
+### Step 2: Create API Route
+Create `plugins/graduation-checker/routes/api.php`:
 ```php
 <?php
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/kelulusan/cek', function (Request $request) {
+Route::post('/graduation/check', function (Request $request) {
     $request->validate(['nisn' => 'required|string']);
     $nisn = $request->input('nisn');
 
-    // Logika pengecekan data siswa
     return response()->json([
         'success' => true,
         'nisn' => $nisn,
-        'status' => 'LULUS',
-        'message' => 'Selamat, Anda dinyatakan LULUS!',
+        'status' => 'GRADUATED',
+        'message' => 'Congratulations, you have officially graduated!',
     ]);
 });
 ```
 
-### Langkah 3: Aktifkan di Admin
-1. Buka menu `/admin/plugins` di browser.
-2. Plugin "Pengumuman Kelulusan Siswa" akan terdeteksi secara otomatis.
-3. Klik tombol switch untuk mengaktifkan.
-4. Endpoint `POST /api/v1/kelulusan/cek` langsung aktif dan siap diakses.
+### Step 3: Activate in Admin
+1. Open `/admin/plugins` in your browser.
+2. The "Graduation Checker" plugin will be automatically discovered.
+3. Click **Activate Module**.
+4. The endpoint `POST /api/v1/graduation/check` is immediately live.
