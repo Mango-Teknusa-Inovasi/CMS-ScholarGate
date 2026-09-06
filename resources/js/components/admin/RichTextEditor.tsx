@@ -14,6 +14,7 @@ import { TableCell } from '@tiptap/extension-table-cell'
 import { TableHeader } from '@tiptap/extension-table-header'
 import Youtube from '@tiptap/extension-youtube'
 import CharacterCount from '@tiptap/extension-character-count'
+import { Iframe } from './tiptap/IframeExtension'
 import { useCallback, useEffect, useRef } from 'react'
 import { usePrompt } from '../ui/PromptModal'
 import { useToast } from '../ui/Toast'
@@ -24,6 +25,7 @@ import {
   AlignRight,
   Bold,
   Code,
+  Code2,
   Heading1,
   Heading2,
   Heading3,
@@ -113,6 +115,7 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Prop
         height: 360,
         HTMLAttributes: { class: 'rounded-xl overflow-hidden my-4' },
       }),
+      Iframe,
       Placeholder.configure({
         placeholder: placeholder || 'Tulis isi konten di sini…',
       }),
@@ -170,6 +173,68 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Prop
     if (!url) return
     editor.commands.setYoutubeVideo({ src: url.trim() })
     toast.success('Video disisipkan.')
+  }, [editor, prompt, toast])
+
+  const addEmbed = useCallback(async () => {
+    if (!editor) return
+    const input = await prompt({
+      title: 'Sisipkan Embed (Instagram / Iframe / Media)',
+      message: 'Masukkan tautan postingan Instagram, video YouTube, Google Maps, Spotify, atau kode tag <iframe>.',
+      placeholder: 'https://www.instagram.com/p/... atau <iframe src="..."></iframe>',
+      confirmLabel: 'Sisipkan',
+    })
+    if (!input) return
+    const trimmed = input.trim()
+
+    // 1. Cek jika input adalah kode tag iframe lengkap: <iframe ... src="..." ...>
+    const iframeSrcMatch = trimmed.match(/<iframe[^>]*\ssrc=["']([^"']+)["'][^>]*>/i)
+    if (iframeSrcMatch) {
+      const src = iframeSrcMatch[1]
+      const widthMatch = trimmed.match(/\swidth=["']([^"']+)["']/i)
+      const heightMatch = trimmed.match(/\sheight=["']([^"']+)["']/i)
+      editor.commands.setIframe({
+        src,
+        width: widthMatch ? widthMatch[1] : '100%',
+        height: heightMatch ? heightMatch[1] : '480',
+      })
+      toast.success('Iframe embed disisipkan.')
+      return
+    }
+
+    // 2. Cek jika URL Instagram (Post, Reel, TV)
+    const igMatch = trimmed.match(/instagram\.com\/(p|reel|tv)\/([A-Za-z0-9_-]+)/i)
+    if (igMatch) {
+      const type = igMatch[1].toLowerCase()
+      const code = igMatch[2]
+      const embedSrc = `https://www.instagram.com/${type}/${code}/embed`
+      editor.commands.setIframe({
+        src: embedSrc,
+        width: '100%',
+        height: '480',
+      })
+      toast.success('Postingan Instagram berhasil disisipkan.')
+      return
+    }
+
+    // 3. Cek jika YouTube
+    if (trimmed.includes('youtube.com') || trimmed.includes('youtu.be')) {
+      editor.commands.setYoutubeVideo({ src: trimmed })
+      toast.success('Video YouTube disisipkan.')
+      return
+    }
+
+    // 4. URL reguler lainnya (Google Maps, Spotify, Vimeo, dsb.)
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      editor.commands.setIframe({
+        src: trimmed,
+        width: '100%',
+        height: '450',
+      })
+      toast.success('Embed media disisipkan.')
+      return
+    }
+
+    toast.error('Format URL atau kode iframe tidak dikenali.')
   }, [editor, prompt, toast])
 
   const uploadImage = useCallback(
@@ -281,6 +346,9 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Prop
         </ToolbarBtn>
         <ToolbarBtn title="YouTube embed" onClick={addYoutube}>
           <Video className="h-4 w-4" />
+        </ToolbarBtn>
+        <ToolbarBtn title="Embed (Instagram, Maps, Iframe)" onClick={addEmbed}>
+          <Code2 className="h-4 w-4" />
         </ToolbarBtn>
         <ToolbarBtn
           title="Tabel"

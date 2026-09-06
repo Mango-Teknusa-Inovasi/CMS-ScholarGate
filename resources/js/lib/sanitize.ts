@@ -15,7 +15,7 @@ const ALLOWED_ATTR = [
   'href', 'target', 'rel', 'title', 'class', 'id',
   'src', 'alt', 'width', 'height', 'loading',
   'colspan', 'rowspan', 'scope',
-  'allow', 'allowfullscreen', 'frameborder', 'referrerpolicy',
+  'allow', 'allowfullscreen', 'frameborder', 'referrerpolicy', 'scrolling',
   'style', // tip tap inline styles (color, text-align) — DOMPurify strip XSS dari style
 ]
 

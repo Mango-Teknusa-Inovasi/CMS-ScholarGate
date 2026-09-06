@@ -107,7 +107,7 @@ class HtmlSanitizer
         $config->set('Core.Encoding', 'UTF-8');
         // Hindari cache stale saat ubah config di dev
         $config->set('HTML.DefinitionID', 'scholargate-cms-v1');
-        $config->set('HTML.DefinitionRev', 1);
+        $config->set('HTML.DefinitionRev', 2);
 
         $cachePath = storage_path('app/htmlpurifier');
         if (! is_dir($cachePath)) {
@@ -141,11 +141,11 @@ class HtmlSanitizer
             'margin-left', 'margin-right',
         ]);
 
-        // YouTube / Vimeo embed only
+        // Safe iframes: YouTube, Vimeo, Instagram, Google Maps, Spotify, SoundCloud
         $config->set('HTML.SafeIframe', true);
         $config->set(
             'URI.SafeIframeRegexp',
-            '%^(https?:)?//(www\.youtube(?:-nocookie)?\.com/embed/|player\.vimeo\.com/video/)%'
+            '%^(https?:)?//(www\.)?(youtube(?:-nocookie)?\.com/embed/|player\.vimeo\.com/video/|instagram\.com/(p|reel|tv)/|google\.com/maps/embed|open\.spotify\.com/embed|w\.soundcloud\.com/player)%'
         );
 
         $config->set('URI.AllowedSchemes', [
@@ -154,6 +154,13 @@ class HtmlSanitizer
             'mailto' => true,
             'tel' => true,
         ]);
+
+        $def = $config->maybeGetRawHTMLDefinition();
+        if ($def) {
+            $def->addAttribute('iframe', 'allowfullscreen', 'Bool');
+            $def->addAttribute('iframe', 'scrolling', 'Enum#yes,no,auto');
+            $def->addAttribute('iframe', 'class', 'Text');
+        }
 
         $this->purifier = new HTMLPurifier($config);
 

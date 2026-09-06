@@ -37,4 +37,23 @@ class SecurityHeadersTest extends TestCase
         $this->assertStringContainsString('script-src-elem', $csp);
         $this->assertNull($response->headers->get('Cross-Origin-Resource-Policy'));
     }
+
+    public function test_csp_allows_instagram_and_safe_iframes(): void
+    {
+        $middleware = new SecurityHeaders;
+        $request = Request::create('https://example.com/', 'GET');
+
+        $response = $middleware->handle($request, fn () => new Response('ok'));
+        $csp = (string) $response->headers->get('Content-Security-Policy');
+
+        $this->assertStringContainsString('https://www.instagram.com', $csp);
+        $this->assertStringContainsString('https://instagram.com', $csp);
+        $this->assertStringContainsString('https://maps.google.com', $csp);
+
+        // Verify HtmlSanitizer preserves Instagram embed iframes
+        $sanitizer = app(\App\Services\HtmlSanitizer::class);
+        $clean = $sanitizer->clean('<p>Halo</p><iframe src="https://www.instagram.com/p/DF123abc/embed" width="100%" height="480" frameborder="0"></iframe>');
+        $this->assertStringContainsString('https://www.instagram.com/p/DF123abc/embed', $clean);
+        $this->assertStringContainsString('width="100%"', $clean);
+    }
 }
