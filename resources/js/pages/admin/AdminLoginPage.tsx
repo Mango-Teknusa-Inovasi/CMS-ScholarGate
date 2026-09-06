@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { easeOutExpo } from '../../lib/motion'
 import { useQueryClient } from '@tanstack/react-query'
 import { adminLogin, fetchAdminMe } from '../../lib/auth'
 import { Skeleton } from '../../components/ui/Skeleton'
+import { SocialLoginButtons } from '../../components/auth/SocialLoginButtons'
 
 export function AdminLoginPage() {
   const navigate = useNavigate()
@@ -38,6 +39,12 @@ export function AdminLoginPage() {
       cancelled = true
     }
   }, [navigate])
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const err = params.get('error')
+    if (err) setError(err)
+  }, [location.search])
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -88,15 +95,14 @@ export function AdminLoginPage() {
       >
         <div className="mb-7 text-center">
           <motion.div
-            className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-500 text-lg font-bold text-white shadow-[0_2px_10px_rgb(20_184_166/0.3)]"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.1, type: 'spring', stiffness: 360, damping: 22 }}
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1 }}
+            className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-soft text-brand ring-1 ring-black/5"
           >
-            S
+            <span className="text-xl font-bold">SG</span>
           </motion.div>
-          <h1 className="text-2xl font-bold tracking-tight text-ink">Login Admin CMS</h1>
-          <p className="mt-1 text-sm text-subtle">Panel pengelolaan konten — bukan member portal</p>
+          <h1 className="text-2xl font-bold tracking-tight text-ink">Admin Portal</h1>
+          <p className="mt-1 text-sm text-subtle">Masuk untuk mengelola konten dan pengaturan situs</p>
         </div>
 
         <form onSubmit={onSubmit} className="space-y-4">
@@ -148,6 +154,9 @@ export function AdminLoginPage() {
             {loading ? 'Masuk…' : 'Masuk CMS'}
           </motion.button>
         </form>
+
+        <SocialLoginButtons intent="admin" />
+
         <p className="mt-5 text-center text-xs text-subtle">
           Member portal?{' '}
           <Link to="/login" className="font-semibold text-teal-600 hover:underline">

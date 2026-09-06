@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { LogIn } from 'lucide-react'
 import { easeOutExpo } from '../lib/motion'
@@ -7,6 +7,7 @@ import { memberLogin } from '../lib/auth'
 import { useMemberAuth } from '../hooks/useMemberAuth'
 import { Logo } from '../components/ui/Logo'
 import { Skeleton } from '../components/ui/Skeleton'
+import { SocialLoginButtons } from '../components/auth/SocialLoginButtons'
 
 export function MemberLoginPage() {
   const navigate = useNavigate()
@@ -22,6 +23,15 @@ export function MemberLoginPage() {
       navigate('/', { replace: true })
     }
   }, [authLoading, isLoggedIn, navigate])
+
+  const location = useLocation()
+
+  // Tangkap error dari callback OAuth jika ada
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const err = params.get('error')
+    if (err) setError(err)
+  }, [location.search])
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -112,6 +122,8 @@ export function MemberLoginPage() {
             {loading ? 'Masuk…' : 'Masuk ke akun'}
           </button>
         </form>
+
+        <SocialLoginButtons intent="member" />
 
         <p className="mt-6 text-center text-xs text-subtle">
           Belum punya akun?{' '}

@@ -42,6 +42,26 @@ class PublicSettings
         'sitemap_frequency',
         'sitemap_include_achievements',
         'sitemap_include_extracurriculars',
+        // Sidebar & Widgets
+        'widget_search_enabled',
+        'widget_popular_enabled',
+        'widget_categories_enabled',
+        'widget_social_enabled',
+        'widget_announcement_enabled',
+        'widget_announcement_title',
+        'widget_announcement_content',
+        'widget_announcement_url',
+        'widget_announcement_btn_text',
+        // Socialite / OIDC Auth Public Buttons
+        'auth_social_google_enabled',
+        'auth_social_google_button_text',
+        'auth_social_github_enabled',
+        'auth_social_github_button_text',
+        'auth_social_facebook_enabled',
+        'auth_social_facebook_button_text',
+        'auth_social_oidc_enabled',
+        'auth_social_oidc_name',
+        'auth_social_oidc_button_text',
     ];
 
     /** @var list<string> */
@@ -54,6 +74,19 @@ class PublicSettings
         'instagram_scraper_provider',
         'instagram_scraper_api_key',
         'instagram_scraper_api_host',
+        // Socialite / OIDC Auth Secrets & Endpoints
+        'auth_social_google_client_id',
+        'auth_social_google_client_secret',
+        'auth_social_github_client_id',
+        'auth_social_github_client_secret',
+        'auth_social_facebook_client_id',
+        'auth_social_facebook_client_secret',
+        'auth_social_oidc_client_id',
+        'auth_social_oidc_client_secret',
+        'auth_social_oidc_base_url',
+        'auth_social_oidc_auth_url',
+        'auth_social_oidc_token_url',
+        'auth_social_oidc_userinfo_url',
     ];
 
     /**

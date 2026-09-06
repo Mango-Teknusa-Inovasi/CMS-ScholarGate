@@ -76,6 +76,10 @@ Route::controller(PageController::class)->group(function () {
     Route::get('/admin/login', 'adminLogin')->name('admin.login');
 });
 
+Route::get('/auth/{provider}/redirect', [\App\Http\Controllers\Auth\SocialAuthController::class, 'redirect'])->name('social.redirect');
+Route::get('/auth/{provider}/callback', [\App\Http\Controllers\Auth\SocialAuthController::class, 'callback'])->name('social.callback');
+
+
 /*
 |--------------------------------------------------------------------------
 | Admin CMS (Inertia) — session auth + admin middleware
