@@ -15,8 +15,13 @@
 [![AI Engine](https://img.shields.io/badge/AI_Intelligence-OpenAI_·_DeepSeek_·_Groq-8A2BE2?style=for-the-badge&logo=openai&logoColor=white)](https://openai.com)
 [![Cloudflare R2](https://img.shields.io/badge/Cloudflare-R2_Storage-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://cloudflare.com)
 [![CI Tests](https://img.shields.io/badge/Tests-80%20Passed%20(100%25)-success?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/Mango-Teknusa-Inovasi/CMS-ScholarGate/actions)
+[![Wiki Docs](https://img.shields.io/badge/Wiki-Dokumentasi%20Bahasa%20Indonesia-007ACC?style=for-the-badge&logo=gitbook&logoColor=white)](https://github.com/Mango-Teknusa-Inovasi/CMS-ScholarGate/wiki)
 
 </div>
+
+> [!TIP]
+> 🇮🇩 **Dokumentasi Lengkap dalam Bahasa Indonesia**:  
+> Seluruh panduan instalasi, konfigurasi AI Intelligence, arsitektur sistem, pembuatan plugin, hingga deployment yang disusun lengkap dalam **Bahasa Indonesia** dialihkan dan dapat dibaca di **[GitHub Wiki Resmi CMS ScholarGate](https://github.com/Mango-Teknusa-Inovasi/CMS-ScholarGate/wiki)**.
 
 ---
 
@@ -301,6 +306,10 @@ Each release includes:
 
 ## 📚 Documentation Index
 
+> 🇮🇩 **Pusat Dokumentasi Terpadu (Bahasa Indonesia)**:  
+> Untuk mempelajari panduan praktis, arsitektur, dan referensi sistem secara interaktif dalam Bahasa Indonesia, silakan jelajahi **[GitHub Wiki Resmi CMS ScholarGate](https://github.com/Mango-Teknusa-Inovasi/CMS-ScholarGate/wiki)**.
+
+- 🌐 **[GitHub Wiki Resmi (Bahasa Indonesia)](https://github.com/Mango-Teknusa-Inovasi/CMS-ScholarGate/wiki)** — Panduan lengkap dari Introduction, AI Suite, hingga Kontak & Dukungan
 - 📖 **[INSTALL.md](./INSTALL.md)** — Installation guide (Web Installer, CLI, VPS, Docker)
 - 📝 **[CHANGELOG.md](./CHANGELOG.md)** — Release history and detailed changelog
 - 🔌 **[docs/PLUGINS.md](./docs/PLUGINS.md)** — Plugin development guide, hooks system & distribution
