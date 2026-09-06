@@ -104,42 +104,87 @@ Route::get('/ppdb/status', function () {
 
 ---
 
-## 5. Database & Migrasi Plugin
+## 5. Aturan Isolasi Database & Konvensi Prefix Tabel (Lepas-Pasang Aman)
 
-Jika plugin membutuhkan tabel baru di database:
-1. Tempatkan file migrasi standar Laravel di dalam folder `database/migrations/`:
-   ```text
-   plugins/ppdb-online/database/migrations/2026_09_06_000001_create_ppdb_registrations_table.php
-   ```
-2. Contoh migrasi:
-   ```php
-   <?php
+CMS ScholarGate menerapkan prinsip isolasi data yang ketat seperti arsitektur plugin modern (WordPress / Laravel Packages) untuk menjamin database inti tetap bersih, stabil, dan aman saat plugin dilepas-pasang.
 
-   use Illuminate\Database\Migrations\Migration;
-   use Illuminate\Database\Schema\Blueprint;
-   use Illuminate\Support\Facades\Schema;
+### 🛡️ Aturan Utama (Golden Rule)
+1. **DILARANG Mengubah Tabel Inti CMS**:
+   - Plugin **tidak boleh** menjalankan `Schema::table('articles', ...)` atau `Schema::table('users', ...)` untuk menambah atau mengubah kolom pada tabel inti.
+   - *Mengapa?* Menambah kolom pada tabel inti membuat skema menjadi kotor (*dirty schema*), menimbulkan konflik jika ada 2 plugin berbeda menambah kolom serupa, dan meninggalkan kolom *zombie* yang merusak integritas data saat plugin dicopot.
+2. **WAJIB Menggunakan Prefix Tabel Plugin**:
+   - Seluruh tabel database yang dibuat oleh plugin **wajib** diawali dengan nama slug plugin atau prefix unik, misalnya:
+     - Plugin `ppdb-online` $\to$ `ppdb_registrations`, `ppdb_documents`, `ppdb_settings`
+     - Plugin `elibrary` $\to$ `elibrary_books`, `elibrary_loans`
+   - Dengan prefix ini, seluruh tabel plugin terisolasi 100% dan tidak akan pernah bertabrakan dengan tabel core CMS ataupun plugin lainnya.
 
-   return new class extends Migration {
-       public function up(): void
-       {
-           Schema::create('ppdb_registrations', function (Blueprint $table) {
-               $table->uuid('id')->primary();
-               $table->string('registration_number')->unique();
-               $table->string('student_name');
-               $table->string('nisn', 10);
-               $table->string('origin_school');
-               $table->string('status')->default('pending');
-               $table->timestamps();
-           });
-       }
+---
 
-       public function down(): void
-       {
-           Schema::dropIfExists('ppdb_registrations');
-       }
-   };
-   ```
-3. **Eksekusi Otomatis**: Saat administrator mengklik tombol **Aktifkan** pada modul plugin di panel admin, CMS ScholarGate secara otomatis menjalankan migrasi ini (`app('migrator')->run($migrationsDir)`).
+### 🔄 Siklus Hidup Lepas-Pasang (Plugin Lifecycle)
+
+ScholarGate membedakan dengan jelas antara **Menonaktifkan (Deactivate)** dan **Menghapus Bersih (Uninstall/Delete)**:
+
+| Aksi | Status Database | Status Berkas & Rute | Kapan Digunakan |
+|---|---|---|---|
+| **Aktifkan (Activate)** | Tabel ber-prefix dibuat otomatis via `up()` migration | Rute, hook, dan controller aktif di memori | Saat modul ingin mulai digunakan sekolah |
+| **Nonaktifkan (Deactivate)** | **Tabel & data fisik tetap utuh** (*preserved*) | Rute, hook, dan controller diputus dari memori | Saat modul dihentikan sementara (misal: PPDB ditutup) tanpa takut kehilangan data riwayat |
+| **Hapus Bersih (Uninstall/Delete)** | Seluruh tabel ber-prefix di-drop via `down()` migration | Berkas fisik `plugins/<slug>/` dan data DB dihapus bersih | Saat modul dicopot permanen dari sistem |
+
+---
+
+### 📝 Contoh File Migrasi Berstandar Isolasi
+
+Tempatkan file migrasi di `plugins/<slug>/database/migrations/`:
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    /**
+     * Jalankan migrasi: buat tabel khusus dengan prefix plugin.
+     */
+    public function up(): void
+    {
+        Schema::create('ppdb_registrations', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->string('registration_number')->unique();
+            $table->string('student_name');
+            $table->string('nisn', 10);
+            $table->string('origin_school');
+            $table->string('status')->default('pending');
+            $table->timestamps();
+        });
+
+        Schema::create('ppdb_documents', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->foreignUuid('registration_id')->constrained('ppdb_registrations')->cascadeOnDelete();
+            $table->string('document_type'); // misal: kartu_keluarga, ijazah
+            $table->string('file_path');
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Rollback migrasi: drop seluruh tabel ber-prefix saat di-uninstall.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('ppdb_documents');
+        Schema::dropIfExists('ppdb_registrations');
+    }
+};
+```
+
+---
+
+### 💡 Bagaimana jika Plugin Butuh Menghubungkan Data ke Artikel atau Pengguna?
+Jika plugin Anda membutuhkan data relasi ke entitas core (seperti Siswa/User atau Artikel Berita):
+- **Gunakan Tabel Relasi Ber-Prefix**: Buat tabel relasi seperti `ppdb_applicant_users` yang memuat foreign key `user_id` mengarah ke tabel `users`.
+- **Gunakan Filter Hook**: Gunakan `Hook::applyFilter('article_content', ...)` untuk menyisipkan tombol atau formulir ke dalam konten artikel tanpa perlu mengubah struktur tabel `articles`.
+- **Gunakan Pengaturan JSON**: Konfigurasi modul disimpan di kolom JSON `manifest` pada tabel `plugins` atau di tabel `settings` dengan key `plugin_{slug}_{key}`.
 
 ---
 

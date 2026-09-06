@@ -158,4 +158,30 @@ class PluginManager
 
         return $record->is_active;
     }
+
+    /**
+     * Uninstall & remove plugin completely.
+     * Optionally roll back its dedicated migrations to drop prefixed plugin tables.
+     */
+    public function uninstall(string $slug, bool $dropTables = true): void
+    {
+        $cleanSlug = str_replace(['..', '\\', "\0"], '', $slug);
+        $folder = $this->pluginPath($cleanSlug);
+        $migrationsDir = $folder.'/database/migrations';
+
+        // Roll back migrations if requested and present
+        if ($dropTables && File::exists($migrationsDir)) {
+            app('migrator')->rollback($migrationsDir);
+        }
+
+        // Remove record from database
+        if (Schema::hasTable('plugins')) {
+            Plugin::query()->where('slug', $cleanSlug)->delete();
+        }
+
+        // Delete physical plugin folder
+        if (File::exists($folder)) {
+            File::deleteDirectory($folder);
+        }
+    }
 }

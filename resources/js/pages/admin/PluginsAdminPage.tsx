@@ -1,9 +1,10 @@
 import { useRef } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { CheckCircle2, Package, Power, Puzzle, Upload, XCircle } from 'lucide-react'
+import { CheckCircle2, Package, Power, Puzzle, Trash2, Upload, XCircle } from 'lucide-react'
 import { api } from '../../lib/api'
 import { AdminPageHeader } from '../../components/admin/AdminPageHeader'
 import { Skeleton } from '../../components/ui/Skeleton'
+import { useConfirm } from '../../components/ui/ConfirmModal'
 import { useToast } from '../../components/ui/Toast'
 
 type PluginItem = {
@@ -19,6 +20,7 @@ type PluginItem = {
 export function PluginsAdminPage() {
   const qc = useQueryClient()
   const toast = useToast()
+  const { confirm } = useConfirm()
   const fileRef = useRef<HTMLInputElement>(null)
 
   const { data, isLoading } = useQuery({
@@ -35,6 +37,17 @@ export function PluginsAdminPage() {
       qc.invalidateQueries({ queryKey: ['admin-plugins'] })
     },
     onError: () => toast.error('Gagal memperbarui status plugin.'),
+  })
+
+  const remove = useMutation({
+    mutationFn: async (slug: string) =>
+      api.delete(`/admin/plugins/${encodeURIComponent(slug)}?drop_tables=true`),
+    onSuccess: (res) => {
+      const msg = (res.data as { message?: string }).message || 'Plugin berhasil dicopot.'
+      toast.success(msg)
+      qc.invalidateQueries({ queryKey: ['admin-plugins'] })
+    },
+    onError: () => toast.error('Gagal mencopot/menghapus plugin.'),
   })
 
   const upload = useMutation({
@@ -164,19 +177,40 @@ export function PluginsAdminPage() {
 
                 <div className="mt-4 flex items-center justify-between border-t border-line/60 pt-3">
                   <span className="font-mono text-[10px] text-subtle">plugins/{p.slug}</span>
-                  <button
-                    type="button"
-                    disabled={toggle.isPending}
-                    onClick={() => toggle.mutate({ slug: p.slug, active: !p.is_active })}
-                    className={`inline-flex items-center gap-1.5 rounded-[10px] px-3 py-1.5 text-xs font-bold transition ${
-                      p.is_active
-                        ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200'
-                        : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm'
-                    }`}
-                  >
-                    <Power className="h-3.5 w-3.5" />
-                    {p.is_active ? 'Nonaktifkan' : 'Aktifkan Modul'}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {!p.is_active && (
+                      <button
+                        type="button"
+                        disabled={remove.isPending}
+                        onClick={async () => {
+                          const ok = await confirm({
+                            title: `Hapus Plugin "${p.name}"?`,
+                            message: `Plugin ini akan dicopot permanen dan tabel database khususnya akan dibersihkan. Tindakan ini tidak dapat dibatalkan.`,
+                            confirmLabel: 'Hapus Bersih',
+                            tone: 'danger',
+                          })
+                          if (ok) remove.mutate(p.slug)
+                        }}
+                        className="rounded-[10px] border border-line p-1.5 text-subtle hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 transition"
+                        title="Hapus dan bersihkan plugin beserta tabelnya"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      disabled={toggle.isPending}
+                      onClick={() => toggle.mutate({ slug: p.slug, active: !p.is_active })}
+                      className={`inline-flex items-center gap-1.5 rounded-[10px] px-3 py-1.5 text-xs font-bold transition ${
+                        p.is_active
+                          ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200'
+                          : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm'
+                      }`}
+                    >
+                      <Power className="h-3.5 w-3.5" />
+                      {p.is_active ? 'Nonaktifkan' : 'Aktifkan Modul'}
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

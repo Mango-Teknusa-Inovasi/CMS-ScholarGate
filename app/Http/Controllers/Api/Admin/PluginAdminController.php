@@ -143,4 +143,14 @@ class PluginAdminController extends Controller
         ]);
     }
 
+    public function destroy(Request $request, string $slug): JsonResponse
+    {
+        $dropTables = $request->boolean('drop_tables', true);
+        $this->pluginManager->uninstall($slug, $dropTables);
+
+        return response()->json([
+            'slug' => $slug,
+            'message' => "Plugin {$slug} berhasil dicopot dan dihapus dari sistem.",
+        ]);
+    }
 }

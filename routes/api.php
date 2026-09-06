@@ -147,6 +147,7 @@ Route::prefix('v1')->group(function () {
                 Route::get('/plugins', [\App\Http\Controllers\Api\Admin\PluginAdminController::class, 'index']);
                 Route::post('/plugins/{slug}/toggle', [\App\Http\Controllers\Api\Admin\PluginAdminController::class, 'toggle']);
                 Route::post('/plugins/upload', [\App\Http\Controllers\Api\Admin\PluginAdminController::class, 'upload']);
+                Route::delete('/plugins/{slug}', [\App\Http\Controllers\Api\Admin\PluginAdminController::class, 'destroy']);
 
             });
 
