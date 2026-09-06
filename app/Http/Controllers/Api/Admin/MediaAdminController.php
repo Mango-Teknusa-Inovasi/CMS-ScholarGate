@@ -229,7 +229,7 @@ class MediaAdminController extends Controller
     {
         $data = $request->validate([
             'ids' => ['required', 'array'],
-            'ids.*' => ['integer', 'exists:media,id'],
+            'ids.*' => ['string', 'exists:media,id'],
         ]);
 
         $items = Media::query()->whereIn('id', $data['ids'])->get();

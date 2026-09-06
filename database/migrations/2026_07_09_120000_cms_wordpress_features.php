@@ -21,10 +21,9 @@ return new class extends Migration
         });
 
         Schema::create('article_tag', function (Blueprint $table) {
-            $table->uuid('id')->primary();
             $table->foreignUuid('article_id')->constrained()->cascadeOnDelete();
             $table->foreignUuid('tag_id')->constrained()->cascadeOnDelete();
-            $table->unique(['article_id', 'tag_id']);
+            $table->primary(['article_id', 'tag_id']);
         });
 
         Schema::create('media', function (Blueprint $table) {

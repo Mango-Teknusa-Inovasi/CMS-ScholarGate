@@ -108,4 +108,31 @@ class ArticleInstagramAiTest extends TestCase
         $this->assertSame('HUT RI, Upacara, Kesiswaan', $data['tags_text']);
         $this->assertSame(2, $data['images_count']);
     }
+
+    public function test_can_save_article_with_tags_and_bulk_delete_with_uuids(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        Sanctum::actingAs($admin);
+
+        $response = $this->postJson('/api/v1/admin/articles', [
+            'title' => 'Artikel Prestasi Sekolah',
+            'slug' => 'artikel-prestasi-sekolah',
+            'body' => '<p>Konten artikel prestasi sekolah.</p>',
+            'status' => 'published',
+            'tags' => ['Prestasi Siswa', 'SMAN 1 Gedeg'],
+        ]);
+
+        $response->assertCreated();
+        $articleId = $response->json('id');
+        $this->assertNotEmpty($articleId);
+        $this->assertCount(2, $response->json('tags'));
+
+        // Test bulk delete with UUID
+        $bulkResponse = $this->postJson('/api/v1/admin/articles/bulk-delete', [
+            'ids' => [$articleId],
+        ]);
+
+        $bulkResponse->assertOk();
+        $this->assertSame(1, $bulkResponse->json('count'));
+    }
 }

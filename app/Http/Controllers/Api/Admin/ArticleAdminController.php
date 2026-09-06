@@ -111,7 +111,7 @@ class ArticleAdminController extends Controller
     {
         $data = $request->validate([
             'ids' => ['required', 'array'],
-            'ids.*' => ['integer'],
+            'ids.*' => ['string'],
             'force' => ['nullable', 'boolean'],
         ]);
 
@@ -142,7 +142,7 @@ class ArticleAdminController extends Controller
         ]);
     }
 
-    private function validated(Request $request, ?int $id = null): array
+    private function validated(Request $request, ?string $id = null): array
     {
         return $request->validate([
             'title' => [$id ? 'sometimes' : 'required', 'string', 'max:255'],
