@@ -14,10 +14,9 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["resources/js/*"],
-      "react-router-dom": ["resources/js/lib/router.tsx"]
+      "@/*": ["./resources/js/*"],
+      "react-router-dom": ["./resources/js/lib/router.tsx"]
     },
     "types": ["vite/client"]
   },
