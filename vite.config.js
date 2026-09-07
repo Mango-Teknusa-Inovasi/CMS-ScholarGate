@@ -23,11 +23,19 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-react': ['react', 'react-dom', '@inertiajs/react'],
-          'vendor-icons': ['lucide-react'],
-          'vendor-query': ['@tanstack/react-query'],
-          'vendor-motion': ['motion'],
+        manualChunks(id) {
+          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/@inertiajs')) {
+            return 'vendor-react'
+          }
+          if (id.includes('node_modules/lucide-react')) {
+            return 'vendor-icons'
+          }
+          if (id.includes('node_modules/@tanstack/react-query')) {
+            return 'vendor-query'
+          }
+          if (id.includes('node_modules/motion')) {
+            return 'vendor-motion'
+          }
         },
       },
     },
