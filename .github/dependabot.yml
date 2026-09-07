@@ -1,24 +1,6 @@
 version: 2
 updates:
-  # 1. Pantau dependensi Node.js / npm
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "07:00"
-      timezone: "Asia/Jakarta"
-    open-pull-requests-limit: 5
-    target-branch: "main"
-    reviewers:
-      - "ardianryan"
-    labels:
-      - "dependencies"
-      - "security"
-    commit-message:
-      prefix: "chore(deps)"
-
-  # 2. Pantau dependensi PHP / Composer
+  # 1. PHP / Composer ecosystem
   - package-ecosystem: "composer"
     directory: "/"
     schedule:
@@ -26,7 +8,7 @@ updates:
       day: "monday"
       time: "07:00"
       timezone: "Asia/Jakarta"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 10
     target-branch: "main"
     reviewers:
       - "ardianryan"
@@ -36,12 +18,30 @@ updates:
     commit-message:
       prefix: "chore(deps)"
 
-  # 3. Pantau versi GitHub Actions workflows
+  # 2. Node.js / npm ecosystem
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "07:00"
+      timezone: "Asia/Jakarta"
+    open-pull-requests-limit: 10
+    target-branch: "main"
+    reviewers:
+      - "ardianryan"
+    labels:
+      - "dependencies"
+      - "security"
+    commit-message:
+      prefix: "chore(deps)"
+
+  # 3. GitHub Actions workflows
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "monthly"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 5
     target-branch: "main"
     labels:
       - "ci"
