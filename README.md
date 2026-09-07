@@ -16,6 +16,7 @@
 [![Cloudflare R2](https://img.shields.io/badge/Cloudflare-R2_Storage-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://cloudflare.com)
 [![CI Tests](https://img.shields.io/badge/Tests-80%20Passed%20(100%25)-success?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/Mango-Teknusa-Inovasi/CMS-ScholarGate/actions)
 [![Wiki Docs](https://img.shields.io/badge/Wiki-Dokumentasi%20Bahasa%20Indonesia-007ACC?style=for-the-badge&logo=gitbook&logoColor=white)](https://github.com/Mango-Teknusa-Inovasi/CMS-ScholarGate/wiki)
+[![Donate](https://img.shields.io/badge/Donate-donate.ppti.me-EA4C89?style=for-the-badge&logo=kofi&logoColor=white)](https://donate.ppti.me)
 
 </div>
 
@@ -40,6 +41,7 @@
 - [🚀 Deployment & Production](#-deployment--production)
 - [📦 Releases & Distribution](#-releases--distribution)
 - [📚 Documentation Index](#-documentation-index)
+- [💖 Support & Donation](#-support--donation)
 - [📄 License](#-license)
 
 ---
@@ -319,6 +321,16 @@ Each release includes:
 - 🗄️ **[docs/DATABASE.md](./docs/DATABASE.md)** — Database schema and portable backup documentation
 - ☁️ **[docs/STORAGE-R2.md](./docs/STORAGE-R2.md)** — Cloudflare R2 CDN integration guide
 - 🚢 **[docs/DEPLOY.md](./docs/DEPLOY.md)** — Production deployment checklist
+
+---
+
+## 💖 Support & Donation
+
+If you find **CMS ScholarGate** valuable and would like to support the ongoing development, security maintenance, and educational community features, you can make a contribution via:
+
+👉 **[donate.ppti.me](https://donate.ppti.me)**
+
+Your support helps us keep improving features, maintaining open-source security standards, and empowering schools and educational institutions worldwide.
 
 ---
 
