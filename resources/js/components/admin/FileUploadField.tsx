@@ -87,8 +87,8 @@ export function FileUploadField({
         headers: { 'Content-Type': 'multipart/form-data' },
       })
 
-      const path = res.data.path || res.data.url
-      onChange(path)
+      const fileUrl = res.data.url || res.data.path
+      onChange(fileUrl)
       if (onFileNameChange) {
         onFileNameChange(file.name)
       }

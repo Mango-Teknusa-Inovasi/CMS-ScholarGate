@@ -40,7 +40,14 @@ export function ResourceEditorPage({ config }: Props) {
     if (isNew) {
       const init: Record<string, string | boolean | null> = {}
       config.fields.forEach((f) => {
-        init[f.key] = f.type === 'checkbox' ? false : f.type === 'image' || f.type === 'file' ? null : ''
+        init[f.key] =
+          f.type === 'checkbox'
+            ? f.key === 'is_active'
+              ? true
+              : false
+            : f.type === 'image' || f.type === 'file'
+            ? null
+            : ''
       })
       setForm(init)
       setReady(true)
@@ -49,7 +56,8 @@ export function ResourceEditorPage({ config }: Props) {
     if (data) {
       const init: Record<string, string | boolean | null> = {}
       config.fields.forEach((f) => {
-        const val = data[f.key]
+        const val =
+          f.key === 'file_path' && data.file_url ? (data.file_url as string) : data[f.key]
         if (f.type === 'checkbox') init[f.key] = Boolean(val)
         else if (f.type === 'image' || f.type === 'file') init[f.key] = (val as string) || null
         else init[f.key] = String(val ?? '')
