@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Download as DownloadIcon, FileText } from 'lucide-react'
 import { api } from '../lib/api'
-import { formatDate } from '../lib/utils'
+import { mediaUrl, formatDate } from '../lib/utils'
 import { SeoHead } from '../components/seo/SeoHead'
 import { Skeleton } from '../components/ui/Skeleton'
 import {
@@ -13,10 +13,12 @@ import {
 } from '../components/ui/PageBento'
 
 type DownloadItem = {
-  id: number
+  id: string | number
   title: string
   description?: string
   file_name?: string
+  file_path?: string
+  file_url?: string
   category?: string
   download_count: number
   published_at?: string
@@ -84,13 +86,25 @@ export function DownloadsPage() {
                     </p>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  className="inline-flex shrink-0 items-center justify-center gap-2 self-start rounded-full bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(16_185_129/0.25)] transition hover:bg-emerald-600 active:scale-[0.98] sm:self-center"
-                >
-                  <DownloadIcon className="h-4 w-4" />
-                  Download
-                </button>
+                {item.file_url || item.file_path ? (
+                  <a
+                    href={mediaUrl(item.file_url || item.file_path) || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    download={item.file_name || undefined}
+                    onClick={() => {
+                      api.post(`/downloads/${item.id}/hit`).catch(() => {})
+                    }}
+                    className="inline-flex shrink-0 items-center justify-center gap-2 self-start rounded-full bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(16_185_129/0.25)] transition hover:bg-emerald-600 active:scale-[0.98] sm:self-center"
+                  >
+                    <DownloadIcon className="h-4 w-4" />
+                    Download
+                  </a>
+                ) : (
+                  <span className="inline-flex shrink-0 items-center justify-center self-start rounded-full bg-black/5 px-3 py-1.5 text-xs font-medium text-subtle sm:self-center">
+                    Belum ada berkas
+                  </span>
+                )}
               </BentoTile>
             ))}
           </BentoBoard>

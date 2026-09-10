@@ -59,6 +59,9 @@ class ResourceAdminController extends Controller
         $data = $this->onlyFillable($model, $data);
         $this->assertSafeUrls($data);
         $this->prepareSlug($resource, $data);
+        if ($resource === 'downloads' && empty($data['published_at'])) {
+            $data['published_at'] = now();
+        }
         $item = $model::create($data);
 
         return response()->json($item, 201);
@@ -241,7 +244,12 @@ class ResourceAdminController extends Controller
     public function upload(Request $request, \App\Services\ImageOptimizer $optimizer): JsonResponse
     {
         $request->validate([
-            'file' => ['required', 'file', 'max:12288', 'mimes:jpg,jpeg,png,gif,webp,pdf,doc,docx'],
+            'file' => [
+                'required',
+                'file',
+                'max:51200',
+                'mimes:jpg,jpeg,png,gif,webp,bmp,pdf,doc,docx,xls,xlsx,ppt,pptx,zip,rar,txt,csv,odt,ods,odp',
+            ],
             'alt' => ['nullable', 'string', 'max:255'],
             'max_width' => ['nullable', 'integer', 'min:400', 'max:3840'],
         ]);

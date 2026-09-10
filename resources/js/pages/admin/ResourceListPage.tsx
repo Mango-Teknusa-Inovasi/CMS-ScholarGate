@@ -112,13 +112,26 @@ export function ResourceListPage({ config }: Props) {
                         </p>
                       </td>
                       <td className="hidden max-w-md truncate px-5 py-4 text-subtle md:table-cell">
-                        {String(
-                          row.subtitle ||
-                            row.description ||
-                            row.slug ||
-                            row.location ||
-                            row.schedule ||
-                            '—',
+                        {row.file_path ? (
+                          <div className="flex items-center gap-1.5 truncate">
+                            <span className="inline-flex items-center gap-1 rounded-md bg-teal-50 px-2 py-0.5 text-[11px] font-semibold text-teal-700">
+                              📎 {String(row.file_name || (typeof row.file_path === 'string' && row.file_path.startsWith('http') ? 'Tautan Dokumen' : 'Berkas Terlampir'))}
+                            </span>
+                            {row.category ? (
+                              <span className="rounded-md bg-page px-1.5 py-0.5 text-[11px] text-subtle">
+                                {String(row.category)}
+                              </span>
+                            ) : null}
+                          </div>
+                        ) : (
+                          String(
+                            row.subtitle ||
+                              row.description ||
+                              row.slug ||
+                              row.location ||
+                              row.schedule ||
+                              '—',
+                          )
                         )}
                       </td>
                       <td className="px-5 py-4">

@@ -73,6 +73,17 @@ class PublicDataController extends Controller
         return response()->json($items);
     }
 
+    public function hitDownload(string $id): JsonResponse
+    {
+        $download = Download::query()->where('is_active', true)->findOrFail($id);
+        $download->increment('download_count');
+
+        return response()->json([
+            'success' => true,
+            'download_count' => $download->download_count,
+        ]);
+    }
+
     public function extracurriculars(): JsonResponse
     {
         $items = Extracurricular::query()

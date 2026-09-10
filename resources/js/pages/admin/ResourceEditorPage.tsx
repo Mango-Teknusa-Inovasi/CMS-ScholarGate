@@ -8,6 +8,7 @@ import { guideForField } from '../../lib/mediaGuide'
 import { RESOURCE_CONFIGS, type ResourceConfig } from '../../admin/resourceConfigs'
 import type { FieldDef } from '../../pages/admin/SimpleResourcePage'
 import { ImageUploadField } from '../../components/admin/ImageUploadField'
+import { FileUploadField } from '../../components/admin/FileUploadField'
 import { RichTextEditor } from '../../components/admin/RichTextEditor'
 import { AchievementAiModal, type AchievementAiResult } from '../../components/admin/AchievementAiModal'
 import { Skeleton } from '../../components/ui/Skeleton'
@@ -39,7 +40,7 @@ export function ResourceEditorPage({ config }: Props) {
     if (isNew) {
       const init: Record<string, string | boolean | null> = {}
       config.fields.forEach((f) => {
-        init[f.key] = f.type === 'checkbox' ? false : f.type === 'image' ? null : ''
+        init[f.key] = f.type === 'checkbox' ? false : f.type === 'image' || f.type === 'file' ? null : ''
       })
       setForm(init)
       setReady(true)
@@ -50,7 +51,7 @@ export function ResourceEditorPage({ config }: Props) {
       config.fields.forEach((f) => {
         const val = data[f.key]
         if (f.type === 'checkbox') init[f.key] = Boolean(val)
-        else if (f.type === 'image') init[f.key] = (val as string) || null
+        else if (f.type === 'image' || f.type === 'file') init[f.key] = (val as string) || null
         else init[f.key] = String(val ?? '')
       })
       setForm(init)
@@ -101,6 +102,28 @@ export function ResourceEditorPage({ config }: Props) {
           onChange={(path) => setForm((prev) => ({ ...prev, [f.key]: path }))}
           guide={guide}
           previewClassName={f.previewClassName || 'aspect-video max-h-56'}
+        />
+      )
+    }
+    if (f.type === 'file') {
+      return (
+        <FileUploadField
+          key={f.key}
+          label={f.label}
+          value={(form[f.key] as string) || null}
+          fileName={(form['file_name'] as string) || ''}
+          onChange={(path) => setForm((prev) => ({ ...prev, [f.key]: path }))}
+          onFileNameChange={(name) => {
+            setForm((prev) => {
+              const next = { ...prev }
+              if (!next.file_name) next.file_name = name
+              if (!next.title && isNew) {
+                const cleanTitle = name.replace(/\.[^/.]+$/, '').replace(/[-_]+/g, ' ')
+                next.title = cleanTitle
+              }
+              return next
+            })
+          }}
         />
       )
     }

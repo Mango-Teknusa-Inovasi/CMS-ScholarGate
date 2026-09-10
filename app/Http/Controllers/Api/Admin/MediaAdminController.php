@@ -36,7 +36,12 @@ class MediaAdminController extends Controller
     {
         $request->validate([
             // SVG dilarang (XSS vector jika di-serve inline)
-            'file' => ['required', 'file', 'max:12288', 'mimes:jpg,jpeg,png,gif,webp,bmp,pdf,doc,docx'],
+            'file' => [
+                'required',
+                'file',
+                'max:51200',
+                'mimes:jpg,jpeg,png,gif,webp,bmp,pdf,doc,docx,xls,xlsx,ppt,pptx,zip,rar,txt,csv,odt,ods,odp',
+            ],
             'alt' => ['nullable', 'string', 'max:255'],
             'max_width' => ['nullable', 'integer', 'min:400', 'max:3840'],
             // force=optimize|auto (default auto: compress images, raw otherwise)

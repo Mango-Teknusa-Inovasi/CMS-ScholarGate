@@ -30,6 +30,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/achievements', [PublicDataController::class, 'achievements']);
         Route::get('/achievements/{slug}', [PublicDataController::class, 'achievementShow']);
         Route::get('/downloads', [PublicDataController::class, 'downloads']);
+        Route::post('/downloads/{id}/hit', [PublicDataController::class, 'hitDownload']);
         Route::get('/ekstrakurikuler', [PublicDataController::class, 'extracurriculars']);
         Route::get('/settings/public', [PublicDataController::class, 'settings']);
         Route::get('/menus', [PublicDataController::class, 'menus']);
