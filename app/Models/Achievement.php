@@ -38,7 +38,14 @@ class Achievement extends Model
             if (empty($item->slug)) {
                 $item->slug = Str::slug($item->title).'-'.Str::random(5);
             }
+            if ($item->sort_order === null) {
+                $item->sort_order = 0;
+            }
+            if (empty($item->status)) {
+                $item->status = 'published';
+            }
         });
+
 
         static::saving(function (Achievement $item) {
             /** @var HtmlSanitizer $sanitizer */

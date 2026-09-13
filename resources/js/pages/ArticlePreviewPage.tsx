@@ -1,7 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Eye, AlertTriangle } from 'lucide-react'
-import { Helmet } from 'react-helmet-async'
+import { Head } from '@inertiajs/react'
 import { api, type Article } from '../lib/api'
 import { coverSrc, formatDate } from '../lib/utils'
 import { Badge } from '../components/ui/Badge'
@@ -47,10 +47,10 @@ export function ArticlePreviewPage() {
 
   return (
     <div>
-      <Helmet>
+      <Head>
         <title>Pratinjau: {article.title} | Scholargate</title>
         <meta name="robots" content="noindex,nofollow" />
-      </Helmet>
+      </Head>
 
       <div className="border-b border-amber-200 bg-amber-50">
         <div className="container-page flex flex-wrap items-center gap-2 py-2.5 text-sm text-amber-900">

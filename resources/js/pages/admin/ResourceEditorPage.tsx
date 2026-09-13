@@ -47,6 +47,10 @@ export function ResourceEditorPage({ config }: Props) {
               : false
             : f.type === 'image' || f.type === 'file'
             ? null
+            : f.key === 'sort_order'
+            ? '0'
+            : f.key === 'status'
+            ? 'published'
             : ''
       })
       setForm(init)

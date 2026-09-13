@@ -27,8 +27,8 @@
       "_vendor-motion-C5dwiJJb.js"
     ]
   },
-  "_vendor-react-D8_6GUv6.js": {
-    "file": "assets/vendor-react-D8_6GUv6.js",
+  "_vendor-react-CPLhG4lQ.js": {
+    "file": "assets/vendor-react-CPLhG4lQ.js",
     "name": "vendor-react",
     "imports": [
       "_rolldown-runtime-hePW80VL.js",
@@ -36,13 +36,13 @@
     ]
   },
   "resources/js/app.tsx": {
-    "file": "assets/app-Bvh2Dcbh.js",
+    "file": "assets/app-Tg7CynbE.js",
     "name": "app",
     "src": "resources/js/app.tsx",
     "isEntry": true,
     "imports": [
       "_rolldown-runtime-hePW80VL.js",
-      "_vendor-react-D8_6GUv6.js",
+      "_vendor-react-CPLhG4lQ.js",
       "_vendor-icons-DMRHhwIe.js",
       "_vendor-motion-C5dwiJJb.js",
       "_vendor-query-F5q15_99.js"

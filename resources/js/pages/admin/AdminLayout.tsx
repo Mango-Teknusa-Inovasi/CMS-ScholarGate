@@ -1,8 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Link as InertiaLink, usePage } from '@inertiajs/react'
+import { Head, Link as InertiaLink, usePage } from '@inertiajs/react'
 import { useQuery } from '@tanstack/react-query'
-import { Helmet } from 'react-helmet-async'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import {
   FileText,
@@ -509,9 +508,9 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-page lg:grid lg:grid-cols-[248px_1fr]">
-      <Helmet>
+      <Head>
         <title>{documentTitle}</title>
-      </Helmet>
+      </Head>
       <BrandIcons />
       <motion.aside
         className="sticky top-0 hidden h-screen flex-col border-r border-line bg-white lg:flex"

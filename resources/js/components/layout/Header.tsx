@@ -109,7 +109,7 @@ export function Header() {
         <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Navigasi utama">
           {nav.map((item) =>
             item.children && item.children.length > 0 ? (
-              <div key={item.id} className="group relative">
+              <div key={item.url || item.id} className="group relative">
                 <NavLink to={item.url || '#'} className={navClass}>
                   {item.label}
                   <ChevronDown className="h-3.5 w-3.5 opacity-55 transition group-hover:rotate-180" />
@@ -147,7 +147,7 @@ export function Header() {
               </div>
             ) : isInternal(item.url) ? (
               <NavLink
-                key={item.id}
+                key={item.url || item.id}
                 to={safeHref(item.url) || '/'}
                 className={navClass}
                 end={(safeHref(item.url) || '/') === '/'}
@@ -156,7 +156,7 @@ export function Header() {
               </NavLink>
             ) : safeHref(item.url) ? (
               <a
-                key={item.id}
+                key={item.url || item.id}
                 href={safeHref(item.url)}
                 target={item.open_in_new_tab ? '_blank' : undefined}
                 rel="noopener noreferrer"
@@ -166,7 +166,7 @@ export function Header() {
               </a>
             ) : (
               <span
-                key={item.id}
+                key={item.url || item.id}
                 className="rounded-[12px] px-3 py-2 text-sm font-medium text-subtle"
               >
                 {item.label}
@@ -303,7 +303,7 @@ export function Header() {
             <div className="container-page flex flex-col gap-0.5 py-3">
               {nav.map((item, i) => (
                 <motion.div
-                  key={item.id}
+                  key={item.url || item.id}
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.03 + i * 0.03, duration: 0.28, ease: easeOutExpo }}

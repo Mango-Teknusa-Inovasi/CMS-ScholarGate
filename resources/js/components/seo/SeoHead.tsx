@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet-async'
+import { Head } from '@inertiajs/react'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '../../lib/api'
 
@@ -57,8 +57,7 @@ export function SeoHead({ kind, page, articleSlug, fallbackTitle }: Props) {
   const jsonLd = data?.json_ld
 
   return (
-    <Helmet>
-      <html lang="id" />
+    <Head>
       <title>{title}</title>
       {description && <meta name="description" content={description} />}
       <meta name="robots" content={robots} />
@@ -120,6 +119,6 @@ export function SeoHead({ kind, page, articleSlug, fallbackTitle }: Props) {
       {jsonLd && (
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       )}
-    </Helmet>
+    </Head>
   )
 }

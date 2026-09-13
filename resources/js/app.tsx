@@ -2,7 +2,6 @@ import '../css/app.css'
 import { createInertiaApp } from '@inertiajs/react'
 import { createRoot, hydrateRoot } from 'react-dom/client'
 import { StrictMode, type ComponentType, type ReactNode } from 'react'
-import { HelmetProvider } from 'react-helmet-async'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { FeedbackProvider } from './components/ui/FeedbackProvider'
 import { PublicLayout } from './components/layout/PublicLayout'
@@ -76,13 +75,11 @@ createInertiaApp({
   setup({ el, App, props }) {
     const app = (
       <StrictMode>
-        <HelmetProvider>
-          <QueryClientProvider client={queryClient}>
-            <FeedbackProvider>
-              <App {...props} />
-            </FeedbackProvider>
-          </QueryClientProvider>
-        </HelmetProvider>
+        <QueryClientProvider client={queryClient}>
+          <FeedbackProvider>
+            <App {...props} />
+          </FeedbackProvider>
+        </QueryClientProvider>
       </StrictMode>
     )
 

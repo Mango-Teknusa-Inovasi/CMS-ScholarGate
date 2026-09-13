@@ -110,13 +110,17 @@ class ResourceAdminController extends Controller
         unset($data['id'], $data['created_at'], $data['updated_at'], $data['deleted_at']);
 
         foreach ($data as $key => $value) {
+            if ($key === 'sort_order') {
+                $data[$key] = ($value === '' || $value === null || $value === 'null') ? 0 : (int) $value;
+                continue;
+            }
             if ($value === '' || $value === 'null') {
                 $data[$key] = null;
             }
             if (in_array($key, ['is_active', 'is_featured', 'open_in_new_tab'], true)) {
                 $data[$key] = filter_var($value, FILTER_VALIDATE_BOOLEAN);
             }
-            if (in_array($key, ['sort_order', 'parent_id', 'download_count'], true) && $data[$key] !== null) {
+            if (in_array($key, ['parent_id', 'download_count'], true) && $data[$key] !== null) {
                 $data[$key] = (int) $data[$key];
             }
             // URL fields (bukan file_path storage) — strip javascript: dll.
@@ -127,6 +131,9 @@ class ResourceAdminController extends Controller
 
         return $data;
     }
+
+
+
 
     /**
      * @param  array<string, mixed>  $data
