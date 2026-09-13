@@ -1,3 +1,4 @@
+import { useSiteName } from '../hooks/useSiteName'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Trophy } from 'lucide-react'
@@ -17,6 +18,7 @@ import {
 const tones: BentoTone[] = ['amber', 'coral', 'mint', 'violet', 'sky', 'peach']
 
 export function AchievementsPage() {
+  const siteName = useSiteName()
   const { data, isLoading } = useQuery({
     queryKey: ['achievements'],
     queryFn: async () =>
@@ -27,13 +29,13 @@ export function AchievementsPage() {
 
   return (
     <>
-      <SeoHead kind="page" page="prestasi" fallbackTitle="Prestasi | Scholargate" />
+      <SeoHead kind="page" page="prestasi" fallbackTitle={"Prestasi | " + siteName} />
       <PageBentoShell>
         <BentoBoard>
           <PageBentoHero
             crumbs={[{ label: 'Beranda', to: '/' }, { label: 'Prestasi' }]}
             title="Prestasi"
-            description="Capaian unggulan peserta didik dan ekosistem Scholargate."
+            description={"Capaian unggulan peserta didik dan ekosistem " + siteName + "."}
             tone="amber"
             icon={<Trophy className="h-5 w-5 text-amber-600" strokeWidth={1.75} />}
           />

@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import { useSiteName } from '../hooks/useSiteName'
 import { Eye, AlertTriangle } from 'lucide-react'
 import { Head } from '@inertiajs/react'
 import { api, type Article } from '../lib/api'
@@ -14,6 +15,7 @@ type PreviewResponse = {
 }
 
 export function ArticlePreviewPage() {
+  const siteName = useSiteName()
   const { token } = useParams()
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['article-preview', token],
@@ -48,7 +50,7 @@ export function ArticlePreviewPage() {
   return (
     <div>
       <Head>
-        <title>Pratinjau: {article.title} | Scholargate</title>
+        <title>{"Pratinjau: " + article.title + " | " + siteName}</title>
         <meta name="robots" content="noindex,nofollow" />
       </Head>
 

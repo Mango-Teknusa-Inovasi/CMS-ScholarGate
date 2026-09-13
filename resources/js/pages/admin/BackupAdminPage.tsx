@@ -212,7 +212,7 @@ export function BackupAdminPage() {
         <section className="rounded-[16px] border border-line bg-white p-5 shadow-[var(--shadow-card)]">
           <h2 className="text-sm font-bold text-ink">Restore dari file</h2>
           <p className="mt-1 text-xs text-subtle">
-            Upload file <code>.json</code> atau <code>.zip</code> hasil backup Scholargate.
+            Upload file <code>.json</code> atau <code>.zip</code> hasil backup data portal.
           </p>
 
           <div className="mt-4 space-y-3">

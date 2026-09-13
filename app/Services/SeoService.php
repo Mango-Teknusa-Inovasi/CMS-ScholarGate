@@ -13,7 +13,7 @@ class SeoService
         $s = Setting::allAsArray();
 
         return [
-            'site_name' => $s['site_name'] ?? 'Scholargate',
+            'site_name' => $s['site_name'] ?? config('app.name', 'Portal Resmi'),
             'site_tagline' => $s['site_tagline'] ?? '',
             'site_description' => $s['site_description'] ?? '',
             'site_logo' => $s['site_logo'] ?? null,
@@ -238,7 +238,7 @@ class SeoService
     public function pageMeta(string $path = '/'): array
     {
         $s = $this->siteSettings();
-        $site = $s['site_name'] ?? 'Scholargate';
+        $site = $s['site_name'] ?? config('app.name', 'Portal Resmi');
         $baseDesc = $s['site_description'] ?: $s['site_tagline'] ?: 'Portal informasi pendidikan';
 
         $pages = [

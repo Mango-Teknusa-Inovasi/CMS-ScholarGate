@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useSiteName } from '../hooks/useSiteName'
 import {
   BookOpen,
   Cpu,
@@ -51,6 +52,7 @@ const iconMap: Record<string, LucideIcon> = {
 const tones: BentoTone[] = ['sky', 'teal', 'mint', 'coral', 'amber', 'violet', 'rose', 'peach']
 
 export function ExtracurricularPage() {
+  const siteName = useSiteName()
   const { data = [], isLoading } = useQuery({
     queryKey: ['ekstrakurikuler'],
     queryFn: async () => (await api.get<Extracurricular[]>('/ekstrakurikuler')).data,
@@ -58,7 +60,7 @@ export function ExtracurricularPage() {
 
   return (
     <>
-      <SeoHead kind="page" page="ekstrakurikuler" fallbackTitle="Ekstrakurikuler | Scholargate" />
+      <SeoHead kind="page" page="ekstrakurikuler" fallbackTitle={"Ekstrakurikuler | " + siteName} />
       <PageBentoShell>
         <BentoBoard>
           <PageBentoHero

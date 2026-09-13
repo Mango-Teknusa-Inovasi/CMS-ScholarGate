@@ -56,7 +56,7 @@ function isAdminPage(name: string) {
 }
 
 createInertiaApp({
-  title: (title) => (title ? `${title}` : 'Scholargate'),
+  title: (title) => (title ? `${title}` : 'Portal Resmi'),
   resolve: (name) => {
     const page = resolvePage(name) as ComponentType & {
       layout?: (page: ReactNode) => ReactNode

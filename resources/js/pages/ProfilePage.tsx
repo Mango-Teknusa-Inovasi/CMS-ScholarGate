@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useSiteName } from '../hooks/useSiteName'
 import {
   BadgeCheck,
   Building2,
@@ -60,6 +61,7 @@ type ProfilePayload = {
 }
 
 export function ProfilePage() {
+  const siteName = useSiteName()
   const { data, isLoading } = useQuery({
     queryKey: ['profile'],
     queryFn: async () => (await api.get<ProfilePayload>('/profile')).data,
@@ -75,7 +77,7 @@ export function ProfilePage() {
 
   return (
     <>
-      <SeoHead kind="page" page="profil" fallbackTitle="Profil | Scholargate" />
+      <SeoHead kind="page" page="profil" fallbackTitle={"Profil | " + siteName} />
       <PageBentoShell>
         <BentoBoard>
           <PageBentoHero

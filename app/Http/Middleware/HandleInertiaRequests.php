@@ -46,7 +46,7 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn () => $request->session()->get('error'),
             ],
             'app' => [
-                'name' => config('app.name', 'Scholargate'),
+                'name' => \App\Models\Setting::getValue('site_name') ?: config('app.name', 'Portal Resmi'),
                 'url' => config('app.url'),
             ],
         ];

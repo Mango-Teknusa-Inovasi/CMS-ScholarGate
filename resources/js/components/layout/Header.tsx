@@ -79,7 +79,7 @@ export function Header() {
       (await api.get<{ header: MenuItem[]; footer: MenuItem[] }>('/menus')).data,
   })
 
-  const siteName = settings?.site_name || 'Scholargate'
+  const siteName = settings?.site_name || 'Portal Resmi'
   const reportUrl = safeHref(settings?.report_url) || '#'
   const siteLogo = settings?.site_logo
   const nav = menus?.header?.length ? menus.header : fallbackNav

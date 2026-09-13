@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSiteName } from '../hooks/useSiteName'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Eye, Filter, Search } from 'lucide-react'
@@ -33,6 +34,7 @@ type ArticlesResponse = {
 const listTones: BentoTone[] = ['white', 'sky', 'mint', 'violet', 'peach', 'amber']
 
 export function ArticlesPage() {
+  const siteName = useSiteName()
   const [params, setParams] = useSearchParams()
   const [q, setQ] = useState(params.get('q') || '')
   const category = params.get('category') || ''
@@ -62,13 +64,13 @@ export function ArticlesPage() {
 
   return (
     <>
-      <SeoHead kind="page" page="artikel" fallbackTitle="Artikel | Scholargate" />
+      <SeoHead kind="page" page="artikel" fallbackTitle={"Artikel | " + siteName} />
       <PageBentoShell>
         <BentoBoard>
           <PageBentoHero
             crumbs={[{ label: 'Beranda', to: '/' }, { label: 'Artikel' }]}
             title="Publikasi & Artikel"
-            description="Informasi berita, kegiatan, dan cerita baik dari ekosistem Scholargate."
+            description={"Informasi berita, kegiatan, dan cerita baik dari ekosistem " + siteName + "."}
             tone="sky"
           />
 

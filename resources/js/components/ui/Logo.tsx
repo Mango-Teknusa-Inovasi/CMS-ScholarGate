@@ -11,7 +11,7 @@ type Props = {
 }
 
 export function Logo({
-  name = 'Scholargate',
+  name = 'Portal Resmi',
   logoPath,
   size = 'md',
   to = '/',

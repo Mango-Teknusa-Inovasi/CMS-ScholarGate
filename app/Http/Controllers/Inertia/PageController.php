@@ -55,7 +55,7 @@ class PageController extends Controller
         $seo = $article
             ? $this->seo->articleMeta($article)
             : array_merge($this->seo->pageMeta('/artikel'), [
-                'title' => 'Artikel | Scholargate',
+                'title' => 'Artikel | ' . ($this->seo->siteSettings()['site_name'] ?? config('app.name', 'Portal Resmi')),
                 'robots' => 'noindex,follow',
             ]);
 
@@ -74,7 +74,7 @@ class PageController extends Controller
             'token' => $token,
             'params' => ['token' => $token],
             'seo' => array_merge($base, [
-                'title' => 'Pratinjau draf | Scholargate',
+                'title' => 'Pratinjau draf | ' . ($base['site_name'] ?? config('app.name', 'Portal Resmi')),
                 'description' => 'Pratinjau konten tidak dipublikasikan.',
                 'canonical' => $this->seo->absoluteUrl('/preview/artikel/'.$token),
                 'og_type' => 'article',
@@ -99,7 +99,7 @@ class PageController extends Controller
         if ($item) {
             $desc = $item->excerpt ?: ($base['description'] ?? '');
             $seo = array_merge($base, [
-                'title' => $item->title.' | '.($base['site_name'] ?? 'Scholargate'),
+                'title' => $item->title.' | '.($base['site_name'] ?? config('app.name', 'Portal Resmi')),
                 'description' => \Illuminate\Support\Str::limit(strip_tags((string) $desc), 160),
                 'canonical' => $this->seo->absoluteUrl('/prestasi/'.$slug),
                 'og_type' => 'article',
@@ -152,35 +152,35 @@ class PageController extends Controller
     public function memberLogin(): Response
     {
         return Inertia::render('MemberLoginPage', [
-            'seo' => $this->noindexSeo('Login Member | Scholargate', '/login'),
+            'seo' => $this->noindexSeo('Login Member | ' . (\App\Models\Setting::getValue('site_name') ?: config('app.name', 'Portal Resmi')), '/login'),
         ]);
     }
 
     public function memberRegister(): Response
     {
         return Inertia::render('MemberRegisterPage', [
-            'seo' => $this->noindexSeo('Daftar Member | Scholargate', '/daftar'),
+            'seo' => $this->noindexSeo('Daftar Member | ' . (\App\Models\Setting::getValue('site_name') ?: config('app.name', 'Portal Resmi')), '/daftar'),
         ]);
     }
 
     public function memberAccount(): Response
     {
         return Inertia::render('MemberAccountPage', [
-            'seo' => $this->noindexSeo('Akun | Scholargate', '/akun'),
+            'seo' => $this->noindexSeo('Akun | ' . (\App\Models\Setting::getValue('site_name') ?: config('app.name', 'Portal Resmi')), '/akun'),
         ]);
     }
 
     public function adminLogin(): Response
     {
         return Inertia::render('admin/AdminLoginPage', [
-            'seo' => $this->noindexSeo('Login Admin | Scholargate', '/admin/login'),
+            'seo' => $this->noindexSeo('Login Admin | ' . (\App\Models\Setting::getValue('site_name') ?: config('app.name', 'Portal Resmi')), '/admin/login'),
         ]);
     }
 
     public function admin(string $page = 'DashboardPage', array $props = []): Response
     {
         return Inertia::render('admin/'.$page, array_merge([
-            'seo' => $this->noindexSeo('Admin | Scholargate', '/admin'),
+            'seo' => $this->noindexSeo('Admin | ' . (\App\Models\Setting::getValue('site_name') ?: config('app.name', 'Portal Resmi')), '/admin'),
         ], $props));
     }
 

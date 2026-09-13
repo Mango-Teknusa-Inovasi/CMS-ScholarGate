@@ -59,7 +59,7 @@ class SpaController extends Controller
             $base = $this->seo->pageMeta('/');
 
             return array_merge($base, [
-                'title' => 'Pratinjau draf | Scholargate',
+                'title' => 'Pratinjau draf | ' . ($base['site_name'] ?? config('app.name', 'Portal Resmi')),
                 'description' => 'Pratinjau konten tidak dipublikasikan.',
                 'canonical' => $this->seo->absoluteUrl($path),
                 'og_type' => 'article',
@@ -73,7 +73,7 @@ class SpaController extends Controller
             $base = $this->seo->pageMeta('/');
 
             return array_merge($base, [
-                'title' => 'Scholargate',
+                'title' => $base['site_name'] ?? config('app.name', 'Portal Resmi'),
                 'canonical' => $this->seo->absoluteUrl($path),
                 'robots' => 'noindex,nofollow',
                 'json_ld' => null,
@@ -89,7 +89,7 @@ class SpaController extends Controller
                     $desc = $item->excerpt ?: ($base['description'] ?? '');
 
                     return array_merge($base, [
-                        'title' => $item->title.' | '.($base['site_name'] ?? 'Scholargate'),
+                        'title' => $item->title.' | '.($base['site_name'] ?? config('app.name', 'Portal Resmi')),
                         'description' => \Illuminate\Support\Str::limit(strip_tags((string) $desc), 160),
                         'canonical' => $this->seo->absoluteUrl($path),
                         'og_type' => 'article',
@@ -133,13 +133,13 @@ class SpaController extends Controller
      */
     private function injectMeta(string $html, array $meta): string
     {
-        $title = e((string) ($meta['title'] ?? 'Scholargate'));
+        $title = e((string) ($meta['title'] ?? config('app.name', 'Portal Resmi')));
         $desc = e((string) ($meta['description'] ?? ''));
         $canonical = e((string) ($meta['canonical'] ?? ''));
         $ogType = e((string) ($meta['og_type'] ?? 'website'));
         $robots = e((string) ($meta['robots'] ?? 'index,follow'));
         $image = ! empty($meta['og_image']) ? e((string) $meta['og_image']) : '';
-        $siteName = e((string) ($meta['site_name'] ?? 'Scholargate'));
+        $siteName = e((string) ($meta['site_name'] ?? config('app.name', 'Portal Resmi')));
 
         // Ganti <title>…</title>
         $html = preg_replace(

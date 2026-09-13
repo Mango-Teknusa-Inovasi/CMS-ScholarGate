@@ -5,11 +5,13 @@ import { LogIn } from 'lucide-react'
 import { easeOutExpo } from '../lib/motion'
 import { memberLogin } from '../lib/auth'
 import { useMemberAuth } from '../hooks/useMemberAuth'
+import { useSiteName } from '../hooks/useSiteName'
 import { Logo } from '../components/ui/Logo'
 import { Skeleton } from '../components/ui/Skeleton'
 import { SocialLoginButtons } from '../components/auth/SocialLoginButtons'
 
 export function MemberLoginPage() {
+  const siteName = useSiteName()
   const navigate = useNavigate()
   const { isLoggedIn, loading: authLoading } = useMemberAuth()
   const [email, setEmail] = useState('')
@@ -71,7 +73,7 @@ export function MemberLoginPage() {
       >
         <div className="mb-7 text-center">
           <div className="mb-4 flex justify-center">
-            <Logo name="Scholargate" size="sm" to="/" />
+            <Logo name={siteName} size="sm" to="/" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-ink">Masuk Member</h1>
           <p className="mt-1 text-sm text-subtle">

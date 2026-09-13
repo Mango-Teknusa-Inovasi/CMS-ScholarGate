@@ -21,7 +21,7 @@ export function ShareButton({ url, title, text, className }: Props) {
   const { prompt } = usePrompt()
 
   const shareUrl = url || (typeof window !== 'undefined' ? window.location.href : '')
-  const shareTitle = title || (typeof document !== 'undefined' ? document.title : 'Scholargate')
+  const shareTitle = title || (typeof document !== 'undefined' ? document.title : 'Portal Resmi')
   const shareText = text || shareTitle
 
   const copyLink = async () => {

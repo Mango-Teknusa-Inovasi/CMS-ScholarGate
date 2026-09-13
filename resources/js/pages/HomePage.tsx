@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useSiteName } from '../hooks/useSiteName'
 import { api, type HomePayload } from '../lib/api'
 import { HomeBento } from '../components/home/HomeBento'
 import { HomeSkeleton } from '../components/ui/Skeleton'
@@ -6,6 +7,7 @@ import { SeoHead } from '../components/seo/SeoHead'
 
 /** Portal homepage — bento grid fun & ceria */
 export function HomePage() {
+  const siteName = useSiteName()
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['home'],
     queryFn: async () => (await api.get<HomePayload>('/home')).data,
@@ -35,7 +37,7 @@ export function HomePage() {
 
   return (
     <>
-      <SeoHead kind="home" fallbackTitle="Scholargate — Portal Pendidikan" />
+      <SeoHead kind="home" fallbackTitle={siteName + " — Portal Resmi"} />
       <HomeBento
         banners={data.banners}
         welcome={data.welcome}

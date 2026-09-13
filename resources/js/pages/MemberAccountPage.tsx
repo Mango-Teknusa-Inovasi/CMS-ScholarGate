@@ -4,11 +4,13 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { CheckCircle2, KeyRound, Loader2, LogOut, ShieldCheck, User, UserCheck } from 'lucide-react'
 import { api, ensureCsrf } from '../lib/api'
 import { useMemberAuth } from '../hooks/useMemberAuth'
+import { useSiteName } from '../hooks/useSiteName'
 import { Gravatar } from '../components/ui/Gravatar'
 import { SeoHead } from '../components/seo/SeoHead'
 import { useToast } from '../components/ui/Toast'
 
 export function MemberAccountPage() {
+  const siteName = useSiteName()
   const { user, loading, logout, isLoggedIn, refresh } = useMemberAuth()
   const navigate = useNavigate()
   const toast = useToast()
@@ -123,7 +125,7 @@ export function MemberAccountPage() {
 
   return (
     <div>
-      <SeoHead kind="page" page="artikel" fallbackTitle="Akun Saya | Scholargate" />
+      <SeoHead kind="page" page="artikel" fallbackTitle={"Akun Saya | " + siteName} />
       
       <section className="page-hero-band">
         <div className="container-page py-8 md:py-10">

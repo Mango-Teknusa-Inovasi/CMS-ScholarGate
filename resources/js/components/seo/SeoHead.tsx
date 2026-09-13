@@ -49,7 +49,7 @@ export function SeoHead({ kind, page, articleSlug, fallbackTitle }: Props) {
     staleTime: 60_000,
   })
 
-  const title = data?.title || fallbackTitle || 'Scholargate'
+  const title = data?.title || fallbackTitle || 'Portal Resmi'
   const description = data?.description || ''
   const canonical = data?.canonical
   const image = data?.og_image || undefined

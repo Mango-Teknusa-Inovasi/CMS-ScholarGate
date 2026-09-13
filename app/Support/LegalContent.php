@@ -12,7 +12,7 @@ class LegalContent
     {
         $name = trim((string) \App\Models\Setting::getValue('site_name', ''));
 
-        return $name !== '' ? $name : (string) config('app.name', 'Scholargate');
+        return $name !== '' ? $name : (string) config('app.name', 'Portal Resmi');
     }
 
     /**

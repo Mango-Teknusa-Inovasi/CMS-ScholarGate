@@ -6,10 +6,12 @@ import { easeOutExpo } from '../lib/motion'
 import { ensureCsrf, api } from '../lib/api'
 import { type AuthUser } from '../lib/auth'
 import { useMemberAuth } from '../hooks/useMemberAuth'
+import { useSiteName } from '../hooks/useSiteName'
 import { Logo } from '../components/ui/Logo'
 import { Skeleton } from '../components/ui/Skeleton'
 
 export function MemberRegisterPage() {
+  const siteName = useSiteName()
   const navigate = useNavigate()
   const { isLoggedIn, loading: authLoading } = useMemberAuth()
   const [name, setName] = useState('')
@@ -88,10 +90,10 @@ export function MemberRegisterPage() {
       >
         <div className="mb-7 text-center">
           <div className="mb-4 flex justify-center">
-            <Logo name="Scholargate" size="sm" to="/" />
+            <Logo name={siteName} size="sm" to="/" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-ink">Daftar Member</h1>
-          <p className="mt-1 text-sm text-subtle">Buat akun portal Scholargate</p>
+          <p className="mt-1 text-sm text-subtle">{"Buat akun portal resmi " + siteName}</p>
         </div>
 
         <form onSubmit={onSubmit} className="space-y-4">

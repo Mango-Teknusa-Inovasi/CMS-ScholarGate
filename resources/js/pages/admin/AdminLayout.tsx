@@ -327,7 +327,7 @@ function SidebarChrome({
   isSuperAdmin?: boolean
   settings?: Record<string, string>
 }) {
-  const siteTitle = settings?.site_name || settings?.site_title || settings?.school_name || 'Scholargate'
+  const siteTitle = settings?.site_name || settings?.site_title || settings?.school_name || 'Portal Resmi'
   const siteLogo = settings?.site_logo || settings?.logo_path || null
   const panelSubtitle = `Panel CMS — ${siteTitle}`
 
@@ -485,7 +485,7 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
     )
   }
 
-  const siteTitle = publicSettings?.site_name || publicSettings?.site_title || publicSettings?.school_name || 'Scholargate'
+  const siteTitle = publicSettings?.site_name || publicSettings?.site_title || publicSettings?.school_name || 'Portal Resmi'
   const pageTitle = resolvePageTitle(location.pathname)
   const documentTitle = `${pageTitle} — ${siteTitle}`
 

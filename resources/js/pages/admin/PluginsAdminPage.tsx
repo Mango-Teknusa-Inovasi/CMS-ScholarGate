@@ -75,7 +75,7 @@ export function PluginsAdminPage() {
     <div>
       <AdminPageHeader
         title="Plugin & Add-on"
-        description="Kelola add-on modul custom ScholarGate (PPDB Online, E-Library, Notifikasi, dll) tanpa merubah kode utama."
+        description="Kelola add-on modul custom CMS (PPDB Online, E-Library, Notifikasi, dll) tanpa merubah kode utama."
         actions={
           <>
             <input

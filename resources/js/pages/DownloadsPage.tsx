@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useSiteName } from '../hooks/useSiteName'
 import { Download as DownloadIcon, FileText } from 'lucide-react'
 import { api } from '../lib/api'
 import { mediaUrl, formatDate } from '../lib/utils'
@@ -27,6 +28,7 @@ type DownloadItem = {
 const tones: BentoTone[] = ['mint', 'sky', 'teal', 'peach', 'violet', 'amber']
 
 export function DownloadsPage() {
+  const siteName = useSiteName()
   const { data = [], isLoading } = useQuery({
     queryKey: ['downloads'],
     queryFn: async () => (await api.get<DownloadItem[]>('/downloads')).data,
@@ -34,7 +36,7 @@ export function DownloadsPage() {
 
   return (
     <>
-      <SeoHead kind="page" page="download" fallbackTitle="Download | Scholargate" />
+      <SeoHead kind="page" page="download" fallbackTitle={"Download | " + siteName} />
       <PageBentoShell>
         <BentoBoard>
           <PageBentoHero

@@ -171,7 +171,7 @@ const fieldMeta: Record<
   },
   openai_display_model_name: {
     label: 'Nama Tampilan Model AI (Brand Persona)',
-    hint: 'Nama model/sistem AI publik yang akan selalu dijawab oleh asisten (misal: ScholarGate Intelligence Engine). Model dilarang membocorkan nama provider atau model aslinya.',
+    hint: 'Nama model/sistem AI publik yang akan selalu dijawab oleh asisten (misal: Portal AI Engine). Model dilarang membocorkan nama provider atau model aslinya.',
     group: 'ai',
   },
   openai_custom_prompt: {

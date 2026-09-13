@@ -32,17 +32,17 @@
     @if(is_array($seo))
         {{-- Blade {{ }} already escapes — do not pre-escape with e() --}}
         @php
-            $title = (string) ($seo['title'] ?? config('app.name', 'Scholargate'));
+            $title = (string) ($seo['title'] ?? config('app.name', 'Portal Resmi'));
             $desc = (string) ($seo['description'] ?? '');
             $canonical = (string) ($seo['canonical'] ?? '');
             $ogType = (string) ($seo['og_type'] ?? 'website');
             $robots = (string) ($seo['robots'] ?? 'index,follow');
             $image = ! empty($seo['og_image']) ? (string) $seo['og_image'] : '';
-            $siteName = (string) ($seo['site_name'] ?? config('app.name', 'Scholargate'));
+            $siteName = (string) ($seo['site_name'] ?? config('app.name', 'Portal Resmi'));
         @endphp
         <title inertia>{{ $title }}</title>
     @else
-        <title inertia>{{ config('app.name', 'Scholargate') }}</title>
+        <title inertia>{{ config('app.name', 'Portal Resmi') }}</title>
     @endif
 
     @if(is_array($seo))

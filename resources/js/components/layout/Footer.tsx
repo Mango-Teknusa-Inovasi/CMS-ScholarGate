@@ -14,7 +14,7 @@ export function Footer() {
       (await api.get<{ header: { id: number; label: string; url: string }[]; footer: { id: number; label: string; url: string }[] }>('/menus')).data,
   })
 
-  const siteName = settings?.site_name || 'Scholargate'
+  const siteName = settings?.site_name || 'Portal Resmi'
   const footerLinks = menus?.footer?.length
     ? menus.footer
     : [

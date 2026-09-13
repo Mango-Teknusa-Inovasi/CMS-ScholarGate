@@ -4,6 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import type { Banner } from '../../lib/api'
 import { cn, coverSrc } from '../../lib/utils'
 import { easeOutExpo } from '../../lib/motion'
+import { useSiteName } from '../../hooks/useSiteName'
 import { safeHref } from '../../lib/sanitize'
 
 type Props = {
@@ -14,6 +15,7 @@ type Props = {
 }
 
 export function HeroCarousel({ banners, embedded = false, className }: Props) {
+  const siteName = useSiteName()
   const [index, setIndex] = useState(0)
   const reduce = useReducedMotion()
   const items = banners.length
@@ -21,7 +23,7 @@ export function HeroCarousel({ banners, embedded = false, className }: Props) {
     : ([
         {
           id: 0,
-          title: 'Selamat datang di Scholargate',
+          title: 'Selamat datang di ' + siteName,
           subtitle: 'Portal informasi dan layanan pendidikan',
           cta_label: 'Jelajahi artikel',
           cta_url: '/artikel',
