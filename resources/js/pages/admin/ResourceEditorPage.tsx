@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { usePage } from '@inertiajs/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Save, Sparkles } from 'lucide-react'
+import { ArrowLeft, Save, Sparkles, Trash2 } from 'lucide-react'
 import { api } from '../../lib/api'
 import { guideForField } from '../../lib/mediaGuide'
 import { RESOURCE_CONFIGS, type ResourceConfig } from '../../admin/resourceConfigs'
@@ -12,6 +12,8 @@ import { FileUploadField } from '../../components/admin/FileUploadField'
 import { RichTextEditor } from '../../components/admin/RichTextEditor'
 import { AchievementAiModal, type AchievementAiResult } from '../../components/admin/AchievementAiModal'
 import { Skeleton } from '../../components/ui/Skeleton'
+import { useConfirm } from '../../components/ui/ConfirmModal'
+import { useToast } from '../../components/ui/Toast'
 
 type Props = { config: ResourceConfig }
 
@@ -20,6 +22,8 @@ export function ResourceEditorPage({ config }: Props) {
   const isNew = !id || id === 'new'
   const navigate = useNavigate()
   const qc = useQueryClient()
+  const { confirm } = useConfirm()
+  const toast = useToast()
   const [form, setForm] = useState<Record<string, string | boolean | null>>({})
   const [ready, setReady] = useState(isNew)
   const [isAchievementAiOpen, setIsAchievementAiOpen] = useState(false)
@@ -78,9 +82,44 @@ export function ResourceEditorPage({ config }: Props) {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin', config.slug] })
+      toast.success(isNew ? `${config.singular} berhasil ditambahkan.` : `Perubahan ${config.singular} disimpan.`)
       navigate(config.listPath)
     },
+    onError: (err: unknown) => {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        `Gagal menyimpan ${config.singular}. Periksa isian lalu coba lagi.`
+      toast.error(msg)
+    },
   })
+
+  const remove = useMutation({
+    mutationFn: async () => api.delete(`/admin/${config.slug}/${id}`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', config.slug] })
+      toast.success(`${config.singular.charAt(0).toUpperCase() + config.singular.slice(1)} berhasil dihapus.`)
+      navigate(config.listPath)
+    },
+    onError: (err: unknown) => {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        `Gagal menghapus ${config.singular}.`
+      toast.error(msg)
+    },
+  })
+
+  const handleDelete = async () => {
+    const label = String(form.name || form.title || form.label || `#${id}`)
+    const ok = await confirm({
+      title: `Hapus ${config.singular}?`,
+      message: `“${label}” akan dihapus secara permanen dari sistem. Tindakan ini tidak dapat dibatalkan.`,
+      confirmLabel: 'Ya, hapus',
+      tone: 'danger',
+    })
+    if (ok) {
+      remove.mutate()
+    }
+  }
 
   const handleAchievementGenerated = (res: AchievementAiResult) => {
     setForm((prev) => ({
@@ -243,6 +282,18 @@ export function ResourceEditorPage({ config }: Props) {
               <span>Liputan Prestasi AI</span>
             </button>
           )}
+          {!isNew && (
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={remove.isPending || save.isPending}
+              className="inline-flex items-center gap-1.5 rounded-[12px] border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-100 hover:border-rose-300 disabled:opacity-60"
+              title={`Hapus ${config.singular}`}
+            >
+              <Trash2 className="h-4 w-4" />
+              <span>{remove.isPending ? 'Menghapus…' : 'Hapus'}</span>
+            </button>
+          )}
           <Link
             to={config.listPath}
             className="rounded-[12px] border border-line bg-white px-4 py-2.5 text-sm font-medium hover:bg-muted"
@@ -252,7 +303,7 @@ export function ResourceEditorPage({ config }: Props) {
           <button
             type="button"
             onClick={() => save.mutate()}
-            disabled={save.isPending}
+            disabled={save.isPending || remove.isPending}
             className="inline-flex items-center gap-2 rounded-[12px] bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(14_165_233/0.25)] transition hover:bg-sky-600 disabled:opacity-60"
           >
             <Save className="h-4 w-4" />
@@ -299,24 +350,39 @@ export function ResourceEditorPage({ config }: Props) {
       )}
 
       <div
-        className={`mt-4 flex justify-end gap-2 ${
+        className={`mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4 ${
           config.wideLayout ? '' : 'mx-auto max-w-3xl'
         }`}
       >
-        <Link
-          to={config.listPath}
-          className="rounded-[12px] border border-line bg-white px-4 py-2.5 text-sm font-medium"
-        >
-          Kembali ke daftar
-        </Link>
-        <button
-          type="button"
-          onClick={() => save.mutate()}
-          disabled={save.isPending}
-          className="rounded-[12px] bg-teal-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-600 disabled:opacity-60"
-        >
-          {save.isPending ? 'Menyimpan…' : 'Simpan'}
-        </button>
+        <div>
+          {!isNew && (
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={remove.isPending || save.isPending}
+              className="inline-flex items-center gap-1.5 rounded-[12px] border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-100 hover:border-rose-300 disabled:opacity-60"
+            >
+              <Trash2 className="h-4 w-4" />
+              <span>{remove.isPending ? 'Menghapus…' : `Hapus ${config.singular}`}</span>
+            </button>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <Link
+            to={config.listPath}
+            className="rounded-[12px] border border-line bg-white px-4 py-2.5 text-sm font-medium hover:bg-muted"
+          >
+            Kembali ke daftar
+          </Link>
+          <button
+            type="button"
+            onClick={() => save.mutate()}
+            disabled={save.isPending || remove.isPending}
+            className="rounded-[12px] bg-teal-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-600 disabled:opacity-60"
+          >
+            {save.isPending ? 'Menyimpan…' : 'Simpan'}
+          </button>
+        </div>
       </div>
 
       {config.aiGenerator === 'achievement' && (

@@ -25,9 +25,14 @@ export function ResourceListPage({ config }: Props) {
     mutationFn: async (id: string | number) => api.delete(`/admin/${config.slug}/${id}`),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin', config.slug] })
-      toast.success(`${config.singular} dihapus.`)
+      toast.success(`${config.singular.charAt(0).toUpperCase() + config.singular.slice(1)} berhasil dihapus.`)
     },
-    onError: () => toast.error(`Gagal menghapus ${config.singular}.`),
+    onError: (err: unknown) => {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        `Gagal menghapus ${config.singular}.`
+      toast.error(msg)
+    },
   })
 
   const rows = data as Array<Record<string, unknown>>
@@ -134,8 +139,8 @@ export function ResourceListPage({ config }: Props) {
                           )
                         )}
                       </td>
-                      <td className="px-5 py-4">
-                        <div className="flex justify-end gap-2">
+                      <td className="whitespace-nowrap px-5 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
                           <Link
                             to={`${config.listPath}/${id}/edit`}
                             className="inline-flex items-center gap-1 rounded-[10px] border border-line bg-white px-2.5 py-1.5 text-xs font-semibold text-body hover:bg-muted"
@@ -145,6 +150,7 @@ export function ResourceListPage({ config }: Props) {
                           </Link>
                           <button
                             type="button"
+                            disabled={remove.isPending}
                             onClick={async () => {
                               const label = String(row.title || row.name || row.label || `#${id}`)
                               const ok = await confirm({
@@ -155,10 +161,10 @@ export function ResourceListPage({ config }: Props) {
                               })
                               if (ok) remove.mutate(id)
                             }}
-                            className="inline-flex items-center gap-1 rounded-[10px] bg-rose-50 px-2.5 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-100"
+                            className="inline-flex items-center gap-1 rounded-[10px] bg-rose-50 px-2.5 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-100 disabled:opacity-60"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
-                            Hapus
+                            {remove.isPending && String(remove.variables) === id ? 'Menghapus…' : 'Hapus'}
                           </button>
                         </div>
                       </td>

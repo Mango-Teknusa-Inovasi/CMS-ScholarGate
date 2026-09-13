@@ -282,22 +282,49 @@ export function SimpleResourcePage({ title, description, resource, fields }: Pro
               })}
             </div>
 
-            <div className="sticky bottom-0 flex justify-end gap-2 border-t border-line bg-white px-5 py-4">
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="rounded-[12px] border border-line px-4 py-2.5 text-sm font-medium"
-              >
-                Batal
-              </button>
-              <button
-                type="button"
-                onClick={() => save.mutate()}
-                disabled={save.isPending}
-                className="rounded-[12px] bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(14_165_233/0.25)] transition hover:bg-sky-600 disabled:opacity-60"
-              >
-                {save.isPending ? 'Menyimpan…' : 'Simpan'}
-              </button>
+            <div className="sticky bottom-0 flex items-center justify-between gap-2 border-t border-line bg-white px-5 py-4">
+              <div>
+                {editingId && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const ok = await confirm({
+                        title: `Hapus ${title}?`,
+                        message: 'Item ini akan dihapus secara permanen dari daftar.',
+                        confirmLabel: 'Ya, hapus',
+                        tone: 'danger',
+                      })
+                      if (ok) {
+                        remove.mutate(editingId)
+                        setOpen(false)
+                        setEditingId(null)
+                      }
+                    }}
+                    disabled={remove.isPending}
+                    className="inline-flex items-center gap-1.5 rounded-[12px] bg-rose-50 px-3.5 py-2.5 text-sm font-semibold text-rose-700 hover:bg-rose-100 disabled:opacity-60"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span>Hapus</span>
+                  </button>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="rounded-[12px] border border-line px-4 py-2.5 text-sm font-medium hover:bg-muted"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={() => save.mutate()}
+                  disabled={save.isPending || remove.isPending}
+                  className="rounded-[12px] bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(14_165_233/0.25)] transition hover:bg-sky-600 disabled:opacity-60"
+                >
+                  {save.isPending ? 'Menyimpan…' : 'Simpan'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

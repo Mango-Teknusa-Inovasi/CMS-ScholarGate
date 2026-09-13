@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Achievement;
+use App\Models\Partner;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -37,5 +38,24 @@ class ResourceAdminTest extends TestCase
             'sort_order' => 0,
             'status' => 'published',
         ]);
+    }
+
+    public function test_can_delete_partner(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        Sanctum::actingAs($admin);
+
+        $partner = Partner::create([
+            'name' => 'Mitra Test',
+            'logo_path' => null,
+            'url' => 'https://example.com',
+            'sort_order' => 1,
+            'is_active' => true,
+        ]);
+
+        $response = $this->deleteJson("/api/v1/admin/partners/{$partner->id}");
+
+        $response->assertOk();
+        $this->assertDatabaseMissing('partners', ['id' => $partner->id]);
     }
 }
