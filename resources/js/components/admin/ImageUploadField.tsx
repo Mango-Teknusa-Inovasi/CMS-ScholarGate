@@ -1,9 +1,10 @@
-import { useState } from 'react'
-import { ImagePlus, Trash2, Loader2, CheckCircle2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { ImagePlus, Trash2, Loader2, CheckCircle2, Images } from 'lucide-react'
 import { mediaUrl } from '../../lib/utils'
 import type { MediaGuide } from '../../lib/mediaGuide'
 import { sizeHintText } from '../../lib/mediaGuide'
 import { uploadOptimized } from '../../lib/upload'
+import { MediaPickerModal, type MediaItem } from './MediaPickerModal'
 
 type Props = {
   label: string
@@ -28,6 +29,13 @@ export function ImageUploadField({
   const [error, setError] = useState('')
   const [optimizedNote, setOptimizedNote] = useState('')
   const [alt, setAlt] = useState(altHint || '')
+  const [isPickerOpen, setIsPickerOpen] = useState(false)
+
+  useEffect(() => {
+    if (altHint && !alt) {
+      setAlt(altHint)
+    }
+  }, [altHint])
 
   const preview = mediaUrl(value)
 
@@ -120,28 +128,56 @@ export function ImageUploadField({
         />
       </div>
 
-      <label className="inline-flex cursor-pointer items-center gap-2 rounded-[12px] border border-line bg-white px-3.5 py-2 text-sm font-semibold text-body shadow-sm hover:bg-muted">
-        {uploading ? (
-          <Loader2 className="h-4 w-4 animate-spin text-brand" />
-        ) : (
-          <ImagePlus className="h-4 w-4 text-brand" />
-        )}
-        {uploading ? 'Mengoptimasi & unggah…' : value ? 'Ganti gambar' : 'Upload gambar'}
-        <input
-          type="file"
-          accept="image/jpeg,image/png,image/webp,image/gif"
-          className="hidden"
-          disabled={uploading}
-          onChange={(e) => {
-            const f = e.target.files?.[0]
-            if (f) void upload(f)
-            e.target.value = ''
-          }}
-        />
-      </label>
-      <p className="mt-1.5 text-[11px] text-subtle">
-        Alur: proses & kompres di server (lokal) → upload R2. Bukan presign (agar kualitas terkontrol).
+      <div className="flex flex-wrap items-center gap-2.5">
+        <button
+          type="button"
+          onClick={() => setIsPickerOpen(true)}
+          className="inline-flex items-center gap-2 rounded-[12px] bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(14_165_233/0.25)] transition hover:bg-sky-600 active:scale-[0.98]"
+        >
+          <Images className="h-4 w-4" />
+          <span>Pilih dari Pustaka Media</span>
+        </button>
+
+        <label className="inline-flex cursor-pointer items-center gap-2 rounded-[12px] border border-line bg-white px-3.5 py-2.5 text-sm font-semibold text-body shadow-sm hover:bg-muted active:scale-[0.98]">
+          {uploading ? (
+            <Loader2 className="h-4 w-4 animate-spin text-sky-500" />
+          ) : (
+            <ImagePlus className="h-4 w-4 text-sky-600" />
+          )}
+          <span>{uploading ? 'Mengoptimasi…' : 'Unggah File Baru'}</span>
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            className="hidden"
+            disabled={uploading}
+            onChange={(e) => {
+              const f = e.target.files?.[0]
+              if (f) void upload(f)
+              e.target.value = ''
+            }}
+          />
+        </label>
+      </div>
+
+      <p className="mt-2 text-[11px] text-subtle">
+        Tips: Pilih file yang pernah diunggah agar tidak menduplikasi media, atau unggah file baru untuk dikompres otomatis.
       </p>
+
+      <MediaPickerModal
+        isOpen={isPickerOpen}
+        onClose={() => setIsPickerOpen(false)}
+        title={`Pilih ${label}`}
+        filterType="image"
+        selectedPathOrUrl={value}
+        onSelect={(media: MediaItem) => {
+          onChange(media.url || media.path)
+          if (media.alt && !alt) {
+            setAlt(media.alt)
+          }
+          setOptimizedNote(`Dipilih dari pustaka media: ${media.filename}`)
+          setError('')
+        }}
+      />
 
       {optimizedNote && (
         <p className="mt-2 inline-flex items-start gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1.5 text-xs font-medium text-emerald-800">

@@ -44,10 +44,12 @@ import {
   Underline as UnderlineIcon,
   Undo2,
   Video,
+  Images,
 } from 'lucide-react'
 import { api } from '../../lib/api'
 import { cn } from '../../lib/utils'
 import { AiAssistModal } from './AiAssistModal'
+import { MediaPickerModal, type MediaItem } from './MediaPickerModal'
 
 type Props = {
   value: string
@@ -91,6 +93,7 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Prop
   const { prompt } = usePrompt()
   const toast = useToast()
   const [isAiModalOpen, setIsAiModalOpen] = useState(false)
+  const [isMediaModalOpen, setIsMediaModalOpen] = useState(false)
 
   const editor = useEditor({
     extensions: [
@@ -344,7 +347,10 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Prop
         <ToolbarBtn title="Link" active={editor.isActive('link')} onClick={setLink}>
           <LinkIcon className="h-4 w-4" />
         </ToolbarBtn>
-        <ToolbarBtn title="Upload gambar" onClick={() => fileRef.current?.click()}>
+        <ToolbarBtn title="Pilih dari pustaka media" onClick={() => setIsMediaModalOpen(true)}>
+          <Images className="h-4 w-4" />
+        </ToolbarBtn>
+        <ToolbarBtn title="Upload gambar baru" onClick={() => fileRef.current?.click()}>
           <ImageIcon className="h-4 w-4" />
         </ToolbarBtn>
         <ToolbarBtn title="YouTube embed" onClick={addYoutube}>
@@ -415,6 +421,18 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Prop
             editor.commands.insertContent(html)
             onChange(editor.getHTML())
           }
+        }}
+      />
+
+      <MediaPickerModal
+        isOpen={isMediaModalOpen}
+        onClose={() => setIsMediaModalOpen(false)}
+        title="Sisipkan Gambar dari Pustaka Media"
+        filterType="image"
+        onSelect={(media: MediaItem) => {
+          const url = media.url || media.path
+          editor.chain().focus().setImage({ src: url, alt: media.alt || media.filename }).run()
+          toast.success('Gambar dari pustaka disisipkan.')
         }}
       />
     </div>

@@ -25,6 +25,14 @@ class MediaAdminController extends Controller
             });
         }
 
+        if ($type = $request->string('type')->toString()) {
+            if ($type === 'image') {
+                $query->where('mime', 'like', 'image/%');
+            } elseif ($type === 'document') {
+                $query->where('mime', 'not like', 'image/%');
+            }
+        }
+
         return response()->json($query->paginate($request->integer('per_page', 24)));
     }
 
