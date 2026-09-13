@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Achievement;
+use App\Models\Article;
 use App\Models\Extracurricular;
 use App\Models\MenuItem;
 use App\Models\Category;
@@ -60,7 +61,24 @@ class PublicDataController extends Controller
     {
         $item = Achievement::published()->where('slug', $slug)->firstOrFail();
 
-        return response()->json($item);
+        $otherAchievements = Achievement::published()
+            ->where('id', '!=', $item->id)
+            ->orderByDesc('is_featured')
+            ->orderByDesc('achieved_at')
+            ->limit(5)
+            ->get();
+
+        $recentArticles = Article::published()
+            ->with('category:id,name,slug,color')
+            ->orderByDesc('published_at')
+            ->limit(5)
+            ->get();
+
+        return response()->json([
+            ...$item->toArray(),
+            'other_achievements' => $otherAchievements,
+            'recent_articles' => $recentArticles,
+        ]);
     }
 
     public function downloads(): JsonResponse
