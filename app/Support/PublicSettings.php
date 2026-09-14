@@ -76,6 +76,7 @@ class PublicSettings
         'instagram_scraper_provider',
         'instagram_scraper_api_key',
         'instagram_scraper_api_host',
+        'instagram_session_cookie',
         // Socialite / OIDC Auth Secrets & Endpoints
         'auth_social_google_client_id',
         'auth_social_google_client_secret',

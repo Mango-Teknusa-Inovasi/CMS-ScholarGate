@@ -32,6 +32,12 @@ class InstagramScraperService
     /**
      * Ambil detail postingan dari Instagram (caption, foto single/carousel, author).
      *
+     * Prioritas Eksekusi:
+     * 1. Native Direct Scraper (Zero API Key, tanpa batasan kuota RapidAPI).
+     * 2. Native Web API dengan App ID & optional Session Cookie (untuk bypass & akun private).
+     * 3. RapidAPI Scraper (sebagai fallback jika dikonfigurasi).
+     * 4. Meta oEmbed API (publik fallback).
+     *
      * @return array{shortcode: string, caption: string, author: ?string, taken_at: ?string, images: array<string>}
      */
     public function fetchPost(string $url): array
@@ -41,6 +47,28 @@ class InstagramScraperService
             throw new \InvalidArgumentException('URL Instagram tidak valid. Pastikan format tautan berupa postingan atau reels Instagram (contoh: https://www.instagram.com/p/...).');
         }
 
+        // TIER 1: Native Direct Scraper (Tanpa RapidAPI, Tanpa Kuota)
+        try {
+            $nativeData = $this->fetchNativePost($url, $shortcode);
+            if (! empty($nativeData['images']) || ! empty($nativeData['caption'])) {
+                return $nativeData;
+            }
+        } catch (\Throwable $e) {
+            Log::info("Instagram native direct scraper failed for {$shortcode}: ".$e->getMessage());
+        }
+
+        // TIER 2: Native Web API dengan App ID & Optional Session Cookie
+        $sessionCookie = trim((string) Setting::getValue('instagram_session_cookie', ''));
+        try {
+            $webApiData = $this->fetchNativeWebApi($url, $shortcode, $sessionCookie ?: null);
+            if (! empty($webApiData['images']) || ! empty($webApiData['caption'])) {
+                return $webApiData;
+            }
+        } catch (\Throwable $e) {
+            Log::info("Instagram native web API failed for {$shortcode}: ".$e->getMessage());
+        }
+
+        // TIER 3: RapidAPI Fallback (Hanya jika pengguna mengisi API Key)
         $apiKey = trim((string) Setting::getValue('instagram_scraper_api_key', env('RAPIDAPI_KEY', '')));
         $host = trim((string) Setting::getValue('instagram_scraper_api_host', 'instagram-scraper-stable-api.p.rapidapi.com'));
 
@@ -55,7 +83,7 @@ class InstagramScraperService
             }
         }
 
-        // Fallback: coba via oEmbed publik
+        // TIER 4: Meta oEmbed Publik Fallback
         try {
             $fallback = $this->fetchFromOembed($url, $shortcode);
             if (! empty($fallback['caption']) || ! empty($fallback['images'])) {
@@ -65,11 +93,230 @@ class InstagramScraperService
             Log::info('Instagram oembed fallback failed: '.$e->getMessage());
         }
 
-        if ($apiKey === '') {
-            throw new \RuntimeException('Instagram Scraper API Key (RapidAPI) belum diatur di menu Pengaturan > Integrasi AI & Instagram.');
+        throw new \RuntimeException('Gagal mengambil data dari tautan Instagram ini secara otomatis. Akun mungkin diproteksi (private) atau dibatasi oleh Instagram. Anda dapat memasukkan teks caption secara manual di form atau mengisi Cookie Instagram di Pengaturan.');
+    }
+
+    /**
+     * Scraper internal mandiri berbasis emulasi bot OpenGraph & SSR payload.
+     * Tidak memerlukan API key berbayar dan tidak terkena limit kuota RapidAPI.
+     *
+     * @return array{shortcode: string, caption: string, author: ?string, taken_at: ?string, images: array<string>}
+     */
+    public function fetchNativePost(string $url, string $shortcode): array
+    {
+        $cleanUrl = "https://www.instagram.com/p/{$shortcode}/";
+
+        // Rotasi User-Agent bot yang didukung SSR oleh Meta/Instagram
+        $userAgents = [
+            'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)',
+            'Twitterbot/1.0',
+            'TelegramBot (like TwitterBot)',
+            'WhatsApp/2.21.12.21 A',
+        ];
+
+        $html = '';
+        foreach ($userAgents as $ua) {
+            try {
+                $response = Http::timeout(15)
+                    ->withHeaders([
+                        'User-Agent' => $ua,
+                        'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                        'Accept-Language' => 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
+                        'Cache-Control' => 'no-cache',
+                    ])
+                    ->get($cleanUrl);
+
+                if ($response->successful() && strlen($response->body()) > 200) {
+                    $html = $response->body();
+                    break;
+                }
+            } catch (\Throwable) {
+                continue;
+            }
         }
 
-        throw new \RuntimeException('Gagal mengambil data dari tautan Instagram ini. Pastikan akun tidak diprivate atau periksa kembali RapidAPI Key & kuota Anda.');
+        if ($html === '') {
+            return [
+                'shortcode' => $shortcode,
+                'caption' => '',
+                'author' => null,
+                'taken_at' => null,
+                'images' => [],
+            ];
+        }
+
+        // 1. Ekstrak Caption
+        $caption = '';
+        if (preg_match('/<meta property="og:title" content="([^"]+)"/i', $html, $mTitle)) {
+            $caption = $this->cleanCaptionFromOgTitle($mTitle[1]);
+        }
+
+        if ($caption === '' && preg_match('/<meta property="og:description" content="([^"]+)"/i', $html, $mDesc)) {
+            $caption = $this->cleanCaptionFromOgDesc($mDesc[1]);
+        }
+
+        if ($caption === '' && preg_match('/<meta name="description" content="([^"]+)"/i', $html, $mMetaDesc)) {
+            $caption = $this->cleanCaptionFromOgDesc($mMetaDesc[1]);
+        }
+
+        // 2. Ekstrak Author / Username
+        $author = null;
+        if (preg_match('/<meta name="twitter:title" content="([^"]+)"/i', $html, $mTwitter)) {
+            $decodedTwitter = html_entity_decode($mTwitter[1], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            if (preg_match('/\(@([A-Za-z0-9._]+)\)/', $decodedTwitter, $mUser)) {
+                $author = $mUser[1];
+            }
+        }
+
+        if (! $author && preg_match('/<meta property="og:url" content="https?:\/\/(?:www\.)?instagram\.com\/([A-Za-z0-9._]+)\//i', $html, $mUrlUser)) {
+            if (! in_array(strtolower($mUrlUser[1]), ['p', 'reel', 'tv', 'explore'], true)) {
+                $author = $mUrlUser[1];
+            }
+        }
+
+        // 3. Ekstrak Cover Image & Carousel Images
+        $images = $this->extractImagesFromHtml($html);
+
+        return [
+            'shortcode' => $shortcode,
+            'caption' => trim($caption),
+            'author' => $author,
+            'taken_at' => null,
+            'images' => $images,
+        ];
+    }
+
+    /**
+     * Bersihkan caption dari og:title ("User on/di Instagram: \"...\"").
+     */
+    public function cleanCaptionFromOgTitle(string $rawTitle): string
+    {
+        $decoded = html_entity_decode($rawTitle, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        // Pola: "... on Instagram: \"Caption...\"" atau "... di Instagram: \"Caption...\""
+        if (preg_match('/(?:on|di)\s+Instagram:\s*["\']?(.*?)["\']?\s*$/isu', $decoded, $matches)) {
+            $inner = trim($matches[1]);
+            if ($inner !== '') {
+                return $inner;
+            }
+        }
+
+        return trim($decoded);
+    }
+
+    /**
+     * Bersihkan caption dari og:description ("45 likes, 3 comments - user on Date: \"...\"").
+     */
+    public function cleanCaptionFromOgDesc(string $rawDesc): string
+    {
+        $decoded = html_entity_decode($rawDesc, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        if (preg_match('/:\s*["\'](.*?)["\']?\s*$/isu', $decoded, $matches)) {
+            $inner = trim($matches[1]);
+            if ($inner !== '') {
+                return $inner;
+            }
+        }
+
+        return trim($decoded);
+    }
+
+    /**
+     * Ekstrak semua gambar resolusi tinggi (cover & carousel) dari SSR HTML Instagram.
+     *
+     * @return array<string>
+     */
+    public function extractImagesFromHtml(string $html): array
+    {
+        $images = [];
+        $seenBasenames = [];
+
+        // Cover utama dari og:image dan twitter:image
+        if (preg_match('/<meta property="og:image" content="([^"]+)"/i', $html, $mOgImg)) {
+            $coverUrl = html_entity_decode($mOgImg[1], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $images[] = $coverUrl;
+            $seenBasenames[basename(parse_url($coverUrl, PHP_URL_PATH) ?? '')] = true;
+        }
+
+        if (preg_match('/<meta name="twitter:image" content="([^"]+)"/i', $html, $mTwImg)) {
+            $twUrl = html_entity_decode($mTwImg[1], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $base = basename(parse_url($twUrl, PHP_URL_PATH) ?? '');
+            if (! isset($seenBasenames[$base])) {
+                $images[] = $twUrl;
+                $seenBasenames[$base] = true;
+            }
+        }
+
+        // Normalisasi escaped slashes JSON (\/ -> /) dan unicode ampersand (\u0026 -> &)
+        $normalizedHtml = str_replace(['\\/', '\\u0026'], ['/', '&'], $html);
+
+        // Cari semua URL gambar CDN scontent di seluruh HTML (termasuk script SSR ScheduledServerJS)
+        if (preg_match_all('#https://[^"\'\s<>]+cdninstagram\.com/[^"\'\s<>]+#i', $normalizedHtml, $matches)) {
+            foreach ($matches[0] as $rawCdnUrl) {
+                $decoded = html_entity_decode($rawCdnUrl, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+                // Abaikan foto profil, sprite, logo, dan thumbnail sangat kecil
+                if (preg_match('/(\/s150x150\/|\/s320x320\/|150_n\.|profile_pic|rsrc\.php|static\.cdninstagram)/i', $decoded)) {
+                    continue;
+                }
+
+                // Hanya ambil format media foto postingan
+                if (! preg_match('/(dst-jpg|_n\.jpg|_n\.heic|_n\.webp)/i', $decoded)) {
+                    continue;
+                }
+
+                $filename = basename(parse_url($decoded, PHP_URL_PATH) ?? '');
+                if ($filename && ! isset($seenBasenames[$filename])) {
+                    $seenBasenames[$filename] = true;
+                    $images[] = $decoded;
+                }
+            }
+        }
+
+        return $images;
+    }
+
+    /**
+     * Native Web API Instagram menggunakan App ID dan opsional session cookie.
+     *
+     * @return array{shortcode: string, caption: string, author: ?string, taken_at: ?string, images: array<string>}
+     */
+    public function fetchNativeWebApi(string $url, string $shortcode, ?string $sessionCookie = null): array
+    {
+        $headers = [
+            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+            'X-IG-App-ID' => '936619743392459',
+            'Accept' => '*/*',
+            'Accept-Language' => 'id-ID,id;q=0.9,en-US;q=0.8',
+            'Sec-Fetch-Mode' => 'cors',
+        ];
+
+        if ($sessionCookie) {
+            // Normalisasi cookie jika user hanya memasukkan sessionid tanpa nama key
+            if (! str_contains($sessionCookie, '=')) {
+                $sessionCookie = "sessionid={$sessionCookie}";
+            }
+            $headers['Cookie'] = $sessionCookie;
+        }
+
+        $res = Http::timeout(15)
+            ->withHeaders($headers)
+            ->get("https://www.instagram.com/p/{$shortcode}/?__a=1&__d=dis");
+
+        if ($res->successful()) {
+            $json = $res->json();
+            if (is_array($json) && ! empty($json)) {
+                return $this->parseInstagramResponse($json, $shortcode);
+            }
+        }
+
+        return [
+            'shortcode' => $shortcode,
+            'caption' => '',
+            'author' => null,
+            'taken_at' => null,
+            'images' => [],
+        ];
     }
 
     /**

@@ -77,4 +77,46 @@ class InstagramScraperServiceTest extends TestCase
         $this->assertSame('https://instagram.cdn/slide2.jpg', $parsed['images'][1]);
         $this->assertSame('https://instagram.cdn/slide3.jpg', $parsed['images'][2]);
     }
+
+    public function test_clean_caption_from_og_title_and_desc(): void
+    {
+        $service = new InstagramScraperService();
+
+        // English format
+        $ogTitleEn = 'SMA Negeri 1 Gedeg on Instagram: "Selamat kepada para pemenang LKBB 2026!"';
+        $this->assertSame('Selamat kepada para pemenang LKBB 2026!', $service->cleanCaptionFromOgTitle($ogTitleEn));
+
+        // Indonesian format
+        $ogTitleId = 'SMA Negeri 1 Gedeg di Instagram: "Dengan penuh rasa syukur dan kebanggaan..."';
+        $this->assertSame('Dengan penuh rasa syukur dan kebanggaan...', $service->cleanCaptionFromOgTitle($ogTitleId));
+
+        // Description format
+        $ogDesc = '45 likes, 3 comments - smansagemoker on February 20, 2026: "Kegiatan Masa Pengenalan Lingkungan Sekolah (MPLS)."';
+        $this->assertSame('Kegiatan Masa Pengenalan Lingkungan Sekolah (MPLS).', $service->cleanCaptionFromOgDesc($ogDesc));
+    }
+
+    public function test_extract_images_from_html(): void
+    {
+        $service = new InstagramScraperService();
+
+        $sampleHtml = <<<HTML
+<html>
+<head>
+    <meta property="og:image" content="https://scontent.cdninstagram.com/v/t51/cover_image.dst-jpg" />
+    <meta name="twitter:image" content="https://scontent.cdninstagram.com/v/t51/cover_image.dst-jpg" />
+</head>
+<body>
+    <script>
+        var data = "https:\/\/scontent-cgk.cdninstagram.com\/v\/t51\/carousel_slide_2_n.jpg?token=123";
+    </script>
+</body>
+</html>
+HTML;
+
+        $images = $service->extractImagesFromHtml($sampleHtml);
+
+        $this->assertCount(2, $images);
+        $this->assertSame('https://scontent.cdninstagram.com/v/t51/cover_image.dst-jpg', $images[0]);
+        $this->assertSame('https://scontent-cgk.cdninstagram.com/v/t51/carousel_slide_2_n.jpg?token=123', $images[1]);
+    }
 }

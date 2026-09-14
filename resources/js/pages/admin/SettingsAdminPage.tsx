@@ -180,9 +180,14 @@ const fieldMeta: Record<
     hint: 'Opsional: Berikan panduan gaya bahasa humas sekolah, nilai-nilai, atau penekanan khusus.',
     group: 'ai',
   },
+  instagram_session_cookie: {
+    label: 'Instagram Session Cookie (Opsional)',
+    hint: 'Opsional: Nilai sessionid dari browser untuk scraping akun Instagram privat atau bypass pembatasan.',
+    group: 'ai',
+  },
   instagram_scraper_api_key: {
-    label: 'Instagram Scraper API Key (RapidAPI)',
-    hint: 'Kunci x-rapidapi-key dari RapidAPI.com untuk mengambil data postingan & carousel Instagram.',
+    label: 'Instagram Scraper API Key (RapidAPI - Cadangan Opsional)',
+    hint: 'Opsional: Kunci RapidAPI hanya jika ingin menggunakan layanan eksternal sebagai cadangan.',
     group: 'ai',
   },
   instagram_scraper_api_host: {
@@ -593,21 +598,38 @@ export function SettingsAdminPage() {
           </section>
 
           <section className="rounded-[16px] border border-line bg-white p-6 shadow-[var(--shadow-card)]">
-            <h2 className="mb-1 text-sm font-bold text-ink">Instagram Scraper API (RapidAPI)</h2>
-            <p className="mb-4 text-xs text-subtle">
-              Mengambil caption, cover, dan multi-foto otomatis dari link postingan Instagram.
+            <div className="flex items-center justify-between mb-1.5">
+              <h2 className="text-sm font-bold text-ink flex items-center gap-2">
+                <span>Instagram Scraper (Native &amp; Integrasi)</span>
+                <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
+                  ● Native Active (Bebas Kuota)
+                </span>
+              </h2>
+            </div>
+            <p className="mb-4 text-xs text-subtle leading-relaxed">
+              CMS kini dilengkapi <strong>Internal Native Scraper</strong> langsung di dalam server. Anda dapat langsung mengimpor postingan &amp; carousel Instagram <strong>tanpa memerlukan RapidAPI</strong> dan tanpa batasan kuota.
             </p>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-4">
               <Field
-                fieldKey="instagram_scraper_api_key"
-                value={form.instagram_scraper_api_key || ''}
-                onChange={(v) => setForm({ ...form, instagram_scraper_api_key: v })}
+                fieldKey="instagram_session_cookie"
+                value={form.instagram_session_cookie || ''}
+                onChange={(v) => setForm({ ...form, instagram_session_cookie: v })}
               />
-              <Field
-                fieldKey="instagram_scraper_api_host"
-                value={form.instagram_scraper_api_host || ''}
-                onChange={(v) => setForm({ ...form, instagram_scraper_api_host: v })}
-              />
+              <div className="pt-3 border-t border-line/60">
+                <p className="text-[11px] font-semibold text-subtle mb-2">Cadangan Tambahan (RapidAPI - Opsional):</p>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field
+                    fieldKey="instagram_scraper_api_key"
+                    value={form.instagram_scraper_api_key || ''}
+                    onChange={(v) => setForm({ ...form, instagram_scraper_api_key: v })}
+                  />
+                  <Field
+                    fieldKey="instagram_scraper_api_host"
+                    value={form.instagram_scraper_api_host || ''}
+                    onChange={(v) => setForm({ ...form, instagram_scraper_api_host: v })}
+                  />
+                </div>
+              </div>
             </div>
           </section>
         </div>
