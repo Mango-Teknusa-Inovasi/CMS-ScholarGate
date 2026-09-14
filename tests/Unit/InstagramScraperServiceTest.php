@@ -95,28 +95,45 @@ class InstagramScraperServiceTest extends TestCase
         $this->assertSame('Kegiatan Masa Pengenalan Lingkungan Sekolah (MPLS).', $service->cleanCaptionFromOgDesc($ogDesc));
     }
 
-    public function test_extract_images_from_html(): void
+    public function test_extract_images_from_html_and_filter_avatars(): void
     {
         $service = new InstagramScraperService();
 
         $sampleHtml = <<<HTML
 <html>
 <head>
-    <meta property="og:image" content="https://scontent.cdninstagram.com/v/t51/cover_image.dst-jpg" />
-    <meta name="twitter:image" content="https://scontent.cdninstagram.com/v/t51/cover_image.dst-jpg" />
+    <meta property="og:image" content="https://scontent.cdninstagram.com/v/t51.82787-15/post_image_1.jpg" />
+    <meta name="twitter:image" content="https://scontent.cdninstagram.com/v/t51.82787-15/post_image_1.jpg" />
 </head>
 <body>
-    <script>
-        var data = "https:\/\/scontent-cgk.cdninstagram.com\/v\/t51\/carousel_slide_2_n.jpg?token=123";
-    </script>
 </body>
 </html>
 HTML;
 
         $images = $service->extractImagesFromHtml($sampleHtml);
 
-        $this->assertCount(2, $images);
-        $this->assertSame('https://scontent.cdninstagram.com/v/t51/cover_image.dst-jpg', $images[0]);
-        $this->assertSame('https://scontent-cgk.cdninstagram.com/v/t51/carousel_slide_2_n.jpg?token=123', $images[1]);
+        $this->assertCount(1, $images);
+        $this->assertSame('https://scontent.cdninstagram.com/v/t51.82787-15/post_image_1.jpg', $images[0]);
+    }
+
+    public function test_filter_post_images_excludes_avatars_and_recommendations(): void
+    {
+        $service = new InstagramScraperService();
+
+        $rawList = [
+            // Gambar postingan valid (t51.*-15)
+            'https://scontent.cdninstagram.com/v/t51.82787-15/real_post_photo.jpg',
+            // Foto profil author/kolaborator (-19/)
+            'https://scontent.cdninstagram.com/v/t51.82787-19/author_avatar.jpg',
+            // Foto profil format lain
+            'https://scontent.cdninstagram.com/v/t51.2885-19/collaborator_profile_pic.jpg?stp=s150x150',
+            // Duplikasi URL sama
+            'https://scontent.cdninstagram.com/v/t51.82787-15/real_post_photo.jpg',
+        ];
+
+        $filtered = $service->filterPostImages($rawList);
+
+        $this->assertCount(1, $filtered);
+        $this->assertSame('https://scontent.cdninstagram.com/v/t51.82787-15/real_post_photo.jpg', $filtered[0]);
     }
 }

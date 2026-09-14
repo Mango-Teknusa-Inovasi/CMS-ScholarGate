@@ -145,7 +145,21 @@ class InstagramScraperService
             ];
         }
 
-        // 1. Ekstrak Caption
+        // TAHAP A: Prioritas Ekstraksi Terarah dari JSON SSR Instagram
+        // Menjamin HANYA data postingan ini yang diambil (bebas dari foto profil, akun kolab, & postingan rekomendasi)
+        $targetMedia = $this->findTargetMediaInJson($html, $shortcode);
+        if ($targetMedia) {
+            $parsed = $this->parseInstagramResponse($targetMedia, $shortcode);
+            $filteredImages = $this->filterPostImages($parsed['images']);
+
+            if (! empty($parsed['caption']) || ! empty($filteredImages)) {
+                $parsed['images'] = $filteredImages;
+                return $parsed;
+            }
+        }
+
+        // TAHAP B: Fallback jika JSON SSR tidak tersedia
+        // 1. Ekstrak Caption dari OpenGraph
         $caption = '';
         if (preg_match('/<meta property="og:title" content="([^"]+)"/i', $html, $mTitle)) {
             $caption = $this->cleanCaptionFromOgTitle($mTitle[1]);
@@ -174,7 +188,7 @@ class InstagramScraperService
             }
         }
 
-        // 3. Ekstrak Cover Image & Carousel Images
+        // 3. Ekstrak Gambar Khusus Postingan Ini (Cover & Twitter Image Saja)
         $images = $this->extractImagesFromHtml($html);
 
         return [
@@ -184,6 +198,55 @@ class InstagramScraperService
             'taken_at' => null,
             'images' => $images,
         ];
+    }
+
+    /**
+     * Cari objek data media spesifik untuk $shortcode di dalam script JSON SSR.
+     * Mengisolasi data postingan agar tidak bercampur dengan rekomendasi atau feed lain.
+     */
+    public function findTargetMediaInJson(string $html, string $shortcode): ?array
+    {
+        if (! preg_match_all('/<script[^>]*>(.*?)<\/script>/is', $html, $scripts)) {
+            return null;
+        }
+
+        foreach ($scripts[1] as $s) {
+            if (! str_contains($s, $shortcode) || ! str_contains($s, '{')) {
+                continue;
+            }
+
+            $json = json_decode($s, true);
+            if (! is_array($json)) {
+                continue;
+            }
+
+            $found = $this->searchMediaRecursive($json, $shortcode);
+            if ($found) {
+                return $found;
+            }
+        }
+
+        return null;
+    }
+
+    private function searchMediaRecursive(array $obj, string $shortcode): ?array
+    {
+        if ((isset($obj['code']) && $obj['code'] === $shortcode) || (isset($obj['shortcode']) && $obj['shortcode'] === $shortcode)) {
+            if (isset($obj['image_versions2']) || isset($obj['if_not_gated_logged_out']) || isset($obj['carousel_media']) || isset($obj['edge_sidecar_to_children']) || isset($obj['video_versions']) || isset($obj['display_url'])) {
+                return $obj;
+            }
+        }
+
+        foreach ($obj as $val) {
+            if (is_array($val)) {
+                $res = $this->searchMediaRecursive($val, $shortcode);
+                if ($res) {
+                    return $res;
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -222,58 +285,62 @@ class InstagramScraperService
     }
 
     /**
-     * Ekstrak semua gambar resolusi tinggi (cover & carousel) dari SSR HTML Instagram.
+     * Ekstrak gambar utama postingan dari OpenGraph / Twitter tags.
+     * Tidak mencari regex bebas ke seluruh HTML untuk menghindari foto profil & rekomendasi postingan lain.
      *
      * @return array<string>
      */
     public function extractImagesFromHtml(string $html): array
     {
         $images = [];
-        $seenBasenames = [];
 
-        // Cover utama dari og:image dan twitter:image
-        if (preg_match('/<meta property="og:image" content="([^"]+)"/i', $html, $mOgImg)) {
-            $coverUrl = html_entity_decode($mOgImg[1], ENT_QUOTES | ENT_HTML5, 'UTF-8');
-            $images[] = $coverUrl;
-            $seenBasenames[basename(parse_url($coverUrl, PHP_URL_PATH) ?? '')] = true;
+        // Cover utama dari og:image dan twitter:image spesifik postingan ini
+        if (preg_match_all('/<meta property="og:image" content="([^"]+)"/i', $html, $mOgImg)) {
+            foreach ($mOgImg[1] as $raw) {
+                $images[] = html_entity_decode($raw, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            }
         }
 
         if (preg_match('/<meta name="twitter:image" content="([^"]+)"/i', $html, $mTwImg)) {
-            $twUrl = html_entity_decode($mTwImg[1], ENT_QUOTES | ENT_HTML5, 'UTF-8');
-            $base = basename(parse_url($twUrl, PHP_URL_PATH) ?? '');
-            if (! isset($seenBasenames[$base])) {
-                $images[] = $twUrl;
+            $images[] = html_entity_decode($mTwImg[1], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        }
+
+        return $this->filterPostImages($images);
+    }
+
+    /**
+     * Filter ketat untuk membersihkan daftar gambar:
+     * - Mengeliminasi foto profil (-19/, profile_pic, avatar, s150x150, dll)
+     * - Mengeliminasi aset statis / icon Meta
+     * - Menghilangkan duplikasi
+     *
+     * @param  array<string>  $images
+     * @return array<string>
+     */
+    public function filterPostImages(array $images): array
+    {
+        $filtered = [];
+        $seenBasenames = [];
+
+        foreach ($images as $url) {
+            $trimmed = trim((string) $url);
+            if (! filter_var($trimmed, FILTER_VALIDATE_URL)) {
+                continue;
+            }
+
+            // Exclude profile pictures (-19/ adalah identifier internal CDN Instagram untuk avatar)
+            if (preg_match('#(/t51\.[0-9]+-19/|/s150x150/|/s320x320/|/s100x100/|150_n\.|profile_pic|rsrc\.php|static\.cdninstagram|avatar)#i', $trimmed)) {
+                continue;
+            }
+
+            $base = basename((string) parse_url($trimmed, PHP_URL_PATH));
+            if ($base !== '' && ! isset($seenBasenames[$base])) {
                 $seenBasenames[$base] = true;
+                $filtered[] = $trimmed;
             }
         }
 
-        // Normalisasi escaped slashes JSON (\/ -> /) dan unicode ampersand (\u0026 -> &)
-        $normalizedHtml = str_replace(['\\/', '\\u0026'], ['/', '&'], $html);
-
-        // Cari semua URL gambar CDN scontent di seluruh HTML (termasuk script SSR ScheduledServerJS)
-        if (preg_match_all('#https://[^"\'\s<>]+cdninstagram\.com/[^"\'\s<>]+#i', $normalizedHtml, $matches)) {
-            foreach ($matches[0] as $rawCdnUrl) {
-                $decoded = html_entity_decode($rawCdnUrl, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-
-                // Abaikan foto profil, sprite, logo, dan thumbnail sangat kecil
-                if (preg_match('/(\/s150x150\/|\/s320x320\/|150_n\.|profile_pic|rsrc\.php|static\.cdninstagram)/i', $decoded)) {
-                    continue;
-                }
-
-                // Hanya ambil format media foto postingan
-                if (! preg_match('/(dst-jpg|_n\.jpg|_n\.heic|_n\.webp)/i', $decoded)) {
-                    continue;
-                }
-
-                $filename = basename(parse_url($decoded, PHP_URL_PATH) ?? '');
-                if ($filename && ! isset($seenBasenames[$filename])) {
-                    $seenBasenames[$filename] = true;
-                    $images[] = $decoded;
-                }
-            }
-        }
-
-        return $images;
+        return $filtered;
     }
 
     /**
