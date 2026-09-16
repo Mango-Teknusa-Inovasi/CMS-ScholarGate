@@ -29,7 +29,13 @@
 ## 📋 Table of Contents
 
 - [About ScholarGate](#-about-scholargate)
+- [📸 Visual Showcase & Platform Tour](#-visual-showcase--platform-tour)
 - [🤖 ScholarGate Intelligence Suite (Flagship Feature)](#-scholargate-intelligence-suite-flagship-feature)
+  - [1. Universal RichText AI Copilot](#1-universal-richtext-ai-copilot-available-in-every-editor)
+  - [2. Built-in Native Instagram Scraper & Auto-Journalism Engine](#2-built-in-native-instagram-scraper--auto-journalism-engine-zero-key-native-laravel)
+  - [3. Media Library Reusability & Asset Management](#3-media-library-reusability--asset-management-wordpress-style)
+  - [4. Specialized Institutional Content Generators](#4-specialized-institutional-content-generators)
+  - [5. RAG School Assistant Chatbot & Hardened AI Security](#5-rag-school-assistant-chatbot--hardened-ai-security)
 - [✨ Other Key Features](#-other-key-features)
 - [🛠️ Technology Stack](#️-technology-stack)
 - [🏗️ Architecture & Security Design](#️-architecture--security-design)
@@ -54,55 +60,108 @@ Unlike traditional educational CMS solutions, ScholarGate operates as an **Inert
 
 ---
 
+## 📸 Visual Showcase & Platform Tour
+
+<div align="center">
+
+### 🌟 Modern Public Portal & Dynamic Bento Board
+*Responsive Bento Grid layout with 60fps micro-animations, principal's greeting, interactive digital services, active news, achievement carousels, and extracurricular directories.*
+
+<img src="./docs/screenshots/portal-beranda.png" alt="ScholarGate Public Portal Homepage" width="100%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.12); margin-bottom: 2rem;" />
+
+<br/><br/>
+
+### 📰 Journalistic Reading Experience & Smart Sidebar
+*Clean typography, reading time estimates, protected view counters, dynamic sidebar widgets (School Info, Trending Articles, File Downloads, Official Social Channels), and related story recommendations.*
+
+<img src="./docs/screenshots/portal-artikel.png" alt="ScholarGate Journalistic Article Detail View" width="100%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.12); margin-bottom: 2rem;" />
+
+<br/><br/>
+
+### ✍️ Article Publishing Studio & TipTap AI Copilot
+*Comprehensive newsroom studio featuring TipTap WYSIWYG editor, inline AI copilot, Media Library integration with cover selection, schedule publishing, inline taxonomy management, and full SEO/AEO/GEO metadata optimization with FAQ schema builders.*
+
+<img src="./docs/screenshots/article-editor-ai.png" alt="ScholarGate Admin Article Editor with AI Copilot" width="100%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.12); margin-bottom: 2rem;" />
+
+<br/><br/>
+
+### ⚡ AI-Powered Instagram Import & Auto-Journalism Studio
+*Transform Instagram posts, multi-photo carousels, or Reels into complete, publication-ready journalistic articles with zero API keys required, automatic media optimization into WebP, and customized institutional tones.*
+
+<img src="./docs/screenshots/instagram-import-modal.png" alt="ScholarGate AI-Powered Instagram Import Modal" width="80%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.12);" />
+
+</div>
+
+---
+
 ## 🤖 ScholarGate Intelligence Suite (Flagship Feature)
 
 ScholarGate features an end-to-end, enterprise-grade AI engine deeply woven into every content creation surface of the CMS. It empowers administrators and teachers to write compelling, grammatically perfect, and SEO-optimized institutional content effortlessly.
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                      SCHOLARGATE AI INTELLIGENCE                        │
-│                                                                         │
-│  ┌───────────────────────┐  ┌──────────────────────┐  ┌──────────────┐  │
-│  │ Universal AI Copilot  │  │ Specialized Gen AI   │  │ Public RAG   │  │
-│  │ (Every HTML Editor)   │  │ (Articles, Speeches) │  │ Chatbot      │  │
-│  └──────────┬────────────┘  └──────────┬───────────┘  └──────┬───────┘  │
-│             │                          │                     │          │
-│             ▼                          ▼                     ▼          │
-│  ┌───────────────────────────────────────────────────────────────────┐  │
-│  │ Security Shield: Prompt Injection Filter & Brand Persona Masking  │  │
-│  └─────────────────────────────────┬─────────────────────────────────┘  │
-│                                    │                                    │
-│                                    ▼                                    │
-│  ┌───────────────────────────────────────────────────────────────────┐  │
-│  │ Providers: OpenAI (GPT-4o) · OpenRouter · DeepSeek · Groq · Custom│  │
-│  └───────────────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│                              SCHOLARGATE AI INTELLIGENCE                                │
+│                                                                                         │
+│  ┌───────────────────────┐  ┌──────────────────────────────┐  ┌──────────────────────┐  │
+│  │ Universal AI Copilot  │  │ Native Instagram Auto-Writer │  │ Specialized Gen AI   │  │
+│  │ (Every HTML Editor)   │  │ (Zero-Key Laravel Scraper)   │  │ (Speeches, Profiles) │  │
+│  └──────────┬────────────┘  └──────────────┬───────────────┘  └──────────┬───────────┘  │
+│             │                              │                             │              │
+│             ▼                              ▼                             ▼              │
+│  ┌───────────────────────────────────────────────────────────────────────────────────┐  │
+│  │ Security Shield: Prompt Injection Filter · Boundary Tags · Brand Persona Masking  │  │
+│  └─────────────────────────────────────────┬─────────────────────────────────────────┘  │
+│                                            │                                            │
+│                                            ▼                                            │
+│  ┌───────────────────────────────────────────────────────────────────────────────────┐  │
+│  │ Providers: OpenAI (GPT-4o) · OpenRouter · DeepSeek · Groq · Custom Endpoints      │  │
+│  └───────────────────────────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### 1. Universal RichText AI Copilot (Available in Every Editor)
-Every HTML text editor across the CMS is equipped with a **✨ Bantuan AI** copilot toolbar button:
+Every HTML text editor across the CMS (Articles, Speeches, Profiles, Achievements, Extracurriculars) is equipped with a **✨ Bantuan AI** copilot toolbar button:
 - **Tulis Baru / Buat Draf**: Generates structured paragraphs from rough concepts or bullet points.
-- **Perbaiki PUEBI & Tata Bahasa**: Corrects typos, punctuation, formal Indonesian vocabulary, and capitalization without altering meaning.
+- **Perbaiki PUEBI & Tata Bahasa**: Corrects typos, punctuation, formal Indonesian vocabulary, and capitalization without altering original meaning.
 - **Perluas & Detail**: Enriches short paragraphs into detailed, high-context institutional narratives.
 - **Ringkas Teks**: Distills lengthy reports or articles into punchy summaries and bullet points.
-- **Sesuaikan Nada (Tone Shift)**: Instantly transforms text into *Resmi & Formal*, *Inspiratif & Bangga*, *Hangat & Mengayomi*, or *Visioner*.
+- **Sesuaikan Nada (Tone Shift)**: Instantly transforms text into:
+  - *Resmi & Formal*: Institutional and governmental tone.
+  - *Inspiratif & Bangga*: Celebratory and uplifting tone celebrating students and teachers.
+  - *Hangat & Mengayomi*: Empathetic and approachable tone for parent communications.
+  - *Visioner & Edukatif*: Forward-looking academic vision and 21st-century educational innovation.
 
-### 2. Specialized Content Generators
-- **✨ Generator Berita dari Petunjuk Singkat**: In the article editor, input just a event topic and key points; the AI crafts the entire journalistic article: Title, URL Slug, Excerpt, Body (clean HTML with headings, lists, quotes), Category matching, Tags, Focus Keyword, and Meta Descriptions.
+### 2. Built-in Native Instagram Scraper & Auto-Journalism Engine (Zero-Key, Native Laravel)
+School activities are frequently posted first on Instagram. ScholarGate bridges social media and the official school portal seamlessly via an **autonomous, zero-key native Instagram scraper** integrated directly within Laravel:
+
+- **Zero-Key & Unlimited Freedom**: Unlike standard solutions reliant on expensive third-party APIs with restrictive monthly quotas, ScholarGate's native scraper runs directly on your server without requiring RapidAPI keys or subscriptions.
+- **4-Tier Intelligent Scraping Architecture**:
+  1. **Tier 1 (Native Bot Emulation & SSR JSON)**: Emulates verified OpenGraph crawler user-agents (Meta External Hit, Twitterbot, TelegramBot, WhatsApp) to extract server-side rendered JSON payloads specifically matching the post's shortcode.
+  2. **Tier 2 (Native Web API with Session Cookie)**: Emulates the Instagram Web API with customizable App IDs and optional session cookies to easily bypass rate limits and scrape institutional private feeds.
+  3. **Tier 3 (RapidAPI Fallback)**: Automatically falls back to RapidAPI if configured in admin settings.
+  4. **Tier 4 (Meta oEmbed Fallback)**: Public metadata fallback ensuring resilience.
+- **Targeted Media Extraction**: Intelligently isolates media assets belonging strictly to the targeted post. Profil avatars, collaborator badges, and recommendation sidebars are strictly filtered out, capturing only single photos, multi-slide carousels, or Reels video thumbnails.
+- **Automated WebP Conversion & Cloud Sync**: Downloaded Instagram media is automatically converted to modern WebP format, resized, and registered directly into the **Media Library** (or Cloudflare R2 object storage).
+- **One-Click Journalistic Article Generation**:
+  - Automatically expands social media captions into full journalistic school news articles.
+  - Selectable writing presets: **Berita Formal (Resmi & Edukatif)**, **Rilis Prestasi (Apresiasi Siswa)**, or **Liputan Ekskul (Hangat & Aktif)**.
+  - Generates news headlines, clean HTML bodies with subheadings, quotes, categories, tags, excerpts, and complete SEO/AEO metadata.
+  - Includes a fallback drawer to manually paste captions if the Instagram URL is restricted.
+
+### 3. Media Library Reusability & Asset Management (WordPress-Style)
+Prevent server bloat and redundant uploads through ScholarGate's centralized **Media Library**:
+- **Reuse Existing Assets ("Pilih dari Pustaka Media")**: Select previously uploaded covers, gallery photos, and school logos directly within the article and achievement editors with instant preview.
+- **Direct Upload ("Unggah File Baru")**: Fast file uploader supporting auto WebP compression, aspect ratio validation (16:9 / 16:10 recommended), and client-side format checks.
+- **Unified Media Registry**: Tracks file dimensions, mime types, file sizes, and storage locations (Local Disk or Cloudflare R2 CDN).
+
+### 4. Specialized Institutional Content Generators
+- **✨ Generator Berita dari Petunjuk Singkat**: In the article editor, input just an event topic and key points; the AI crafts the entire journalistic article: Title, URL Slug, Excerpt, Body (clean HTML with headings, lists, quotes), Category matching, Tags, Focus Keyword, and Meta Descriptions.
 - **✨ Generator Sambutan Kepala Sekolah**: Crafts heartfelt and authoritative speeches for the Homepage and Profile page with configurable tone (*Hangat & Mengayomi*, *Visioner*, *Karakter Bangsa*, *Religius*).
 - **✨ Generator Keterangan Profil Sekolah**: Generates comprehensive profile tabs (Sejarah, Visi Misi, Budaya Sekolah, Fasilitas Unggulan) formatted with clean semantic HTML.
-- **✨ Generator Liputan Prestasi AI**: Generates complete championship news articles, medalist badges, and celebratory quotes from tournament metadata.
-
-### 3. Wide Two-Column Achievement Editor
-- The **Prestasi (Achievements)** module features an expansive, article-like two-column layout:
-  - **Main Canvas**: Generous workspace for the rich text editor with full AI copilot integration, titles, and excerpts.
-  - **Sidebar Metadata**: 16:9 Cover image uploader, championship badge label, publication status, ranking order, and featured toggle.
-
-### 4. Automated Instagram Journalism
-- Paste an Instagram post or carousel URL to automatically extract high-res images, convert them to WebP, register them in the Media Library, and construct a full journalistic web article with responsive visual layouts and SEO tags.
+- **✨ Generator Liputan Prestasi AI**: Generates complete championship news articles, medalist badges, and celebratory quotes from tournament metadata within the wide two-column achievement editor.
 
 ### 5. RAG School Assistant Chatbot & Hardened AI Security
-- **Public AI Chatbot**: Visitors can ask questions about admissions, school culture, curriculum, and extracurriculars, answered via Retrieval-Augmented Generation (RAG) referencing published school content.
+- **Public AI Chatbot**: Visitors can ask questions about admissions (PPDB), school culture, curriculum, and extracurriculars, answered via Retrieval-Augmented Generation (RAG) referencing published school content.
 - **Prompt Injection Defense**: Sanitizes all input using `filterPromptInjection` and encapsulates untrusted user input within boundary isolation tags (`<untrusted_material>`).
 - **Brand Persona & Model Masking**: Protects proprietary setup by masking backend models behind a configurable institutional name (`custom_ai_model_name`).
 - **Flexible Multi-Provider**: Compatible with standard OpenAI API endpoints, OpenRouter, 9Router, DeepSeek, and Groq.
@@ -119,6 +178,8 @@ Every HTML text editor across the CMS is equipped with a **✨ Bantuan AI** copi
 - **Institutional Branding**: Dynamic favicon generator, school emblem co-branding, and custom color accents.
 
 ### 🛡️ Enterprise Admin CMS & Settings Hub
+- **TipTap WYSIWYG Newsroom Studio**: Advanced rich text editor with full formatting (headings, formatting, blockquotes, code, tables, YouTube video embeds, and AI copilot).
+- **Wide Two-Column Achievement Editor**: Spacious newsroom canvas tailored for comprehensive championship coverage, award badges, and photo galleries.
 - **Tabbed Settings Dashboard**: Clean, organized configuration tabs for *Umum*, *AI & RAG Intelligence*, *Social Login (OIDC)*, *Branding*, *SEO/AEO*, *Backup & Cloud*, and *Maintenance*.
 - **WordPress-Style Plugin Architecture**: Extend functionality (e.g. PPDB Online, Digital Library) via modular `.ZIP` packages with action & filter hooks (`Hook::addFilter()`, `Hook::doAction()`).
 - **Universal Socialite & OIDC Login**: Support for Google, GitHub, Authentik, Keycloak, and custom OpenID Connect providers with automatic RBAC synchronization.
