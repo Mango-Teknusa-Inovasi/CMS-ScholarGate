@@ -122,10 +122,10 @@ export function WelcomeAdminPage() {
                     type="button"
                     onClick={() => setAiModalBlock({ id: block.id, key: block.key, label })}
                     className="inline-flex items-center gap-1.5 rounded-xl border border-purple-500/30 bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-indigo-500/10 px-3 py-1.5 text-xs font-semibold text-purple-700 shadow-2xs transition hover:from-purple-500/20 hover:via-pink-500/20 hover:to-indigo-500/20 dark:text-purple-300"
-                    title="Generate naskah sambutan lengkap dengan AI"
+                    title="Susun naskah sambutan dengan AI"
                   >
                     <Sparkles className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
-                    <span>Generate Sambutan AI</span>
+                    <span>Susun Sambutan AI</span>
                   </button>
                   <label className="flex items-center gap-2 rounded-[12px] border border-line bg-page px-3 py-2 text-sm">
                     <input

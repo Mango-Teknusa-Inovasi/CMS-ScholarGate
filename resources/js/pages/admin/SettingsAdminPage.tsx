@@ -98,12 +98,12 @@ const fieldMeta: Record<
   },
   twitter_handle: { label: 'Twitter/X @handle', group: 'seo' },
   google_site_verification: {
-    label: 'Google Search Console — kode verifikasi',
+    label: 'Google Search Console: kode verifikasi',
     group: 'seo',
     hint: 'Tempel kode content saja, atau full tag <meta name="google-site-verification" content="…">. Sistem memotong otomatis.',
   },
   bing_site_verification: {
-    label: 'Bing Webmaster — kode verifikasi',
+    label: 'Bing Webmaster: kode verifikasi',
     group: 'seo',
     hint: 'Opsional. Sama: boleh tempel full meta tag msvalidate.01.',
   },

@@ -37,7 +37,7 @@ export function HomePage() {
 
   return (
     <>
-      <SeoHead kind="home" fallbackTitle={siteName + " — Portal Resmi"} />
+      <SeoHead kind="home" fallbackTitle={siteName + " | Portal Resmi"} />
       <HomeBento
         banners={data.banners}
         welcome={data.welcome}

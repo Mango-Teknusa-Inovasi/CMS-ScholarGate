@@ -150,9 +150,9 @@ export function AiAssistModal({ isOpen, onClose, initialText = '', onApply }: Pr
               <Sparkles className="h-5 w-5 animate-pulse" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-ink">Asisten AI Text Editor</h2>
+              <h2 className="text-base font-bold text-ink">Bantuan Penulisan Teks</h2>
               <p className="text-xs text-subtle">
-                Kecerdasan buatan terintegrasi untuk menyusun, memperbaiki, dan memperkaya tulisan.
+                Susun draf baru, perbaiki ejaan baku PUEBI, atau sesuaikan gaya bahasa.
               </p>
             </div>
           </div>

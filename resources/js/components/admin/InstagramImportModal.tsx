@@ -113,24 +113,18 @@ export function InstagramImportModal({ isOpen, onClose, onSuccess }: Props) {
       aria-modal="true"
     >
       <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl transition-all dark:border-slate-800 dark:bg-slate-900">
-        {/* Top Gradient Ribbon */}
-        <div className="h-1.5 w-full bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400" />
-
         {/* Header */}
         <div className="flex items-start justify-between p-5 pb-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-purple-600 via-pink-500 to-orange-400 text-white shadow-md">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-pink-500/10 text-pink-600 dark:bg-pink-900/30 dark:text-pink-300">
               <InstagramIcon className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
                 Import dari Instagram
-                <span className="inline-flex items-center gap-1 rounded-full bg-pink-100 px-2 py-0.5 text-[10px] font-semibold text-pink-700 dark:bg-pink-900/40 dark:text-pink-300">
-                  <Sparkles className="h-3 w-3" /> AI Powered
-                </span>
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Ubah postingan atau reels IG menjadi artikel berita resmi secara otomatis.
+                Ubah postingan atau reels Instagram menjadi draf berita sekolah.
               </p>
             </div>
           </div>
@@ -224,22 +218,13 @@ export function InstagramImportModal({ isOpen, onClose, onSuccess }: Props) {
             )}
           </div>
 
-          {/* Loading Animation Status */}
+          {/* Loading Status */}
           {loading && (
-            <div className="rounded-xl border border-pink-100 bg-pink-50/60 p-3.5 dark:border-pink-900/30 dark:bg-pink-950/20">
-              <div className="flex items-center gap-3">
-                <Loader2 className="h-5 w-5 animate-spin text-pink-600 dark:text-pink-400 shrink-0" />
-                <div className="space-y-1 text-xs">
-                  <p className="font-semibold text-slate-800 dark:text-slate-200">
-                    {step === 'scraping' && 'Langkah 1/3: Mengambil data & foto dari Instagram...'}
-                    {step === 'optimizing' && 'Langkah 2/3: Mengunduh dan menata galeri gambar WebP...'}
-                    {step === 'writing' && 'Langkah 3/3: AI menyusun naskah berita jurnalisme...'}
-                  </p>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Mohon tunggu beberapa detik, sistem sedang memproses media...
-                  </p>
-                </div>
-              </div>
+            <div className="flex items-center gap-3 rounded-xl border border-pink-100 bg-pink-50/60 p-3.5 dark:border-pink-900/30 dark:bg-pink-950/20">
+              <Loader2 className="h-5 w-5 animate-spin text-pink-600 dark:text-pink-400 shrink-0" />
+              <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                Sedang mengambil konten postingan dan menyusun draf berita…
+              </p>
             </div>
           )}
 
@@ -256,17 +241,17 @@ export function InstagramImportModal({ isOpen, onClose, onSuccess }: Props) {
             <button
               type="submit"
               disabled={loading || !url.trim()}
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 px-5 py-2 text-xs font-semibold text-white shadow-md transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl bg-pink-600 px-5 py-2 text-xs font-semibold text-white shadow-md transition hover:bg-pink-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Memproses...
+                  Memproses…
                 </>
               ) : (
                 <>
                   <Sparkles className="h-4 w-4" />
-                  Generate Artikel Sekarang
+                  Import & Susun Berita
                 </>
               )}
             </button>

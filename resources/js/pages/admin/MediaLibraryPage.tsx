@@ -246,7 +246,7 @@ export function MediaLibraryPage() {
                       className="w-full truncate rounded-lg border border-dashed border-line px-1.5 py-1 text-left text-[10px] text-subtle hover:border-brand hover:text-brand"
                       title="Edit alt text (SEO)"
                     >
-                      alt: {item.alt || '— klik isi —'}
+                      alt: {item.alt || '(klik untuk isi)'}
                     </button>
                   )}
                   <div className="flex gap-1">

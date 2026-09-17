@@ -104,9 +104,9 @@ export function ProfileAiModal({ isOpen, onClose, currentLabel, onGenerated }: P
               <Sparkles className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-ink">Generate Konten Profil Sekolah AI</h2>
+              <h2 className="text-base font-bold text-ink">Bantuan Teks Profil</h2>
               <p className="text-xs text-subtle">
-                Susun narasi sejarah, visi misi, atau budaya sekolah berformat HTML rapi dan elegan.
+                Susun narasi sejarah, visi misi, atau budaya sekolah berformat HTML.
               </p>
             </div>
           </div>
@@ -202,7 +202,7 @@ export function ProfileAiModal({ isOpen, onClose, currentLabel, onGenerated }: P
               ) : (
                 <>
                   <Sparkles className="h-4 w-4" />
-                  Generate Konten Profil
+                  Susun Draf Profil
                 </>
               )}
             </button>

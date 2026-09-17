@@ -15,7 +15,7 @@ export function Footer() {
   })
 
   const siteName = settings?.site_name || 'Portal Resmi'
-  const footerLinks = menus?.footer?.length
+  const rawFooterLinks = menus?.footer?.length
     ? menus.footer
     : [
         { id: 1, label: 'Beranda', url: '/' },
@@ -25,6 +25,11 @@ export function Footer() {
         { id: 5, label: 'Ekstrakurikuler', url: '/ekstrakurikuler' },
         { id: 6, label: 'Download', url: '/download' },
       ]
+
+  // Cegah tautan kebijakan privasi & syarat ketentuan tampil berulang di kolom Layanan dan bilah bawah
+  const footerLinks = rawFooterLinks.filter(
+    (l) => l.url !== '/kebijakan-privasi' && l.url !== '/syarat-ketentuan'
+  )
 
   const mid = Math.ceil(footerLinks.length / 2)
   const colA = footerLinks.slice(0, mid)

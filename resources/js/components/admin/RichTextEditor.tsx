@@ -395,7 +395,7 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Prop
       <EditorContent editor={editor} />
 
       <div className="flex justify-between border-t border-line bg-page px-3 py-1.5 text-xs text-subtle">
-        <span>Editor teks berformat — tebal, tautan, tabel, gambar, video, asisten AI</span>
+        <span>Editor teks berformat: tebal, tautan, tabel, gambar, video, asisten AI</span>
         <span>
           {words} kata · {chars} karakter
         </span>

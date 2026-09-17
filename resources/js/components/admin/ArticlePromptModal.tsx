@@ -160,7 +160,7 @@ export function ArticlePromptModal({ isOpen, onClose, categories, onGenerated }:
                 value={categoryHint}
                 onChange={(e) => setCategoryHint(e.target.value)}
               >
-                <option value="">-- Otomatis Ditentukan AI --</option>
+                <option value="">Otomatis (Dipilih Berdasarkan Topik)</option>
                 {categories.map((c) => (
                   <option key={c.id} value={c.name}>
                     {c.name}
@@ -226,7 +226,7 @@ export function ArticlePromptModal({ isOpen, onClose, categories, onGenerated }:
               ) : (
                 <>
                   <Sparkles className="h-4 w-4" />
-                  Generate Artikel
+                  Susun Draf Berita
                 </>
               )}
             </button>

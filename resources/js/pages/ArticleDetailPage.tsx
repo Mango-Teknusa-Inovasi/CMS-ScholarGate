@@ -6,7 +6,7 @@ import {
   Eye,
   Megaphone,
   Search,
-  Sparkles,
+  Share2,
   TrendingUp,
   FolderOpen,
 } from 'lucide-react'
@@ -305,7 +305,7 @@ export function ArticleDetailPage() {
             {showSocial && (
               <div className="rounded-[18px] border border-line bg-white p-5 shadow-[var(--shadow-card)]">
                 <div className="mb-3 flex items-center gap-2 border-b border-line pb-2.5">
-                  <Sparkles className="h-4 w-4 text-amber-500" />
+                  <Share2 className="h-4 w-4 text-sky-600" />
                   <h3 className="text-sm font-bold text-ink">Ikuti Kanal Resmi</h3>
                 </div>
                 <p className="mb-3.5 text-xs text-subtle">

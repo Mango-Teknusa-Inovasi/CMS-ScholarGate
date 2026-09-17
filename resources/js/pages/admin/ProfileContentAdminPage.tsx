@@ -173,10 +173,10 @@ export function ProfileContentAdminPage() {
                 type="button"
                 onClick={() => setIsProfileAiOpen(true)}
                 className="inline-flex items-center gap-1.5 rounded-[12px] border border-brand/30 bg-gradient-to-r from-brand/10 via-sky-500/10 to-indigo-500/10 px-3 py-2 text-xs font-semibold text-brand shadow-2xs transition hover:from-brand/20 hover:via-sky-500/20 hover:to-indigo-500/20"
-                title="Generate isi tab profil dengan AI"
+                title="Susun isi tab profil dengan AI"
               >
                 <Sparkles className="h-3.5 w-3.5 text-brand" />
-                <span className="hidden sm:inline">Generate Profil AI</span>
+                <span className="hidden sm:inline">Bantuan Draf AI</span>
                 <span className="sm:hidden">AI</span>
               </button>
               <button

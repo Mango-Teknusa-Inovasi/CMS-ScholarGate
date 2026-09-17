@@ -329,7 +329,7 @@ function SidebarChrome({
 }) {
   const siteTitle = settings?.site_name || settings?.site_title || settings?.school_name || 'Portal Resmi'
   const siteLogo = settings?.site_logo || settings?.logo_path || null
-  const panelSubtitle = `Panel CMS — ${siteTitle}`
+  const panelSubtitle = `Panel CMS · ${siteTitle}`
 
   return (
     <>
@@ -487,7 +487,7 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
 
   const siteTitle = publicSettings?.site_name || publicSettings?.site_title || publicSettings?.school_name || 'Portal Resmi'
   const pageTitle = resolvePageTitle(location.pathname)
-  const documentTitle = `${pageTitle} — ${siteTitle}`
+  const documentTitle = `${pageTitle} | ${siteTitle}`
 
   const initials = user.name
     .split(' ')

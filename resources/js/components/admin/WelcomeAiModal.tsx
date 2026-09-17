@@ -105,9 +105,9 @@ export function WelcomeAiModal({
               <Sparkles className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-ink">Generate Sambutan AI ({targetLabel})</h2>
+              <h2 className="text-base font-bold text-ink">Susun Sambutan ({targetLabel})</h2>
               <p className="text-xs text-subtle">
-                Susun naskah sambutan resmi Kepala Sekolah yang inspiratif, berwibawa, dan tertata rapi.
+                Susun naskah sambutan resmi kepala sekolah dengan gaya bahasa terarah.
               </p>
             </div>
           </div>
@@ -192,7 +192,7 @@ export function WelcomeAiModal({
               ) : (
                 <>
                   <Sparkles className="h-4 w-4" />
-                  Generate Sambutan
+                  Susun Draf Sambutan
                 </>
               )}
             </button>

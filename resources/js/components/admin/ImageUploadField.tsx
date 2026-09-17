@@ -159,10 +159,6 @@ export function ImageUploadField({
         </label>
       </div>
 
-      <p className="mt-2 text-[11px] text-subtle">
-        Tips: Pilih file yang pernah diunggah agar tidak menduplikasi media, atau unggah file baru untuk dikompres otomatis.
-      </p>
-
       <MediaPickerModal
         isOpen={isPickerOpen}
         onClose={() => setIsPickerOpen(false)}

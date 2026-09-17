@@ -77,7 +77,7 @@ export function MemberLoginPage() {
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-ink">Masuk Member</h1>
           <p className="mt-1 text-sm text-subtle">
-            Area anggota portal — bukan panel admin CMS.
+            Area anggota portal (khusus siswa dan alumni).
           </p>
         </div>
 

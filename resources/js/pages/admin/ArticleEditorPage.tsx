@@ -340,9 +340,9 @@ export function ArticleEditorPage() {
           </div>
 
           <div className="rounded-[16px] border border-line bg-white p-4 shadow-[var(--shadow-card)] md:p-5">
-            <h2 className="mb-1 text-sm font-bold text-ink">SEO · AEO · GEO</h2>
+            <h2 className="mb-1 text-sm font-bold text-ink">Optimasi Mesin Pencari (SEO)</h2>
             <p className="mb-3 text-xs text-subtle">
-              Optimasi mesin pencari, answer engine (AI), dan entitas lokal.
+              Atur judul dan ringkasan cuplikan untuk Google dan asisten pencarian.
             </p>
             <div className="space-y-3">
               <div>
@@ -370,17 +370,17 @@ export function ArticleEditorPage() {
               </div>
               <div>
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-subtle">
-                  Meta description (jawaban singkat AEO)
+                  Meta description
                 </label>
                 <textarea
                   className="w-full rounded-[12px] border border-line bg-page px-3 py-2.5 text-sm outline-none focus:border-brand focus:bg-white"
                   rows={3}
-                  placeholder="Ringkasan singkat 1–2 kalimat untuk mesin pencari"
+                  placeholder="Ringkasan singkat 1-2 kalimat untuk hasil pencarian"
                   value={form.meta_description}
                   onChange={(e) => setForm({ ...form, meta_description: e.target.value })}
                 />
                 <p className="mt-1 text-[11px] text-subtle">
-                  {form.meta_description.length}/160 · tulis seperti jawaban untuk user & AI
+                  {form.meta_description.length}/160 disarankan
                 </p>
               </div>
               <div>
@@ -408,8 +408,8 @@ export function ArticleEditorPage() {
           <div className="rounded-[16px] border border-line bg-white p-4 shadow-[var(--shadow-card)] md:p-5">
             <div className="mb-3 flex items-center justify-between">
               <div>
-                <h2 className="text-sm font-bold text-ink">FAQ (AEO)</h2>
-                <p className="text-xs text-subtle">Q&A untuk schema FAQPage — cocok AI answer engines</p>
+                <h2 className="text-sm font-bold text-ink">FAQ Tambahan</h2>
+                <p className="text-xs text-subtle">Tanya jawab terstruktur untuk cuplikan pencarian (schema FAQPage)</p>
               </div>
               <button
                 type="button"
@@ -553,7 +553,7 @@ export function ArticleEditorPage() {
                   value={form.category_id}
                   onChange={(e) => setForm({ ...form, category_id: e.target.value })}
                 >
-                  <option value="">— Pilih —</option>
+                  <option value="">Pilih Kategori</option>
                   {categories.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
@@ -617,29 +617,10 @@ export function ArticleEditorPage() {
                   onChange={(e) => setForm({ ...form, slug: e.target.value })}
                 />
               </div>
-              <div className="flex flex-col gap-2 border-t border-line pt-3">
-                <button
-                  type="button"
-                  onClick={() => save.mutate(false)}
-                  disabled={save.isPending || !form.title}
-                  className="w-full rounded-[12px] border border-line py-2.5 text-sm font-semibold hover:bg-muted disabled:opacity-50"
-                >
-                  Simpan
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setForm((f) => ({ ...f, status: 'published' }))
-                    save.mutate(true)
-                  }}
-                  disabled={save.isPending || !form.title}
-                  className="w-full rounded-[12px] bg-violet-500 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-600 disabled:opacity-50"
-                >
-                  {form.status === 'published' ? 'Perbarui' : 'Terbitkan'}
-                </button>
+              <div className="border-t border-line pt-3">
                 <Link
                   to="/admin/articles"
-                  className="text-center text-xs font-medium text-subtle hover:text-brand"
+                  className="block text-center text-xs font-medium text-subtle hover:text-brand"
                 >
                   Kembali ke semua artikel
                 </Link>

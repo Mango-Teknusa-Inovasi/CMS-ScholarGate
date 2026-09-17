@@ -109,7 +109,7 @@ export function AchievementAiModal({ isOpen, onClose, onGenerated }: Props) {
                   Liputan Prestasi AI
                 </h3>
                 <p className="text-xs text-subtle">
-                  Generate rilis berita prestasi, badge medali, & kutipan inspiratif otomatis.
+                  Susun rilis berita prestasi, badge medali, dan kutipan apresiasi.
                 </p>
               </div>
             </div>
