@@ -21,6 +21,13 @@ class UpdateController extends Controller
             return redirect()->route('install.show');
         }
 
+        // Require authenticated super admin to view update status
+        $user = auth()->user();
+        if (! $user || ! $user->isSuperAdmin()) {
+            return redirect('/admin/login')
+                ->with('error', 'Hanya super admin yang dapat mengakses halaman update.');
+        }
+
         $status = Updater::status();
 
         return view('update', [

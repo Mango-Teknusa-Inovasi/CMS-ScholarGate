@@ -238,7 +238,21 @@ class SocialAuthController extends Controller
 
         // 2. Search by email if not found
         if (! $user) {
-            $user = User::query()->where('email', $data['email'])->first();
+            $emailUser = User::query()->where('email', $data['email'])->first();
+
+            if ($emailUser) {
+                // Block automatic linking for admin accounts — admins must link OAuth via profile settings
+                if ($emailUser->isAdmin()) {
+                    Log::warning('OAuth auto-link blocked for admin account', [
+                        'email' => $data['email'],
+                        'provider' => $data['provider'],
+                    ]);
+
+                    return $this->redirectWithError($intent, 'Akun admin tidak dapat dihubungkan otomatis melalui login sosial. Silakan login dengan email dan password, lalu hubungkan akun sosial melalui pengaturan profil.');
+                }
+
+                $user = $emailUser;
+            }
         }
 
         if ($user) {

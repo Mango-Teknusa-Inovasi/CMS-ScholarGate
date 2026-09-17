@@ -93,7 +93,7 @@
             <meta name="ICBM" content="{{ str_replace(';', ', ', (string) $seo['geo_position']) }}">
         @endif
         @if(!empty($seo['json_ld']) && is_array($seo['json_ld']))
-            <script type="application/ld+json">{!! json_encode($seo['json_ld'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+            <script type="application/ld+json">{!! json_encode($seo['json_ld'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!}</script>
         @endif
         <link rel="sitemap" type="application/xml" href="/sitemap.xml">
         <link rel="alternate" type="text/plain" href="/llms.txt" title="LLMs">
