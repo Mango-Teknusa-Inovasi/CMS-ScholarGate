@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ContactInfo;
 use App\Models\ProfilePage;
 use App\Models\QuickService;
+use App\Models\ServiceItem;
 use App\Models\WelcomeBlock;
 use Illuminate\Http\JsonResponse;
 
@@ -18,6 +19,7 @@ class ProfileController extends Controller
             'welcome' => WelcomeBlock::query()->where('key', 'profile')->where('is_active', true)->first(),
             'contacts' => ContactInfo::query()->orderBy('sort_order')->get(),
             'quick_services' => QuickService::query()->where('is_active', true)->orderBy('sort_order')->get(),
+            'services' => ServiceItem::query()->where('is_active', true)->orderBy('sort_order')->get(),
         ]);
     }
 }

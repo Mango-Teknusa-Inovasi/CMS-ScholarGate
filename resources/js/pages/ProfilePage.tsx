@@ -16,7 +16,8 @@ import {
   Sparkles,
   type LucideIcon,
 } from 'lucide-react'
-import { api, type ContactInfo, type QuickService, type WelcomeBlock } from '../lib/api'
+import { api, type ContactInfo, type QuickService, type ServiceItem, type WelcomeBlock } from '../lib/api'
+import { getLucideIcon } from '../components/ui/DynamicIcon'
 import { cn, coverSrc } from '../lib/utils'
 import { SeoHead } from '../components/seo/SeoHead'
 import { PageSkeleton } from '../components/ui/Skeleton'
@@ -32,20 +33,6 @@ import {
   type BentoTone,
 } from '../components/ui/PageBento'
 
-const iconMap: Record<string, LucideIcon> = {
-  'map-pin': MapPin,
-  mail: Mail,
-  phone: Phone,
-  printer: Printer,
-  map: MapPin,
-  'file-text': FileText,
-  'badge-check': BadgeCheck,
-  calendar: Calendar,
-  'hand-coins': HandCoins,
-  newspaper: Newspaper,
-  download: Download,
-}
-
 const contactTones: BentoTone[] = ['sky', 'mint', 'coral', 'amber', 'violet']
 const serviceTones: BentoTone[] = ['sky', 'teal', 'mint', 'coral', 'amber', 'violet']
 
@@ -58,6 +45,7 @@ type ProfilePayload = {
   welcome: WelcomeBlock | null
   contacts: ContactInfo[]
   quick_services: QuickService[]
+  services?: ServiceItem[]
 }
 
 export function ProfilePage() {
@@ -153,7 +141,7 @@ export function ProfilePage() {
           <PageBentoSection eyebrow="Kontak" title="Hubungi kami">
             <BentoBoard>
               {data.contacts.map((c, i) => {
-                const Icon = iconMap[c.icon || ''] || MapPin
+                const Icon = getLucideIcon(c.icon)
                 const href = safeHref(c.link_url)
                 return (
                   <BentoTile
@@ -222,14 +210,14 @@ export function ProfilePage() {
           </BentoBoard>
         )}
 
-        {data.quick_services.length > 0 && (
+        {((data.services && data.services.length > 0) || data.quick_services.length > 0) && (
           <PageBentoSection
             eyebrow="Akses cepat"
             title="Layanan penting"
           >
             <BentoBoard>
-              {data.quick_services.map((item, i) => {
-                const Icon = iconMap[item.icon] || Sparkles
+              {((data.services && data.services.length > 0) ? data.services : data.quick_services).map((item, i) => {
+                const Icon = getLucideIcon(item.icon)
                 const href = safeHref(item.link_url) || '#'
                 return (
                   <BentoTile
@@ -245,7 +233,7 @@ export function ProfilePage() {
                       {...(href.startsWith('http')
                         ? { target: '_blank', rel: 'noopener noreferrer' }
                         : {})}
-                      className="flex h-full flex-col outline-none"
+                      className="flex h-full flex-col outline-none group"
                     >
                       <div
                         className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/80 shadow-sm ring-1 ring-black/5"
@@ -260,7 +248,7 @@ export function ProfilePage() {
                       <h3 className="font-bold text-ink">{item.title}</h3>
                       <p className="mt-1 line-clamp-2 text-xs text-subtle">{item.description}</p>
                       <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-brand">
-                        {item.link_label || 'Buka'} →
+                        {(item as any).link_label || 'Buka'} →
                       </span>
                     </a>
                   </BentoTile>
