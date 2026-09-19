@@ -48,6 +48,8 @@ class HandleInertiaRequests extends Middleware
             'app' => [
                 'name' => \App\Models\Setting::getValue('site_name') ?: config('app.name', 'Portal Resmi'),
                 'url' => config('app.url'),
+                'logo_url' => \App\Services\BrandLogoService::brandUrls()['logo'] ?? null,
+                'tagline' => \App\Models\Setting::getValue('site_tagline') ?: \App\Models\Setting::getValue('site_subtitle') ?: '',
                 'email' => \App\Models\Setting::getValue('contact_email') ?: \App\Models\Setting::getValue('site_email') ?: '',
                 'phone' => \App\Models\Setting::getValue('contact_phone') ?: \App\Models\Setting::getValue('site_phone') ?: '',
                 'address' => \App\Models\Setting::getValue('contact_address') ?: \App\Models\Setting::getValue('site_address') ?: '',

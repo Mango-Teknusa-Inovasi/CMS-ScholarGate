@@ -9,6 +9,8 @@ interface SharedProps extends PageProps {
     app?: {
         name?: string;
         url?: string;
+        logo_url?: string | null;
+        tagline?: string;
         email?: string;
         phone?: string;
         address?: string;
@@ -19,6 +21,8 @@ interface SharedProps extends PageProps {
 export function ClassicLayout({ children }: { children: ReactNode }) {
     const { props, url } = usePage<SharedProps>();
     const siteName = props.app?.name || 'Portal Resmi Sekolah';
+    const logoUrl = props.app?.logo_url;
+    const tagline = props.app?.tagline;
     const email = props.app?.email;
     const address = props.app?.address;
     const phone = props.app?.phone;
@@ -49,7 +53,7 @@ export function ClassicLayout({ children }: { children: ReactNode }) {
                             <Bell className="w-3 h-3" /> Warta Sekolah
                         </span>
                         <span className="hidden sm:inline text-slate-400 text-[11px] truncate max-w-md">
-                            Portal Informasi Resmi Kebijakan & Prestasi Akademik
+                            {tagline || `Portal Informasi Resmi Kebijakan & Prestasi Akademik`}
                         </span>
                     </div>
 
@@ -78,12 +82,20 @@ export function ClassicLayout({ children }: { children: ReactNode }) {
             <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-6 px-4 sm:px-6 lg:px-8 shadow-sm">
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
                     <Link href="/" className="flex items-center gap-3.5 group">
-                        <div className="w-12 h-12 rounded-lg bg-red-600 text-white flex items-center justify-center font-serif font-black text-2xl shadow-md group-hover:bg-red-700 transition">
-                            <Newspaper className="w-7 h-7" />
-                        </div>
+                        {logoUrl ? (
+                            <img
+                                src={logoUrl}
+                                alt={siteName}
+                                className="h-12 w-auto object-contain max-w-[180px] drop-shadow-sm"
+                            />
+                        ) : (
+                            <div className="w-12 h-12 rounded-lg bg-red-600 text-white flex items-center justify-center font-serif font-black text-2xl shadow-md group-hover:bg-red-700 transition">
+                                <Newspaper className="w-7 h-7" />
+                            </div>
+                        )}
                         <div>
                             <span className="text-[10px] font-bold text-red-600 dark:text-red-400 uppercase tracking-widest block">
-                                KORAN DIGITAL MAJALAH SEKOLAH
+                                {tagline || 'KORAN DIGITAL MAJALAH SEKOLAH'}
                             </span>
                             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight font-serif">
                                 {siteName}
@@ -180,7 +192,11 @@ export function ClassicLayout({ children }: { children: ReactNode }) {
                 <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 mb-8 text-xs">
                     <div className="space-y-3">
                         <div className="flex items-center gap-2 text-white font-bold font-serif text-base">
-                            <Newspaper className="w-5 h-5 text-red-500" />
+                            {logoUrl ? (
+                                <img src={logoUrl} alt={siteName} className="h-7 w-auto object-contain brightness-0 invert" />
+                            ) : (
+                                <Newspaper className="w-5 h-5 text-red-500" />
+                            )}
                             <span>{siteName}</span>
                         </div>
                         <p className="text-slate-400 leading-relaxed">
