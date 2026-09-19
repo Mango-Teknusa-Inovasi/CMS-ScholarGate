@@ -25,10 +25,10 @@ class MediaStorage
 
     public static function r2Configured(): bool
     {
-        $endpoint = (string) env('R2_ENDPOINT', '');
-        $key = (string) env('R2_ACCESS_KEY_ID', '');
-        $secret = (string) env('R2_SECRET_ACCESS_KEY', '');
-        $bucket = (string) env('R2_BUCKET_NAME', '');
+        $endpoint = (string) (config('filesystems.disks.r2.endpoint') ?: env('R2_ENDPOINT', ''));
+        $key = (string) (config('filesystems.disks.r2.key') ?: env('R2_ACCESS_KEY_ID', ''));
+        $secret = (string) (config('filesystems.disks.r2.secret') ?: env('R2_SECRET_ACCESS_KEY', ''));
+        $bucket = (string) (config('filesystems.disks.r2.bucket') ?: env('R2_BUCKET_NAME', ''));
 
         if ($endpoint === '' || $key === '' || $secret === '' || $bucket === '') {
             return false;
@@ -48,7 +48,7 @@ class MediaStorage
      */
     public static function prefixPath(string $path): string
     {
-        $folder = trim((string) config('filesystems.disks.r2.folder', env('R2_FOLDER_PATH', 'scholargate')), '/');
+        $folder = trim((string) (config('filesystems.disks.r2.folder') ?: env('R2_FOLDER_PATH', 'scholargate')), '/');
         $path = ltrim($path, '/');
 
         if ($folder === '') {
@@ -66,7 +66,7 @@ class MediaStorage
     {
         $url = (string) config("filesystems.disks.{$disk}.url", '');
         if ($url === '') {
-            $url = (string) env($disk === 's3' ? 'AWS_URL' : 'R2_PUBLIC_URL', '');
+            $url = (string) (config("filesystems.disks.{$disk}.url") ?: env($disk === 's3' ? 'AWS_URL' : 'R2_PUBLIC_URL', ''));
         }
 
         return rtrim($url, '/');
