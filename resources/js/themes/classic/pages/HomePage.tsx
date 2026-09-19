@@ -2,6 +2,7 @@ import React from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { HookSlot } from '@/components/ui/HookSlot';
 import { Newspaper, Bell, Calendar, ChevronRight, ArrowRight, Eye, Tag } from 'lucide-react';
+import ClassicLayout from '../layout/ClassicLayout';
 
 interface Article {
     id: number;
@@ -20,7 +21,7 @@ interface HomePageProps {
     announcements?: Article[];
 }
 
-export default function ClassicNewsHomePage({ articles = [], latest_articles = [], announcements = [] }: HomePageProps) {
+export function ClassicNewsHomePage({ articles = [], latest_articles = [], announcements = [] }: HomePageProps) {
     const { props } = usePage<{ app?: { name?: string } }>();
     const siteName = props.app?.name || 'Portal Resmi Sekolah';
     const displayArticles = articles.length > 0 ? articles : latest_articles;
@@ -280,3 +281,7 @@ export default function ClassicNewsHomePage({ articles = [], latest_articles = [
         </>
     );
 }
+
+ClassicNewsHomePage.layout = (page: React.ReactNode) => <ClassicLayout>{page}</ClassicLayout>;
+
+export default ClassicNewsHomePage;
