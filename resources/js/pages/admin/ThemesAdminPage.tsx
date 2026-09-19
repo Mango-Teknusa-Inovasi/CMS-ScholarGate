@@ -1,6 +1,6 @@
 import React, { useRef } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { CheckCircle2, Palette, Power, Upload, Sparkles, LayoutTemplate } from 'lucide-react'
+import { CheckCircle2, Palette, Power, Upload, XCircle, LayoutTemplate } from 'lucide-react'
 import { api } from '../../lib/api'
 import { AdminPageHeader } from '../../components/admin/AdminPageHeader'
 import { Skeleton } from '../../components/ui/Skeleton'
@@ -34,10 +34,9 @@ export function ThemesAdminPage() {
       const msg = (res.data as { message?: string }).message || 'Tema berhasil diaktifkan.'
       toast.success(msg)
       qc.invalidateQueries({ queryKey: ['admin-themes'] })
-      // Reload window so Inertia re-fetches shared active_theme prop
       setTimeout(() => {
         window.location.reload()
-      }, 800)
+      }, 600)
     },
     onError: () => toast.error('Gagal mengaktifkan tema.'),
   })
@@ -67,148 +66,160 @@ export function ThemesAdminPage() {
   const activeSlug = data?.active_theme || 'default'
 
   return (
-    <div className="space-y-6">
+    <div>
       <AdminPageHeader
-        title="Manajemen Tema & Layout (Theme Engine)"
+        title="Manajemen Tema & Layout"
         description="Kelola dan ganti tata letak visual utama website portal sekolah secara modular."
         actions={
-          <div className="flex items-center gap-2">
+          <>
             <input
               ref={fileRef}
               type="file"
               accept=".zip"
               className="hidden"
               onChange={(e) => {
-                const file = e.target.files?.[0]
-                if (file) upload.mutate(file)
+                const f = e.target.files?.[0]
+                if (f) upload.mutate(f)
+                e.target.value = ''
               }}
             />
             <button
               type="button"
-              disabled={upload.isPending}
               onClick={() => fileRef.current?.click()}
-              className="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:opacity-50"
+              disabled={upload.isPending}
+              className="inline-flex items-center gap-2 rounded-[12px] bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-sky-600 disabled:opacity-60"
             >
               <Upload className="h-4 w-4" />
-              {upload.isPending ? 'Mengunggah...' : 'Unggah Tema ZIP'}
+              {upload.isPending ? 'Mengunggah…' : 'Unggah Tema (.ZIP)'}
             </button>
-          </div>
+          </>
         }
       />
 
-      {/* Info Banner */}
-      <div className="rounded-2xl border border-sky-200 bg-sky-50/60 p-4 text-sky-900 dark:border-sky-900/50 dark:bg-sky-950/40 dark:text-sky-200">
-        <div className="flex items-start gap-3">
-          <Sparkles className="mt-0.5 h-5 w-5 flex-shrink-0 text-sky-600 dark:text-sky-400" />
-          <div className="text-sm leading-relaxed">
-            <span className="font-semibold">Dual Theme & Hook Engine Aktif:</span> Tema mengontrol seluruh desain halaman publik (layout, navbar, footer, & bento), sementara <strong>Plugin</strong> menyuntikkan widget ke dalam slot tema secara otomatis.
+      <section className="rounded-[16px] border border-line bg-white p-6 shadow-[var(--shadow-card)]">
+        <div className="flex items-center justify-between border-b border-line pb-4">
+          <div>
+            <h2 className="text-base font-bold text-ink flex items-center gap-2">
+              <Palette className="h-5 w-5 text-sky-500" />
+              Daftar Tema Terpasang
+            </h2>
+            <p className="mt-0.5 text-xs text-subtle">
+              Tema disimpan di folder <code>resources/js/themes/</code>. Pilih tema yang ingin digunakan untuk halaman depan portal.
+            </p>
           </div>
+          <span className="text-xs font-semibold text-subtle bg-page px-3 py-1 rounded-full border border-line">
+            {themes.length} Tema Terdeteksi
+          </span>
         </div>
-      </div>
 
-      {isLoading ? (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          <Skeleton className="h-64 rounded-2xl" />
-          <Skeleton className="h-64 rounded-2xl" />
-        </div>
-      ) : themes.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-300 p-12 text-center dark:border-slate-700">
-          <LayoutTemplate className="mx-auto h-12 w-12 text-slate-400" />
-          <p className="mt-2 text-sm font-medium text-slate-600 dark:text-slate-400">
-            Belum ada tema tambahan yang terinstall.
-          </p>
-        </div>
-      ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {themes.map((theme) => {
-            const isActive = theme.slug === activeSlug
+        {isLoading ? (
+          <div className="mt-6 space-y-3">
+            <Skeleton className="h-24 w-full rounded-[14px]" />
+            <Skeleton className="h-24 w-full rounded-[14px]" />
+          </div>
+        ) : themes.length === 0 ? (
+          <div className="mt-12 text-center py-8">
+            <LayoutTemplate className="h-12 w-12 text-subtle mx-auto mb-3 opacity-40" />
+            <p className="text-sm font-bold text-ink">Belum Ada Tema Terpasang</p>
+            <p className="text-xs text-subtle mt-1">
+              Unggah file <code>.zip</code> tema atau tambahkan folder tema di <code>resources/js/themes/</code>.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            {themes.map((t) => {
+              const isActive = t.slug === activeSlug
 
-            return (
-              <div
-                key={theme.slug}
-                className={`relative flex flex-col justify-between rounded-2xl border p-6 transition-all duration-200 ${
-                  isActive
-                    ? 'border-emerald-500 dark:border-emerald-500 bg-emerald-50/40 dark:bg-emerald-950/30 ring-1 ring-emerald-500/30 shadow-md'
-                    : 'border-slate-200/90 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700'
-                }`}
-              >
-                <div>
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${
-                        isActive 
-                          ? 'bg-emerald-500 text-white shadow-sm' 
-                          : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
-                      }`}>
-                        <LayoutTemplate className="h-5 w-5" />
+              return (
+                <div
+                  key={t.slug}
+                  className={`relative flex flex-col justify-between rounded-[14px] border p-4 transition ${
+                    isActive
+                      ? 'border-emerald-300 bg-emerald-50/40 shadow-sm'
+                      : 'border-line bg-white'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] ${
+                          isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-sky-100 text-sky-600'
+                        } font-bold text-lg`}>
+                          🎨
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-sm font-bold text-ink">{t.name}</h3>
+                            <span className="text-[10px] font-semibold text-subtle bg-page px-1.5 py-0.5 rounded border border-line">
+                              v{t.version}
+                            </span>
+                          </div>
+                          {t.author && (
+                            <p className="text-[11px] text-subtle mt-0.5">Oleh: {t.author}</p>
+                          )}
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="font-bold text-slate-900 dark:text-white text-base">{theme.name}</h3>
-                        <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
-                          v{theme.version} • Oleh {theme.author || 'Developer'}
-                        </p>
-                      </div>
+
+                      {isActive ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-bold text-emerald-800">
+                          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> Aktif
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-bold text-slate-600">
+                          <XCircle className="h-3.5 w-3.5 text-slate-400" /> Nonaktif
+                        </span>
+                      )}
                     </div>
-                    {isActive ? (
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-3 py-1 text-xs font-bold text-white shadow-sm">
-                        <CheckCircle2 className="h-3.5 w-3.5" /> Aktif
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
-                        Tidak Aktif
-                      </span>
+
+                    <p className="mt-3 text-xs text-subtle line-clamp-2">
+                      {t.description || 'Tidak ada deskripsi tema.'}
+                    </p>
+
+                    {t.supported_slots && t.supported_slots.length > 0 && (
+                      <div className="mt-3 pt-2">
+                        <span className="text-[10px] font-semibold text-subtle uppercase tracking-wider block mb-1">
+                          Supported Hook Slots:
+                        </span>
+                        <div className="flex flex-wrap gap-1">
+                          {t.supported_slots.map((slot) => (
+                            <span
+                              key={slot}
+                              className="rounded bg-page px-1.5 py-0.5 text-[10px] font-mono text-subtle border border-line"
+                            >
+                              {slot}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
                     )}
                   </div>
 
-                  <p className="mt-4 text-xs leading-relaxed font-normal text-slate-700 dark:text-slate-200">
-                    {theme.description || 'Tidak ada deskripsi tema.'}
-                  </p>
-
-                  {theme.supported_slots && theme.supported_slots.length > 0 && (
-                    <div className="mt-4 pt-3 border-t border-slate-200/60 dark:border-slate-800">
-                      <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">
-                        Supported Hook Slots:
-                      </span>
-                      <div className="flex flex-wrap gap-1.5">
-                        {theme.supported_slots.map((slot) => (
-                          <span
-                            key={slot}
-                            className="rounded-md bg-slate-200/70 dark:bg-slate-800 px-2.5 py-1 font-mono text-[11px] font-medium text-slate-800 dark:text-slate-200 border border-slate-300/50 dark:border-slate-700"
-                          >
-                            {slot}
-                          </span>
-                        ))}
-                      </div>
+                  <div className="mt-4 flex items-center justify-between border-t border-line/60 pt-3">
+                    <span className="font-mono text-[10px] text-subtle">themes/{t.slug}</span>
+                    <div className="flex items-center gap-2">
+                      {!isActive ? (
+                        <button
+                          type="button"
+                          disabled={activate.isPending}
+                          onClick={() => activate.mutate(t.slug)}
+                          className="inline-flex items-center gap-1.5 rounded-[10px] bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-60"
+                        >
+                          <Power className="h-3.5 w-3.5" />
+                          {activate.isPending ? 'Mengaktifkan…' : 'Aktifkan Tema'}
+                        </button>
+                      ) : (
+                        <span className="text-xs font-semibold text-emerald-700">
+                          Sedang Digunakan
+                        </span>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </div>
-
-                <div className="mt-6 pt-4 border-t border-slate-200/60 dark:border-slate-800 flex items-center justify-between">
-                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                    Slug: <code className="font-mono text-slate-700 dark:text-slate-300">{theme.slug}</code>
-                  </span>
-
-                  {!isActive ? (
-                    <button
-                      type="button"
-                      disabled={activate.isPending}
-                      onClick={() => activate.mutate(theme.slug)}
-                      className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-4 py-2 text-xs font-semibold text-white shadow-sm transition active:scale-95 disabled:opacity-50"
-                    >
-                      <Power className="h-3.5 w-3.5" />
-                      Aktifkan Tema Ini
-                    </button>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 dark:text-emerald-400">
-                      <CheckCircle2 className="h-4 w-4 text-emerald-500" /> Sedang Digunakan
-                    </span>
-                  )}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
+              )
+            })}
+          </div>
+        )}
+      </section>
     </div>
   )
 }
