@@ -77,7 +77,7 @@ export function ClassicProfilePage() {
                                         {data.welcome.title}
                                     </h2>
                                     <div className="prose prose-slate dark:prose-invert text-xs sm:text-sm leading-relaxed text-slate-700 dark:text-slate-300">
-                                        <SafeHtml content={data.welcome.body} />
+                                        <SafeHtml html={data.welcome.body} />
                                     </div>
                                 </div>
                             </div>
@@ -104,7 +104,7 @@ export function ClassicProfilePage() {
                                 </div>
                                 <div className="p-6">
                                     <div className="prose prose-slate dark:prose-invert max-w-none text-xs sm:text-sm leading-relaxed">
-                                        <SafeHtml content={currentTab?.content_html || ''} />
+                                        <SafeHtml html={currentTab?.content_html || ''} />
                                     </div>
                                 </div>
                             </div>

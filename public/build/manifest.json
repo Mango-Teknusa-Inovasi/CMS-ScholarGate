@@ -36,7 +36,7 @@
     ]
   },
   "resources/js/app.tsx": {
-    "file": "assets/app-D8v8ejzO.js",
+    "file": "assets/app-C3iMy8TJ.js",
     "name": "app",
     "src": "resources/js/app.tsx",
     "isEntry": true,
@@ -48,7 +48,7 @@
       "_vendor-query-CyodUsB7.js"
     ],
     "css": [
-      "assets/app-Be-fRpGH.css"
+      "assets/app-Dp5uphm8.css"
     ]
   }
 }

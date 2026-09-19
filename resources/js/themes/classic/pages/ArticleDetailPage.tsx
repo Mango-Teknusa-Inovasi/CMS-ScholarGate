@@ -122,7 +122,7 @@ export function ClassicArticleDetailPage({ slug: propSlug, article: initialArtic
 
                     {/* Article Content Typography */}
                     <div className="prose prose-slate dark:prose-invert max-w-none text-slate-800 dark:text-slate-200 text-sm leading-relaxed space-y-4 font-sans">
-                        <SafeHtml content={article.content || article.excerpt || ''} />
+                        <SafeHtml html={article.body || (article as any).content || article.excerpt || ''} />
                     </div>
 
                     {/* Back Button */}
