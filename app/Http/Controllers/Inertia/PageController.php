@@ -254,6 +254,11 @@ class PageController extends Controller
         return $this->admin('PluginsAdminPage');
     }
 
+    public function adminThemes(): Response
+    {
+        return $this->admin('ThemesAdminPage');
+    }
+
 
     public function adminResourceList(string $resource): Response
     {
