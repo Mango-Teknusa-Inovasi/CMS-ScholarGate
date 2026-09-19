@@ -55,7 +55,7 @@ export function ClassicExtracurricularPage() {
                                     <div className="flex items-center gap-3 mb-2">
                                         {item.logo_path ? (
                                             <img
-                                                src={mediaUrl(item.logo_path)}
+                                                src={mediaUrl(item.logo_path) || undefined}
                                                 alt={item.title}
                                                 className="w-10 h-10 object-contain rounded border border-slate-200 dark:border-slate-700 p-0.5"
                                             />
