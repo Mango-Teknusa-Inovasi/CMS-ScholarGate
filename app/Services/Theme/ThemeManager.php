@@ -103,7 +103,7 @@ class ThemeManager
         // Guarantee 'default' theme is always present even if folder scan missed it
         if (! isset($themes['default'])) {
             $themes['default'] = [
-                'name' => 'Default Theme',
+                'name' => 'Bento Grid (Default)',
                 'slug' => 'default',
                 'version' => '1.0.0',
                 'author' => 'ScholarGate Team',

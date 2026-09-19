@@ -1,9 +1,9 @@
 {
-  "name": "Classic Academic Theme",
+  "name": "Classic News Portal",
   "slug": "classic",
   "version": "1.0.0",
   "author": "ScholarGate Community",
-  "description": "Tema klasik akademis dengan Header Hero Banner besar, tata letak berita dua kolom, dan navigasi tradisional.",
+  "description": "Tema portal berita klasik berbasis latar putih bersih (Plain White News Portal) dengan tatanan headline multi-kolom dan pengumuman resmi.",
   "screenshot": "/favicon.svg",
   "supported_slots": ["after_navbar", "before_footer", "home_bento"]
 }

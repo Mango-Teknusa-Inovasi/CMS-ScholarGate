@@ -376,6 +376,7 @@ Each release includes:
 - 📖 **[INSTALL.md](./INSTALL.md)** — Installation guide (Web Installer, CLI, VPS, Docker)
 - 📝 **[CHANGELOG.md](./CHANGELOG.md)** — Release history and detailed changelog
 - 🔌 **[docs/PLUGINS.md](./docs/PLUGINS.md)** — Plugin development guide, hooks system & distribution
+- 🎨 **[docs/THEMES.md](./docs/THEMES.md)** — Theme development guide, manifest schema & fallback engine
 - 🏗️ **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)** — System architecture & AI pipeline
 - 🔒 **[docs/SECURITY.md](./docs/SECURITY.md)** — Security policies, prompt injection shielding & RBAC
 - 🔍 **[docs/SEO-AEO-GEO.md](./docs/SEO-AEO-GEO.md)** — Search engine, AEO, and AI crawler optimization
