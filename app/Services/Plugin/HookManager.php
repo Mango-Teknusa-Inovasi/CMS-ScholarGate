@@ -61,4 +61,31 @@ class HookManager
 
         return $value;
     }
+
+    /** @var array<string, list<array{content: string|array, priority: int}>> */
+    private array $widgets = [];
+
+    /**
+     * Add a UI Widget/HTML snippet to a named theme HookSlot.
+     */
+    public function addWidget(string $slot, string|array $content, int $priority = 10): void
+    {
+        $this->widgets[$slot][] = ['content' => $content, 'priority' => $priority];
+    }
+
+    /**
+     * Get all registered UI widgets grouped by slot name for frontend HookSlot rendering.
+     *
+     * @return array<string, list<string|array>>
+     */
+    public function getRegisteredHooks(): array
+    {
+        $result = [];
+        foreach ($this->widgets as $slot => $items) {
+            usort($items, fn ($a, $b) => $a['priority'] <=> $b['priority']);
+            $result[$slot] = array_column($items, 'content');
+        }
+
+        return $result;
+    }
 }

@@ -21,17 +21,39 @@ const pages = import.meta.glob('./pages/**/*.tsx', { eager: true }) as Record<
   { default: ComponentType; layout?: (page: ReactNode) => ReactNode }
 >
 
-function resolvePage(name: string): ComponentType {
-  const path = `./pages/${name}.tsx`
-  const mod = pages[path]
-  if (!mod) {
-    throw new Error(`Inertia page not found: ${name} (looked for ${path})`)
+const themePages = import.meta.glob('./themes/**/*.tsx', { eager: true }) as Record<
+  string,
+  { default: ComponentType; layout?: (page: ReactNode) => ReactNode }
+>
+
+function resolvePage(name: string, activeTheme: string = 'default'): ComponentType {
+  // Admin pages stay in ./pages/
+  if (name.startsWith('admin/')) {
+    const path = `./pages/${name}.tsx`
+    if (pages[path]) {
+      return pages[path].default
+    }
   }
-  const Component = mod.default || (Object.values(mod)[0] as ComponentType)
-  if (!Component) {
-    throw new Error(`Inertia page has no valid component export: ${name}`)
+
+  // 1. Try active theme path: ./themes/{activeTheme}/pages/{name}.tsx
+  const activePath = `./themes/${activeTheme}/pages/${name}.tsx`
+  if (themePages[activePath]) {
+    return themePages[activePath].default
   }
-  return Component
+
+  // 2. Fallback to default theme path: ./themes/default/pages/{name}.tsx
+  const defaultPath = `./themes/default/pages/${name}.tsx`
+  if (themePages[defaultPath]) {
+    return themePages[defaultPath].default
+  }
+
+  // 3. Fallback to legacy pages folder: ./pages/{name}.tsx
+  const legacyPath = `./pages/${name}.tsx`
+  if (pages[legacyPath]) {
+    return pages[legacyPath].default
+  }
+
+  throw new Error(`Inertia page not found: ${name} (active theme: ${activeTheme})`)
 }
 
 
@@ -58,7 +80,10 @@ function isAdminPage(name: string) {
 createInertiaApp({
   title: (title) => (title ? `${title}` : 'Portal Resmi'),
   resolve: (name) => {
-    const page = resolvePage(name) as ComponentType & {
+    const initialPage = (window as unknown as { initialPage?: { props?: { active_theme?: string } } }).initialPage
+    const activeTheme = initialPage?.props?.active_theme || 'default'
+    
+    const page = resolvePage(name, activeTheme) as ComponentType & {
       layout?: (page: ReactNode) => ReactNode
     }
 

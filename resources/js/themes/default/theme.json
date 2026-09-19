@@ -1,0 +1,9 @@
+{
+  "name": "Default Theme",
+  "slug": "default",
+  "version": "1.0.0",
+  "author": "ScholarGate Team",
+  "description": "Tema bawaan resmi CMS ScholarGate dengan Bento Grid, Dark Mode, dan animasi halus.",
+  "screenshot": "/favicon.svg",
+  "supported_slots": ["after_navbar", "before_footer", "home_bento"]
+}

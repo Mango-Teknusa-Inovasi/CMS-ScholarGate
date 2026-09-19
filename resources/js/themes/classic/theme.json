@@ -1,0 +1,9 @@
+{
+  "name": "Classic Academic Theme",
+  "slug": "classic",
+  "version": "1.0.0",
+  "author": "ScholarGate Community",
+  "description": "Tema klasik akademis dengan Header Hero Banner besar, tata letak berita dua kolom, dan navigasi tradisional.",
+  "screenshot": "/favicon.svg",
+  "supported_slots": ["after_navbar", "before_footer", "home_bento"]
+}

@@ -150,6 +150,10 @@ Route::prefix('v1')->group(function () {
                 Route::post('/plugins/upload', [\App\Http\Controllers\Api\Admin\PluginAdminController::class, 'upload']);
                 Route::delete('/plugins/{slug}', [\App\Http\Controllers\Api\Admin\PluginAdminController::class, 'destroy']);
 
+                // Themes — super admin only
+                Route::get('/themes', [\App\Http\Controllers\Api\Admin\ThemeAdminController::class, 'index']);
+                Route::post('/themes/{slug}/activate', [\App\Http\Controllers\Api\Admin\ThemeAdminController::class, 'activate']);
+                Route::post('/themes/upload', [\App\Http\Controllers\Api\Admin\ThemeAdminController::class, 'upload']);
             });
 
             // Settings & profile

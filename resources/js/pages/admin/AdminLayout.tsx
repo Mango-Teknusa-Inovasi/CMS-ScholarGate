@@ -31,6 +31,7 @@ import {
   DatabaseBackup,
   Scale,
   Puzzle,
+  Palette,
 } from 'lucide-react'
 
 import { api } from '../../lib/api'
@@ -106,6 +107,7 @@ const navGroups: NavGroup[] = [
     title: 'Sistem',
     items: [
       { to: '/admin/users', label: 'Pengguna', icon: UserCog },
+      { to: '/admin/themes', label: 'Tema & Layout', icon: Palette },
       { to: '/admin/plugins', label: 'Plugin & Add-on', icon: Puzzle },
       { to: '/admin/settings', label: 'Pengaturan', icon: Settings },
       { to: '/admin/backups', label: 'Backup', icon: DatabaseBackup },
@@ -120,6 +122,7 @@ const pathTitles: Record<string, string> = {
   '/admin/articles/new': 'Tambah artikel',
   '/admin/media': 'Media',
   '/admin/users': 'Pengguna',
+  '/admin/themes': 'Tema & Layout',
   '/admin/plugins': 'Plugin & Add-on',
   '/admin/categories': 'Kategori',
   '/admin/menus': 'Menu',

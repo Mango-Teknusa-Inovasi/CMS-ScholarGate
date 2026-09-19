@@ -49,6 +49,8 @@ class HandleInertiaRequests extends Middleware
                 'name' => \App\Models\Setting::getValue('site_name') ?: config('app.name', 'Portal Resmi'),
                 'url' => config('app.url'),
             ],
+            'active_theme' => fn () => app(\App\Services\Theme\ThemeManager::class)->getActiveTheme(),
+            'hooks' => fn () => app(\App\Services\Plugin\HookManager::class)->getRegisteredHooks(),
         ];
     }
 
