@@ -5,6 +5,29 @@ All notable changes to **ScholarGate** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2026-09-19
+
+### Added
+- **Dual Theme & Hook Engine Architecture**:
+  - Built-in `ThemeManager` service (`app/Services/Theme/ThemeManager.php`), `ThemeAdminController`, and `ThemesAdminPage` for ZIP theme uploading, live activation, and metadata inspection.
+  - Dynamic client-side Inertia page resolver in `resources/js/app.tsx` with automatic fallback to `themes/default/pages/` for uncustomized views.
+  - Extensible `<HookSlot />` component system for plugin widget injections across active themes.
+- **Classic News Portal Theme ("Plain White News Website")**:
+  - Introduced traditional white newspaper-style layout (`resources/js/themes/classic/`) featuring `ClassicLayout`, `HomePage`, `ArticlesPage`, `ArticleDetailPage`, `AchievementsPage`, `ExtracurricularPage`, `DownloadsPage`, and `ProfilePage`.
+  - Classic news portal aesthetics: Top warta bar, official announcements ticker, multi-column story feed, and newspaper brand header.
+  - 100% connected to live backend REST APIs (`/api/v1/*`) via `@tanstack/react-query`.
+- **Dynamic Branding & Zero Hardcoding Security**:
+  - Global `logo_url` and `tagline` distribution via `HandleInertiaRequests.php` middleware.
+  - Dynamic rendering of uploaded institution logos (`<img src={logoUrl} />`) across header, top bar, and footer in all themes.
+  - Removed all hardcoded institution names, contacts, emails, locations, and phone numbers.
+  - Dynamic `Layanan Penting` (Services) rendering connected directly to Admin Panel (`/admin/services`) with dynamic Lucide icon resolver (`getLucideIcon`).
+- **Comprehensive Documentation & Wiki**:
+  - Updated Theme Development Guide (`docs/THEMES.md`) in English and GitHub Wiki (`docs/wiki/Panduan-Pembuatan-Tema.md`) in Indonesian.
+
+### Fixed
+- Fixed `SafeHtml` prop name binding (`html` vs `content`) on article detail and school profile pages.
+- Fixed theme dataset parsing in `resources/js/app.tsx` during initial page load and SPA navigation.
+
 ---
 
 ## [2.2.0] - 2026-09-06
