@@ -21,10 +21,18 @@ resources/js/themes/
 │       ├── DownloadsPage.tsx        # Halaman Pusat Unduhan
 │       └── ProfilePage.tsx          # Halaman Profil Sekolah
 │
-└── classic/                         # Tema Portal Berita Klasik (Polos Putih)
+└── classic/                         # Tema Portal Berita Klasik (Polos Putih Model News Website)
     ├── theme.json
+    ├── layout/
+    │   └── ClassicLayout.tsx        # Custom Theme Layout Wrapper
     └── pages/
-        └── HomePage.tsx             # Meng-override Halaman Utama dengan Tampilan Berita Klasik
+        ├── HomePage.tsx             # Halaman Beranda Berita Klasik Multi-Kolom
+        ├── ArticlesPage.tsx         # Halaman Feed Berita Klasik
+        ├── ArticleDetailPage.tsx    # Halaman Detail Baca Berita Klasik
+        ├── AchievementsPage.tsx     # Direktori Prestasi Siswa Klasik
+        ├── ExtracurricularPage.tsx  # Direktori Ekstrakurikuler Klasik
+        ├── DownloadsPage.tsx        # Pusat Unduhan File Klasik
+        └── ProfilePage.tsx          # Halaman Profil & Struktur Sekolah Klasik
 ```
 
 ---
@@ -45,19 +53,42 @@ Setiap tema **wajib** memiliki file `theme.json` di root foldernya:
 }
 ```
 
-### Atribut Manifes:
-| Atribut | Tipe Data | Keterangan |
-|---|---|---|
-| `name` | `string` | Nama tema yang tampil di Admin Panel |
-| `slug` | `string` | Identifikasi unik folder tema (huruf kecil & strip, misal `classic`, `modern`) |
-| `version` | `string` | Versi tema (misal `1.0.0`) |
-| `author` | `string` | Nama pengembang atau organisasi pembuat |
-| `description` | `string` | Deskripsi singkat mengenai gaya visual tema |
-| `supported_slots` | `array` | Daftar nama `<HookSlot />` yang didukung oleh tema ini |
+---
+
+## 🏛️ 2. Aturan Utama: Bebas Hardcode & Branding Dinamis
+
+Untuk menjaga standar keamanan enterprise, kompatibilitas multi-lembaga, dan kebersihan kode:
+
+1. **DILARANG KERAS Menulis Teks Hardcoded**:
+   - Dilarang menuliskan nama instansi, email, nomor telepon, alamat, atau logo secara hardcoded di komponen TSX.
+   - Gunakan props global dari Inertia (`HandleInertiaRequests.php`):
+     ```tsx
+     const { props } = usePage<{
+         app?: {
+             name?: string;
+             logo_url?: string | null;
+             tagline?: string;
+             email?: string;
+             phone?: string;
+             address?: string;
+         }
+     }>();
+
+     const siteName = props.app?.name || 'Portal Resmi Sekolah';
+     const logoUrl = props.app?.logo_url;
+     const tagline = props.app?.tagline;
+     ```
+
+2. **Render Logo Dinamis**:
+   - Periksa apakah `logo_url` tersedia. Jika ada, tampilkan logo resmi `<img src={logoUrl} alt={siteName} />`. Gunakan icon/fallback hanya jika `logo_url` bernilai `null`.
+
+3. **Integrasi Data Dinamis & Safe HTML**:
+   - Ambil data artikel, prestasi, ekskul, dan pusat unduhan melalui API `/api/v1/*` atau React Query (`@tanstack/react-query`).
+   - Render konten artikel menggunakan komponen aman `<SafeHtml html={article.body_html} />` agar terhindar dari kerentanan XSS.
 
 ---
 
-## ⚛️ 2. Membuat Komponen Halaman Tema (`pages/*.tsx`)
+## ⚛️ 3. Membuat Komponen Halaman Tema (`pages/*.tsx`)
 
 Halaman tema menggunakan komponen React 19 dengan props dari Inertia.js.
 
@@ -68,36 +99,17 @@ Jika tema buatan Anda **tidak** menyediakan file halaman tertentu (misalnya tema
 
 ```tsx
 import React from 'react';
-import { Head, Link, usePage } from '@inertiajs/react';
-import PublicLayout from '@/components/layout/PublicLayout';
+import { Head, usePage } from '@inertiajs/react';
+import ClassicLayout from '../layout/ClassicLayout';
 import { HookSlot } from '@/components/ui/HookSlot';
 
-interface Article {
-    id: number;
-    title: string;
-    slug: string;
-    excerpt: string;
-    cover_url: string | null;
-    published_at: string | null;
-}
-
-interface HomePageProps {
-    articles?: Article[];
-    latest_articles?: Article[];
-}
-
-export default function TemaSayaHomePage({ articles = [], latest_articles = [] }: HomePageProps) {
+export default function TemaSayaHomePage() {
     const { props } = usePage<{ app?: { name?: string } }>();
     const siteName = props.app?.name || 'Portal Resmi';
 
     return (
-        <PublicLayout>
+        <ClassicLayout>
             <Head title={`Beranda Utama — ${siteName}`} />
-
-            {/* Header Tema Kustom */}
-            <header className="bg-white border-b p-8 text-center">
-                <h1 className="text-3xl font-bold text-slate-900">{siteName}</h1>
-            </header>
 
             {/* Hook Slot untuk Menyuntikkan Widget Plugin */}
             <div className="max-w-7xl mx-auto px-4 py-4">
@@ -113,16 +125,16 @@ export default function TemaSayaHomePage({ articles = [], latest_articles = [] }
             <div className="max-w-7xl mx-auto px-4 py-4">
                 <HookSlot name="before_footer" />
             </div>
-        </PublicLayout>
+        </ClassicLayout>
     );
 }
 ```
 
 ---
 
-## 🔌 3. Menempatkan Slot Plugin (`<HookSlot />`)
+## 🔌 4. Menempatkan Slot Plugin (`<HookSlot />`)
 
-Agar tema buatan Anda kompatibel dengan plugin yang terpasang (seperti plugin running text, pengumuman melayang, atau widget interaktif), tempatkan komponen `<HookSlot />` di posisi strategis:
+Agar tema buatan Anda kompatibel dengan plugin yang terpasang (seperti plugin running text, pengumuman melayanan, atau widget interaktif), tempatkan komponen `<HookSlot />` di posisi strategis:
 
 ```tsx
 import { HookSlot } from '@/components/ui/HookSlot';
@@ -135,10 +147,11 @@ import { HookSlot } from '@/components/ui/HookSlot';
 
 ---
 
-## 📦 4. Mengemas & Menginstall Tema
+## 📦 5. Mengemas & Menginstall Tema
 
 1. Kompres folder tema Anda menjadi file `.zip` (yang berisi `theme.json` dan folder `pages/`).
 2. Login ke Admin Panel sebagai **Super Admin**.
 3. Buka menu **Sistem -> Tema & Layout** (`/admin/themes`).
 4. Klik tombol **Unggah Tema (.ZIP)** dan pilih file arsip Anda.
 5. Klik **Aktifkan Tema** untuk langsung berganti ke tema baru!
+

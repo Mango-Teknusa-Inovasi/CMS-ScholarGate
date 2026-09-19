@@ -21,15 +21,23 @@ resources/js/themes/
 │       ├── DownloadsPage.tsx        # Downloads & Files Page
 │       └── ProfilePage.tsx          # School Profile View
 │
-└── classic/                         # Classic News Portal Theme
+└── classic/                         # Classic News Portal Theme (Polos Putih Model News Website)
     ├── theme.json
+    ├── layout/
+    │   └── ClassicLayout.tsx        # Custom Theme Layout Wrapper
     └── pages/
-        └── HomePage.tsx             # Overrides HomePage with Classic News Layout
+        ├── HomePage.tsx             # Classic Multi-Column News Portal Landing Page
+        ├── ArticlesPage.tsx         # Classic News Feed Page
+        ├── ArticleDetailPage.tsx    # Classic Single Article Detail Page
+        ├── AchievementsPage.tsx     # Classic Student Achievements Grid
+        ├── ExtracurricularPage.tsx  # Classic Club & Extracurricular Directory
+        ├── DownloadsPage.tsx        # Classic Downloads Directory
+        └── ProfilePage.tsx          # Classic School Profile Page
 ```
 
 ---
 
-## 📝 1. Creating the Theme Manifest (`theme.json`)
+## 📝 1. Theme Manifest (`theme.json`)
 
 Every theme **must** include a `theme.json` file in its root folder:
 
@@ -45,89 +53,86 @@ Every theme **must** include a `theme.json` file in its root folder:
 }
 ```
 
-### Manifest Schema Attributes:
-| Attribute | Type | Description |
-|---|---|---|
-| `name` | `string` | Display name of your theme in the Admin Panel |
-| `slug` | `string` | Unique folder slug (alphanumeric, e.g. `classic`, `modern`) |
-| `version` | `string` | Semantic version number (e.g. `1.0.0`) |
-| `author` | `string` | Author or organization name |
-| `description` | `string` | Concise description of the theme's visual style |
-| `supported_slots` | `array` | List of `<HookSlot />` names supported by this theme |
+---
+
+## 🏛️ 2. Critical Guidelines: Zero Hardcoding & Dynamic Branding
+
+To maintain enterprise security, multi-institution compatibility, and clean code standards:
+
+1. **NO Hardcoded Institution Data**:
+   - Never hardcode institution names, emails, phone numbers, addresses, or logos in TSX components.
+   - Use shared Inertia props provided by `HandleInertiaRequests.php`:
+     ```tsx
+     const { props } = usePage<{
+         app?: {
+             name?: string;
+             logo_url?: string | null;
+             tagline?: string;
+             email?: string;
+             phone?: string;
+             address?: string;
+         }
+     }>();
+
+     const siteName = props.app?.name || 'Portal Resmi';
+     const logoUrl = props.app?.logo_url;
+     const tagline = props.app?.tagline;
+     ```
+
+2. **Dynamic Logo Rendering**:
+   - Check if `logo_url` exists. If present, render the uploaded branding logo `<img src={logoUrl} alt={siteName} />`. Fallback to an icon only if `logo_url` is `null`.
+
+3. **Dynamic API & Data Fetching**:
+   - Fetch live portal data (articles, achievements, extracurriculars, downloads) using TanStack Query (`@tanstack/react-query`) calling `/api/v1/*` endpoints or Inertia page props.
+   - Safe HTML rendering: Always render article content with `<SafeHtml html={article.body_html} />` or DOMPurify.
 
 ---
 
-## ⚛️ 2. Developing Theme Pages (`pages/*.tsx`)
+## ⚛️ 3. Developing Theme Pages (`pages/*.tsx`)
 
 Theme pages are React 19 components using Inertia.js props.
 
 ### 🛡️ Automatic Fallback Mechanism
-If your custom theme does **not** provide a specific page (e.g., your theme only customizes `HomePage.tsx`), ScholarGate's dynamic Inertia resolver in `resources/js/app.tsx` automatically falls back to `themes/default/pages/` for any missing pages. You only need to create the pages you want to customize!
+If your custom theme does **not** provide a specific page (e.g., your theme only customizes `HomePage.tsx`), ScholarGate's dynamic Inertia resolver in `resources/js/app.tsx` automatically falls back to `themes/default/pages/` for any missing pages.
 
 ### Example: Creating a Custom `HomePage.tsx`
 
 ```tsx
 import React from 'react';
-import { Head, Link, usePage } from '@inertiajs/react';
-import PublicLayout from '@/components/layout/PublicLayout';
+import { Head, usePage } from '@inertiajs/react';
+import ClassicLayout from '../layout/ClassicLayout';
 import { HookSlot } from '@/components/ui/HookSlot';
+import { SafeHtml } from '@/components/ui/SafeHtml';
 
-interface Article {
-    id: number;
-    title: string;
-    slug: string;
-    excerpt: string;
-    cover_url: string | null;
-    published_at: string | null;
-}
-
-interface HomePageProps {
-    articles?: Article[];
-    latest_articles?: Article[];
-}
-
-export default function MyCustomHomePage({ articles = [], latest_articles = [] }: HomePageProps) {
+export default function ClassicHomePage() {
     const { props } = usePage<{ app?: { name?: string } }>();
     const siteName = props.app?.name || 'Portal Resmi';
 
     return (
-        <PublicLayout>
-            <Head title={`Beranda — ${siteName}`} />
+        <ClassicLayout>
+            <Head title={`Beranda Utama — ${siteName}`} />
 
-            {/* Custom Theme Header */}
-            <header className="bg-white border-b p-8 text-center">
-                <h1 className="text-3xl font-bold">{siteName}</h1>
-            </header>
+            <HookSlot name="after_navbar" />
 
-            {/* Hook Slot for Plugin Widget Injections */}
-            <div className="max-w-7xl mx-auto px-4 py-4">
-                <HookSlot name="after_navbar" />
-            </div>
-
-            {/* Article Content Grid */}
-            <main className="max-w-7xl mx-auto px-4 py-8">
-                {/* Your Custom Layout HTML */}
+            <main className="max-w-7xl mx-auto py-8">
+                {/* Your Custom Theme Components */}
             </main>
 
-            {/* Footer Hook Slot */}
-            <div className="max-w-7xl mx-auto px-4 py-4">
-                <HookSlot name="before_footer" />
-            </div>
-        </PublicLayout>
+            <HookSlot name="before_footer" />
+        </ClassicLayout>
     );
 }
 ```
 
 ---
 
-## 🔌 3. Supporting Plugin Hooks (`<HookSlot />`)
+## 🔌 4. Supporting Plugin Hooks (`<HookSlot />`)
 
-To ensure your theme is compatible with installed plugins (such as notification bars, chatbot widgets, or custom footers), place `<HookSlot />` components at strategic positions in your layout:
+Place `<HookSlot />` components at strategic positions in your theme layout to enable plugin widgets:
 
 ```tsx
 import { HookSlot } from '@/components/ui/HookSlot';
 
-// Available standard slot names:
 <HookSlot name="after_navbar" />
 <HookSlot name="home_bento" />
 <HookSlot name="before_footer" />
@@ -135,10 +140,11 @@ import { HookSlot } from '@/components/ui/HookSlot';
 
 ---
 
-## 📦 4. Packaging & Installing Themes
+## 📦 5. Packaging & Installing Themes
 
 1. Compress your theme folder into a `.zip` archive (containing `theme.json` and `pages/`).
 2. Log in to the Admin Panel as a **Super Admin**.
 3. Navigate to **Sistem -> Tema & Layout** (`/admin/themes`).
 4. Click **Unggah Tema (.ZIP)** and select your archive.
 5. Click **Aktifkan Tema** to switch the active theme instantly!
+
