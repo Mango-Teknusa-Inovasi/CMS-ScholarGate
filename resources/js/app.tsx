@@ -81,10 +81,19 @@ import { router } from '@inertiajs/react'
 
 function getInitialActiveTheme(): string {
   try {
-    const el = document.getElementById('app')
-    if (el?.dataset?.page) {
-      const page = JSON.parse(el.dataset.page)
-      return page?.props?.active_theme || 'default'
+    const scriptEl = document.querySelector('script[data-page]')
+    if (scriptEl?.textContent) {
+      const page = JSON.parse(scriptEl.textContent)
+      if (page?.props?.active_theme) {
+        return page.props.active_theme
+      }
+    }
+    const appEl = document.getElementById('app')
+    if (appEl?.dataset?.page) {
+      const page = JSON.parse(appEl.dataset.page)
+      if (page?.props?.active_theme) {
+        return page.props.active_theme
+      }
     }
   } catch {
     // ignore
@@ -104,9 +113,13 @@ router.on('navigate', (event) => {
 createInertiaApp({
   title: (title) => (title ? `${title}` : 'Portal Resmi'),
   resolve: (name) => {
-    const activeTheme = currentActiveTheme || getInitialActiveTheme()
+    const activeTheme = getInitialActiveTheme()
+    if (activeTheme !== 'default') {
+      currentActiveTheme = activeTheme
+    }
+    const finalTheme = currentActiveTheme || activeTheme || 'default'
 
-    const page = resolvePage(name, activeTheme) as ComponentType & {
+    const page = resolvePage(name, finalTheme) as ComponentType & {
       layout?: (page: ReactNode) => ReactNode
     }
 
