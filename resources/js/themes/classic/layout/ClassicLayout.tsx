@@ -6,13 +6,22 @@ import { HookSlot } from '@/components/ui/HookSlot';
 import type { PageProps } from '@inertiajs/core';
 
 interface SharedProps extends PageProps {
-    app?: { name?: string; url?: string };
+    app?: {
+        name?: string;
+        url?: string;
+        email?: string;
+        phone?: string;
+        address?: string;
+    };
     auth?: { user?: { name?: string; role?: string; is_admin?: boolean } | null };
 }
 
 export function ClassicLayout({ children }: { children: ReactNode }) {
     const { props, url } = usePage<SharedProps>();
-    const siteName = props.app?.name || 'SMA Negeri 1 Gedeg';
+    const siteName = props.app?.name || 'Portal Resmi Sekolah';
+    const email = props.app?.email;
+    const address = props.app?.address;
+    const phone = props.app?.phone;
     const user = props.auth?.user;
     const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
@@ -207,10 +216,13 @@ export function ClassicLayout({ children }: { children: ReactNode }) {
                         <h4 className="font-bold text-white uppercase tracking-wider mb-3 border-l-2 border-red-600 pl-2">
                             Redaksi & Kontak
                         </h4>
-                        <p className="text-slate-400 leading-relaxed mb-2">
-                            Jl. Pendidikan No. 55, Kabupaten Mojokerto, Jawa Timur
-                        </p>
-                        <p className="text-slate-400 font-mono">Email: admin@sman1gedeg.sch.id</p>
+                        {address ? (
+                            <p className="text-slate-400 leading-relaxed mb-2">{address}</p>
+                        ) : (
+                            <p className="text-slate-400 leading-relaxed mb-2">Portal Informasi Resmi Sekolah</p>
+                        )}
+                        {email && <p className="text-slate-400 font-mono">Email: {email}</p>}
+                        {phone && <p className="text-slate-400 font-mono">Telp: {phone}</p>}
                     </div>
                 </div>
 

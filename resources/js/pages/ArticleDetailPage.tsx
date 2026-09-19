@@ -10,18 +10,19 @@ import {
   TrendingUp,
   FolderOpen,
 } from 'lucide-react'
-import { api, type Article, type Category, type Settings } from '../lib/api'
-import { coverSrc, formatDate } from '../lib/utils'
-import { Badge } from '../components/ui/Badge'
-import { SeoHead } from '../components/seo/SeoHead'
-import { ArticleDetailSkeleton } from '../components/ui/Skeleton'
-import { ShareButton } from '../components/ShareButton'
-import { SafeHtml } from '../components/ui/SafeHtml'
+import { useSiteName } from '@/hooks/useSiteName'
+import { api, type Article, type Category, type Settings } from '@/lib/api'
+import { coverSrc, formatDate } from '@/lib/utils'
+import { Badge } from '@/components/ui/Badge'
+import { SeoHead } from '@/components/seo/SeoHead'
+import { ArticleDetailSkeleton } from '@/components/ui/Skeleton'
+import { ShareButton } from '@/components/ShareButton'
+import { SafeHtml } from '@/components/ui/SafeHtml'
 import {
   BentoBoard,
   BentoTile,
   PageBentoShell,
-} from '../components/ui/PageBento'
+} from '@/components/ui/PageBento'
 
 type DetailResponse = {
   article: Article
@@ -33,6 +34,7 @@ type DetailResponse = {
 }
 
 export function ArticleDetailPage() {
+  const siteName = useSiteName()
   const { slug } = useParams()
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
@@ -211,7 +213,7 @@ export function ArticleDetailPage() {
                 </div>
                 <p className="text-xs leading-relaxed text-slate-600">
                   {settings?.widget_announcement_content ||
-                    'Dapatkan kabar terkini mengenai agenda akademik, prestasi siswa, dan layanan humas SMA Negeri 1 Gedeg.'}
+                    `Dapatkan kabar terkini mengenai agenda akademik, prestasi siswa, dan layanan humas ${siteName}.`}
                 </p>
                 {settings?.widget_announcement_url ? (
                   <a

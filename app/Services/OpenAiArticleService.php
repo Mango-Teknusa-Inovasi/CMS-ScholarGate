@@ -127,7 +127,7 @@ SCHEMA;
         try {
             $response = Http::withToken($apiKey)
                 ->withHeaders([
-                    'HTTP-Referer' => config('app.url', 'https://sman1gedeg.sch.id'),
+                    'HTTP-Referer' => config('app.url', 'http://localhost'),
                     'X-Title' => 'ScholarGate CMS',
                 ])
                 ->timeout(60)
@@ -246,7 +246,7 @@ SCHEMA;
         try {
             $response = Http::withToken($key)
                 ->withHeaders([
-                    'HTTP-Referer' => config('app.url', 'https://sman1gedeg.sch.id'),
+                    'HTTP-Referer' => config('app.url', 'http://localhost'),
                     'X-Title' => 'ScholarGate CMS',
                 ])
                 ->timeout(15)
@@ -631,7 +631,7 @@ PROMPT;
         try {
             $response = Http::withToken($apiKey)
                 ->withHeaders([
-                    'HTTP-Referer' => config('app.url', 'https://sman1gedeg.sch.id'),
+                    'HTTP-Referer' => config('app.url', 'http://localhost'),
                     'X-Title' => 'ScholarGate CMS',
                 ])
                 ->timeout(30)
@@ -771,7 +771,7 @@ SCHEMA;
         try {
             $response = Http::withToken($apiKey)
                 ->withHeaders([
-                    'HTTP-Referer' => config('app.url', 'https://sman1gedeg.sch.id'),
+                    'HTTP-Referer' => config('app.url', 'http://localhost'),
                     'X-Title' => 'ScholarGate CMS',
                 ])
                 ->timeout(60)
@@ -923,7 +923,7 @@ SCHEMA;
         try {
             $response = Http::withToken($apiKey)
                 ->withHeaders([
-                    'HTTP-Referer' => config('app.url', 'https://sman1gedeg.sch.id'),
+                    'HTTP-Referer' => config('app.url', 'http://localhost'),
                     'X-Title' => 'ScholarGate CMS',
                 ])
                 ->timeout(45)
@@ -1040,7 +1040,7 @@ SCHEMA;
         try {
             $response = Http::withToken($apiKey)
                 ->withHeaders([
-                    'HTTP-Referer' => config('app.url', 'https://sman1gedeg.sch.id'),
+                    'HTTP-Referer' => config('app.url', 'http://localhost'),
                     'X-Title' => 'ScholarGate CMS',
                 ])
                 ->timeout(45)
@@ -1168,7 +1168,7 @@ SCHEMA;
         try {
             $response = Http::withToken($apiKey)
                 ->withHeaders([
-                    'HTTP-Referer' => config('app.url', 'https://sman1gedeg.sch.id'),
+                    'HTTP-Referer' => config('app.url', 'http://localhost'),
                     'X-Title' => 'ScholarGate CMS',
                 ])
                 ->timeout(45)
@@ -1282,7 +1282,7 @@ PROMPT;
         try {
             $response = Http::withToken($apiKey)
                 ->withHeaders([
-                    'HTTP-Referer' => config('app.url', 'https://sman1gedeg.sch.id'),
+                    'HTTP-Referer' => config('app.url', 'http://localhost'),
                     'X-Title' => 'ScholarGate CMS',
                 ])
                 ->timeout(45)

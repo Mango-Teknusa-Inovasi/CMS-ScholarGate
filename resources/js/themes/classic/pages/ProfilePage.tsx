@@ -54,7 +54,7 @@ export function ClassicProfilePage() {
                             <BookOpen className="w-5 h-5 text-red-600" /> Sejarah Singkat Pendirian
                         </h2>
                         <p className="text-slate-700 dark:text-slate-300 text-xs sm:text-sm leading-relaxed">
-                            Didirikan sebagai salah satu pusat unggulan pendidikan di wilayah Kabupaten Mojokerto, sekolah ini terus berkembang mencetak ribuan lulusan berkualitas yang tersebar di berbagai perguruan tinggi negeri terbaik dan dunia kerja.
+                            Didirikan sebagai salah satu pusat unggulan pendidikan, sekolah ini terus berkembang mencetak ribuan lulusan berkualitas yang tersebar di berbagai perguruan tinggi negeri terbaik dan dunia kerja.
                         </p>
                     </div>
                 </div>

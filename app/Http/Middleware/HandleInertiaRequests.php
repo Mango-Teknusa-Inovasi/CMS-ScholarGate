@@ -48,6 +48,9 @@ class HandleInertiaRequests extends Middleware
             'app' => [
                 'name' => \App\Models\Setting::getValue('site_name') ?: config('app.name', 'Portal Resmi'),
                 'url' => config('app.url'),
+                'email' => \App\Models\Setting::getValue('contact_email') ?: \App\Models\Setting::getValue('site_email') ?: '',
+                'phone' => \App\Models\Setting::getValue('contact_phone') ?: \App\Models\Setting::getValue('site_phone') ?: '',
+                'address' => \App\Models\Setting::getValue('contact_address') ?: \App\Models\Setting::getValue('site_address') ?: '',
             ],
             'active_theme' => fn () => app(\App\Services\Theme\ThemeManager::class)->getActiveTheme(),
             'hooks' => fn () => app(\App\Services\Plugin\HookManager::class)->getRegisteredHooks(),

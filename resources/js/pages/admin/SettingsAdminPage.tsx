@@ -71,22 +71,22 @@ const fieldMeta: Record<
   // Medsos
   social_instagram: {
     label: 'URL Instagram',
-    hint: 'Contoh: https://instagram.com/sman1gedeg',
+    hint: 'Contoh: https://instagram.com/namasekolah',
     group: 'social',
   },
   social_facebook: {
     label: 'URL Facebook',
-    hint: 'Contoh: https://facebook.com/sman1gedeg',
+    hint: 'Contoh: https://facebook.com/namasekolah',
     group: 'social',
   },
   social_tiktok: {
     label: 'URL TikTok',
-    hint: 'Contoh: https://tiktok.com/@sman1gedeg',
+    hint: 'Contoh: https://tiktok.com/@namasekolah',
     group: 'social',
   },
   social_youtube: {
     label: 'URL YouTube',
-    hint: 'Contoh: https://youtube.com/@sman1gedeg',
+    hint: 'Contoh: https://youtube.com/@namasekolah',
     group: 'social',
   },
 
@@ -482,7 +482,7 @@ export function SettingsAdminPage() {
                   placeholder="Tuliskan keterangan singkat, jadwal pendaftaran, atau pengumuman penting..."
                   value={
                     form.widget_announcement_content ??
-                    'Dapatkan berita terbaru, kalender akademik, dan layanan informasi terpadu SMA Negeri 1 Gedeg langsung melalui kanal resmi.'
+                    'Dapatkan berita terbaru, kalender akademik, dan layanan informasi terpadu sekolah langsung melalui kanal resmi.'
                   }
                   onChange={(e) => setForm({ ...form, widget_announcement_content: e.target.value })}
                   className="w-full rounded-[12px] border border-line bg-page px-3 py-2.5 text-sm outline-none focus:border-brand focus:bg-white"

@@ -335,7 +335,7 @@ export function UsersAdminPage() {
                 <label className="mb-1 block text-xs font-semibold text-ink">Email</label>
                 <input
                   type="email"
-                  placeholder="contoh@sman1gedeg.sch.id"
+                  placeholder="contoh@sekolah.sch.id"
                   className="w-full rounded-[12px] border border-line bg-page px-3.5 py-2 text-sm outline-none focus:border-brand focus:bg-white"
                   value={newForm.email}
                   onChange={(e) => setNewForm({ ...newForm, email: e.target.value })}

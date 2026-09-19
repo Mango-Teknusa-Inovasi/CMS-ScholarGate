@@ -130,7 +130,7 @@ export function ProfileAiModal({ isOpen, onClose, currentLabel, onGenerated }: P
               type="text"
               required
               className="w-full rounded-[14px] border border-line bg-page px-3.5 py-2.5 text-sm outline-none transition focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/10"
-              placeholder="Contoh: Sejarah Singkat SMAN 1 Gedeg"
+              placeholder="Contoh: Sejarah Singkat Sekolah"
               value={tabLabel}
               onChange={(e) => setTabLabel(e.target.value)}
             />

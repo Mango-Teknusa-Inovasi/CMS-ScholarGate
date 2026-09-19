@@ -130,7 +130,7 @@ export function WelcomeAiModal({
             <input
               type="text"
               className="w-full rounded-[14px] border border-line bg-page px-3.5 py-2.5 text-sm outline-none transition focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/10"
-              placeholder="Contoh: Drs. H. Ahmad Fauzi, M.Pd. - Kepala SMAN 1 Gedeg"
+              placeholder="Contoh: Drs. H. Ahmad Fauzi, M.Pd. - Kepala Sekolah"
               value={speaker}
               onChange={(e) => setSpeaker(e.target.value)}
             />
