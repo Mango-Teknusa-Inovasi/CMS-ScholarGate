@@ -1,31 +1,54 @@
 import React from 'react';
 import { Head, Link } from '@inertiajs/react';
-import { Calendar, Eye, Tag, Share2, Printer, ChevronLeft, ArrowRight, User } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { api, type Article, type Category } from '@/lib/api';
+import { coverSrc, formatDate } from '@/lib/utils';
+import { SafeHtml } from '@/components/ui/SafeHtml';
+import { Calendar, Eye, Printer, ChevronLeft, User, AlertCircle } from 'lucide-react';
 import ClassicLayout from '../layout/ClassicLayout';
 
-interface Article {
-    id: number;
-    title: string;
-    slug: string;
-    content?: string;
-    excerpt?: string;
-    cover_url?: string | null;
-    published_at?: string | null;
-    views_count?: number;
-    author?: { name: string };
-    category?: { name: string; slug: string };
-}
-
 interface ArticleDetailPageProps {
+    slug?: string;
     article?: Article;
     related_articles?: Article[];
 }
 
-export function ClassicArticleDetailPage({ article, related_articles = [] }: ArticleDetailPageProps) {
-    if (!article) {
+type DetailResponse = {
+    article: Article;
+    related: Article[];
+    sidebar: {
+        categories: Category[];
+        popular: Article[];
+    };
+};
+
+export function ClassicArticleDetailPage({ slug: propSlug, article: initialArticle }: ArticleDetailPageProps) {
+    // Extract slug from URL if not passed in props
+    const pathSlug = window.location.pathname.split('/artikel/')[1] || '';
+    const currentSlug = propSlug || pathSlug;
+
+    const { data, isLoading, isError } = useQuery({
+        queryKey: ['article', currentSlug],
+        queryFn: async () => (await api.get<DetailResponse>(`/articles/${currentSlug}`)).data,
+        enabled: !initialArticle && !!currentSlug,
+    });
+
+    const article = initialArticle || data?.article;
+    const relatedList = data?.related || [];
+
+    if (isLoading) {
+        return (
+            <div className="bg-white dark:bg-slate-900 p-12 text-center rounded-lg border border-slate-200 dark:border-slate-800 text-xs text-slate-500">
+                Memuat isi berita...
+            </div>
+        );
+    }
+
+    if (isError || !article) {
         return (
             <div className="bg-white dark:bg-slate-900 p-12 text-center rounded-lg border border-slate-200 dark:border-slate-800">
-                <p className="text-slate-600 dark:text-slate-300 text-sm">Artikel tidak ditemukan.</p>
+                <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
+                <p className="text-slate-900 dark:text-white text-sm font-bold">Artikel tidak ditemukan</p>
                 <Link href="/artikel" className="inline-block mt-4 text-xs text-red-600 font-bold hover:underline">
                     ← Kembali ke Indeks Berita
                 </Link>
@@ -64,16 +87,16 @@ export function ClassicArticleDetailPage({ article, related_articles = [] }: Art
                         <div className="flex items-center gap-4">
                             <span className="flex items-center gap-1 font-semibold text-slate-700 dark:text-slate-300">
                                 <User className="w-3.5 h-3.5 text-red-600" />
-                                {article.author?.name || 'Redaksi Sekolah'}
+                                Redaksi Sekolah
                             </span>
                             <span className="flex items-center gap-1 font-mono">
                                 <Calendar className="w-3.5 h-3.5" />
-                                {article.published_at ? new Date(article.published_at).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : ''}
+                                {formatDate(article.published_at)}
                             </span>
                         </div>
                         <div className="flex items-center gap-3">
                             <span className="flex items-center gap-1 text-[11px]">
-                                <Eye className="w-3.5 h-3.5" /> {article.views_count ?? 0} Pembaca
+                                <Eye className="w-3.5 h-3.5" /> {article.views ?? 0} Pembaca
                             </span>
                             <button
                                 type="button"
@@ -87,10 +110,10 @@ export function ClassicArticleDetailPage({ article, related_articles = [] }: Art
                     </div>
 
                     {/* Featured Cover Image */}
-                    {article.cover_url && (
+                    {article.cover_path && (
                         <div className="mb-6 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800">
                             <img
-                                src={article.cover_url}
+                                src={coverSrc(article.cover_path, article.slug || article.id, 1200, 600)}
                                 alt={article.title}
                                 className="w-full h-auto max-h-[450px] object-cover"
                             />
@@ -98,10 +121,9 @@ export function ClassicArticleDetailPage({ article, related_articles = [] }: Art
                     )}
 
                     {/* Article Content Typography */}
-                    <div
-                        className="prose prose-slate dark:prose-invert max-w-none text-slate-800 dark:text-slate-200 text-sm leading-relaxed space-y-4 font-sans"
-                        dangerouslySetInnerHTML={{ __html: article.content || article.excerpt || '' }}
-                    />
+                    <div className="prose prose-slate dark:prose-invert max-w-none text-slate-800 dark:text-slate-200 text-sm leading-relaxed space-y-4 font-sans">
+                        <SafeHtml content={article.content || article.excerpt || ''} />
+                    </div>
 
                     {/* Back Button */}
                     <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
@@ -120,15 +142,15 @@ export function ClassicArticleDetailPage({ article, related_articles = [] }: Art
                         <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4 border-l-4 border-red-600 pl-2">
                             Berita Terkait
                         </h3>
-                        {related_articles.length > 0 ? (
+                        {relatedList.length > 0 ? (
                             <div className="space-y-4">
-                                {related_articles.slice(0, 5).map((rel) => (
+                                {relatedList.slice(0, 5).map((rel) => (
                                     <div key={rel.id} className="group">
-                                        <h4 className="font-bold text-xs text-slate-900 dark:text-white group-hover:text-red-600 transition line-clamp-2 leading-snug">
+                                        <h4 className="font-bold text-xs text-slate-900 dark:text-white group-hover:text-red-600 transition line-clamp-2 leading-snug font-serif">
                                             <Link href={`/artikel/${rel.slug}`}>{rel.title}</Link>
                                         </h4>
                                         <span className="text-[10px] text-slate-400 mt-1 block">
-                                            {rel.published_at ? new Date(rel.published_at).toLocaleDateString('id-ID') : ''}
+                                            {formatDate(rel.published_at)}
                                         </span>
                                     </div>
                                 ))}

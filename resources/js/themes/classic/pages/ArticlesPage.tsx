@@ -1,37 +1,50 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
-import { Newspaper, Calendar, Search, Tag, Eye, ChevronRight } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { api, type Article, type Category } from '@/lib/api';
+import { coverSrc, formatDate } from '@/lib/utils';
+import { useSiteName } from '@/hooks/useSiteName';
+import { Newspaper, Calendar, Search, Tag, Eye, ChevronRight, Filter } from 'lucide-react';
 import ClassicLayout from '../layout/ClassicLayout';
 
-interface Article {
-    id: number;
-    title: string;
-    slug: string;
-    excerpt: string;
-    cover_url: string | null;
-    published_at: string | null;
-    views_count?: number;
-    category?: { name: string; slug: string };
-}
-
-interface ArticlesPageProps {
-    articles?: {
+type ArticlesResponse = {
+    featured: Article | null;
+    articles: {
         data: Article[];
-        links?: Array<{ url: string | null; label: string; active: boolean }>;
-        current_page?: number;
-        last_page?: number;
-    } | Article[];
-    categories?: Array<{ id: number; name: string; slug: string }>;
-}
+        current_page: number;
+        last_page: number;
+        total: number;
+    };
+    sidebar: {
+        summary: { total_articles: number; total_categories: number };
+        categories: Category[];
+        popular: Article[];
+    };
+};
 
-export function ClassicArticlesPage({ articles, categories = [] }: ArticlesPageProps) {
-    const articleList: Article[] = Array.isArray(articles)
-        ? articles
-        : articles?.data || [];
+export function ClassicArticlesPage() {
+    const siteName = useSiteName();
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('');
+    const [sort, setSort] = useState('latest');
+    const [page, setPage] = useState(1);
+
+    const { data, isLoading } = useQuery({
+        queryKey: ['articles', searchQuery, selectedCategory, sort, page],
+        queryFn: async () =>
+            (
+                await api.get<ArticlesResponse>('/articles', {
+                    params: { q: searchQuery || undefined, category: selectedCategory || undefined, sort, page },
+                })
+            ).data,
+    });
+
+    const articlesList = data?.articles?.data || [];
+    const categoriesList = data?.sidebar?.categories || [];
 
     return (
         <>
-            <Head title="Indeks Berita & Artikel — Portal Informasi Resmi" />
+            <Head title={`Indeks Berita & Artikel — ${siteName}`} />
 
             {/* Header Banner */}
             <div className="bg-white dark:bg-slate-900 p-6 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm mb-6">
@@ -42,7 +55,7 @@ export function ClassicArticlesPage({ articles, categories = [] }: ArticlesPageP
                     Indeks Publikasi & Berita Resmi
                 </h1>
                 <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm mt-1">
-                    Arsip lengkap pengumuman, berita kegiatan, dan rilis pers civitas akademika sekolah.
+                    Arsip berita kegiatan, pengumuman, dan rilis pers resmi {siteName}.
                 </p>
             </div>
 
@@ -50,17 +63,45 @@ export function ClassicArticlesPage({ articles, categories = [] }: ArticlesPageP
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 {/* Main Articles Area */}
                 <div className="lg:col-span-8 space-y-4">
-                    {articleList.length > 0 ? (
+                    {/* Search & Sort Filter Bar */}
+                    <div className="bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row gap-3">
+                        <div className="relative flex-1">
+                            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
+                                placeholder="Cari berita & artikel..."
+                                className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                            />
+                        </div>
+                        <select
+                            value={selectedCategory}
+                            onChange={(e) => { setSelectedCategory(e.target.value); setPage(1); }}
+                            className="px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-slate-900 dark:text-white"
+                        >
+                            <option value="">Semua Kategori</option>
+                            {categoriesList.map((cat) => (
+                                <option key={cat.id} value={cat.slug}>{cat.name}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {isLoading ? (
+                        <div className="bg-white dark:bg-slate-900 p-12 text-center rounded-lg border border-slate-200 dark:border-slate-800 text-xs text-slate-500">
+                            Memuat daftar artikel...
+                        </div>
+                    ) : articlesList.length > 0 ? (
                         <div className="space-y-4">
-                            {articleList.map((art) => (
+                            {articlesList.map((art) => (
                                 <article
                                     key={art.id}
                                     className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row gap-5 hover:border-red-500/50 transition group"
                                 >
-                                    {art.cover_url && (
+                                    {art.cover_path && (
                                         <div className="w-full sm:w-48 aspect-video sm:aspect-square bg-slate-100 dark:bg-slate-800 rounded overflow-hidden flex-shrink-0">
                                             <img
-                                                src={art.cover_url}
+                                                src={coverSrc(art.cover_path, art.slug || art.id, 500, 500)}
                                                 alt={art.title}
                                                 className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                                             />
@@ -76,7 +117,7 @@ export function ClassicArticlesPage({ articles, categories = [] }: ArticlesPageP
                                                 )}
                                                 <span className="flex items-center gap-1 font-mono">
                                                     <Calendar className="w-3 h-3" />
-                                                    {art.published_at ? new Date(art.published_at).toLocaleDateString('id-ID') : 'Baru'}
+                                                    {formatDate(art.published_at)}
                                                 </span>
                                             </div>
                                             <h2 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-red-600 transition leading-snug mb-2 font-serif">
@@ -88,7 +129,7 @@ export function ClassicArticlesPage({ articles, categories = [] }: ArticlesPageP
                                         </div>
                                         <div className="pt-3 mt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
                                             <span className="text-slate-400 text-[11px] flex items-center gap-1">
-                                                <Eye className="w-3.5 h-3.5" /> {art.views_count ?? 0} pembaca
+                                                <Eye className="w-3.5 h-3.5" /> {art.views ?? 0} pembaca
                                             </span>
                                             <Link
                                                 href={`/artikel/${art.slug}`}
@@ -110,39 +151,29 @@ export function ClassicArticlesPage({ articles, categories = [] }: ArticlesPageP
 
                 {/* Sidebar Filter & Categories */}
                 <div className="lg:col-span-4 space-y-6">
-                    <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
-                        <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-3 border-l-4 border-red-600 pl-2">
-                            Pencarian Berita
-                        </h3>
-                        <form action="/artikel" method="GET" className="relative">
-                            <input
-                                type="text"
-                                name="q"
-                                placeholder="Kata kunci..."
-                                className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
-                            />
-                            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-                        </form>
-                    </div>
-
-                    {categories.length > 0 && (
+                    {categoriesList.length > 0 && (
                         <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
                             <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-3 border-l-4 border-red-600 pl-2">
                                 Kategori Warta
                             </h3>
                             <div className="space-y-1 text-xs">
-                                {categories.map((cat) => (
-                                    <Link
+                                {categoriesList.map((cat) => (
+                                    <button
                                         key={cat.id}
-                                        href={`/artikel?cat=${cat.slug}`}
-                                        className="flex items-center justify-between p-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition"
+                                        type="button"
+                                        onClick={() => { setSelectedCategory(cat.slug); setPage(1); }}
+                                        className={`flex items-center justify-between w-full p-2 rounded text-left transition ${
+                                            selectedCategory === cat.slug
+                                                ? 'bg-red-600 text-white font-bold'
+                                                : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+                                        }`}
                                     >
                                         <span className="flex items-center gap-2">
-                                            <Tag className="w-3.5 h-3.5 text-red-500" />
+                                            <Tag className="w-3.5 h-3.5" />
                                             {cat.name}
                                         </span>
-                                        <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-                                    </Link>
+                                        <ChevronRight className="w-3.5 h-3.5 opacity-60" />
+                                    </button>
                                 ))}
                             </div>
                         </div>
