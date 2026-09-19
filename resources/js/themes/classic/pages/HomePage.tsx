@@ -1,6 +1,5 @@
 import React from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
-import PublicLayout from '@/components/layout/PublicLayout';
 import { HookSlot } from '@/components/ui/HookSlot';
 import { Newspaper, Bell, Calendar, ChevronRight, ArrowRight, Eye, Tag } from 'lucide-react';
 
@@ -30,7 +29,7 @@ export default function ClassicNewsHomePage({ articles = [], latest_articles = [
     const recentArticles = displayArticles.slice(5);
 
     return (
-        <PublicLayout>
+        <>
             <Head title={`Portal Berita Utama — ${siteName}`} />
 
             {/* Plain White Traditional News Header Container */}
@@ -278,6 +277,6 @@ export default function ClassicNewsHomePage({ articles = [], latest_articles = [
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-6">
                 <HookSlot name="before_footer" />
             </div>
-        </PublicLayout>
+        </>
     );
 }
