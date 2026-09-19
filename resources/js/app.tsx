@@ -77,12 +77,35 @@ function isAdminPage(name: string) {
   return name.startsWith('admin/') && name !== 'admin/AdminLoginPage'
 }
 
+import { router } from '@inertiajs/react'
+
+function getInitialActiveTheme(): string {
+  try {
+    const el = document.getElementById('app')
+    if (el?.dataset?.page) {
+      const page = JSON.parse(el.dataset.page)
+      return page?.props?.active_theme || 'default'
+    }
+  } catch {
+    // ignore
+  }
+  return 'default'
+}
+
+let currentActiveTheme = getInitialActiveTheme()
+
+router.on('navigate', (event) => {
+  const pageTheme = (event.detail.page?.props as { active_theme?: string })?.active_theme
+  if (pageTheme) {
+    currentActiveTheme = pageTheme
+  }
+})
+
 createInertiaApp({
   title: (title) => (title ? `${title}` : 'Portal Resmi'),
   resolve: (name) => {
-    const initialPage = (window as unknown as { initialPage?: { props?: { active_theme?: string } } }).initialPage
-    const activeTheme = initialPage?.props?.active_theme || 'default'
-    
+    const activeTheme = currentActiveTheme || getInitialActiveTheme()
+
     const page = resolvePage(name, activeTheme) as ComponentType & {
       layout?: (page: ReactNode) => ReactNode
     }
