@@ -72,7 +72,7 @@ class MediaStorage
         return rtrim($url, '/');
     }
 
-    public static function url(?string $path): ?string
+    public static function url(?string $path, ?string $disk = null): ?string
     {
         if (! $path) {
             return null;
@@ -83,12 +83,23 @@ class MediaStorage
         }
 
         $cleanPath = ltrim(str_replace('/storage/', '', $path), '/');
-        $disk = self::diskName();
 
-        // Path di DB biasanya relative tanpa folder prefix (uploads/...)
-        // atau full key; URL R2/S3 pakai public base + folder + path
-        if (in_array($disk, ['r2', 's3'], true)) {
-            $public = self::publicBaseUrl($disk);
+        // 1. Jika disk diset eksplisit sebagai public/local -> selalu gunakan URL lokal
+        if ($disk && in_array($disk, ['public', 'local'], true)) {
+            return asset('storage/'.$cleanPath);
+        }
+
+        // 2. Jika file secara fisik ADA di storage lokal (storage/app/public/...),
+        // utamakan sebagai fallback lokal agar tidak broken
+        if (Storage::disk('public')->exists($cleanPath)) {
+            return asset('storage/'.$cleanPath);
+        }
+
+        $effectiveDisk = $disk ?: self::diskName();
+
+        // 3. Jika disk R2/S3 dan file tidak ada di lokal -> gunakan CDN / Public R2 URL
+        if (in_array($effectiveDisk, ['r2', 's3'], true)) {
+            $public = self::publicBaseUrl($effectiveDisk);
             $key = self::prefixPath($cleanPath);
 
             if ($public !== '') {
@@ -96,7 +107,7 @@ class MediaStorage
             }
 
             try {
-                return Storage::disk($disk)->url($key);
+                return Storage::disk($effectiveDisk)->url($key);
             } catch (\Throwable) {
                 return $key;
             }

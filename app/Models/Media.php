@@ -36,7 +36,7 @@ class Media extends Model
 
     public function getUrlAttribute(): string
     {
-        return MediaStorage::url($this->path) ?: '';
+        return MediaStorage::url($this->path, $this->disk) ?: '';
     }
 
     public function deleteFile(): void
