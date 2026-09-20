@@ -102,6 +102,7 @@ class BackupService
         'media' => ['optimized'],
         'legal_pages' => ['is_published'],
         'plugins' => ['is_active'],
+        'users' => ['is_admin'],
     ];
 
     /** Kolom tanggal/waktu. */
