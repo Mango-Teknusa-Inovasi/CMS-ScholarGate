@@ -161,14 +161,14 @@ export function Header() {
                 href={safeHref(item.url)}
                 target={item.open_in_new_tab ? '_blank' : undefined}
                 rel="noopener noreferrer"
-                className="rounded-[12px] px-3 py-2 text-sm font-medium text-body hover:bg-muted"
+                className="rounded-[12px] px-3 py-2 text-sm font-medium text-body dark:text-slate-300 hover:bg-muted dark:hover:bg-slate-800 dark:hover:text-white"
               >
                 {item.label}
               </a>
             ) : (
               <span
                 key={item.url || item.id}
-                className="rounded-[12px] px-3 py-2 text-sm font-medium text-subtle"
+                className="rounded-[12px] px-3 py-2 text-sm font-medium text-subtle dark:text-slate-400"
               >
                 {item.label}
               </span>
@@ -191,13 +191,13 @@ export function Header() {
 
           {/* Member area: login ATAU menu akun + Gravatar */}
           {authLoading ? (
-            <div className="h-10 w-28 animate-pulse rounded-[12px] bg-muted" />
+            <div className="h-10 w-28 animate-pulse rounded-[12px] bg-muted dark:bg-slate-800" />
           ) : isLoggedIn && user ? (
             <div className="relative" ref={accountRef}>
               <button
                 type="button"
                 onClick={() => setAccountOpen((v) => !v)}
-                className="inline-flex items-center gap-2 rounded-[12px] border border-line bg-page py-1 pl-1 pr-2.5 text-sm font-semibold text-ink transition hover:bg-muted active:scale-[0.98]"
+                className="inline-flex items-center gap-2 rounded-[12px] border border-line dark:border-slate-800 bg-page dark:bg-slate-800 py-1 pl-1 pr-2.5 text-sm font-semibold text-ink dark:text-slate-200 transition hover:bg-muted dark:hover:bg-slate-700 active:scale-[0.98]"
                 aria-expanded={accountOpen}
                 aria-haspopup="menu"
               >
@@ -209,7 +209,7 @@ export function Header() {
                 />
                 <span className="max-w-[120px] truncate">{user.name.split(' ')[0]}</span>
                 <ChevronDown
-                  className={cn('h-3.5 w-3.5 text-subtle transition', accountOpen && 'rotate-180')}
+                  className={cn('h-3.5 w-3.5 text-subtle dark:text-slate-400 transition', accountOpen && 'rotate-180')}
                 />
               </button>
 
@@ -221,9 +221,9 @@ export function Header() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 4, scale: 0.98 }}
                     transition={{ duration: 0.18, ease: easeOutExpo }}
-                    className="absolute right-0 top-full z-30 mt-2 w-60 overflow-hidden rounded-[16px] border border-line bg-white shadow-[var(--shadow-card-hover)]"
+                    className="absolute right-0 top-full z-30 mt-2 w-60 overflow-hidden rounded-[16px] border border-line dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[var(--shadow-card-hover)]"
                   >
-                    <div className="border-b border-line bg-peach-soft/50 px-3 py-3">
+                    <div className="border-b border-line dark:border-slate-800 bg-peach-soft/50 dark:bg-slate-800/80 px-3 py-3">
                       <div className="flex items-center gap-2.5">
                         <Gravatar
                           url={user.gravatar_url}
@@ -232,8 +232,8 @@ export function Header() {
                           size={40}
                         />
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-ink">{user.name}</p>
-                          <p className="truncate text-[11px] text-subtle">{user.email}</p>
+                          <p className="truncate text-sm font-semibold text-ink dark:text-slate-100">{user.name}</p>
+                          <p className="truncate text-[11px] text-subtle dark:text-slate-400">{user.email}</p>
                         </div>
                       </div>
                     </div>
@@ -242,9 +242,9 @@ export function Header() {
                         to="/akun"
                         role="menuitem"
                         onClick={() => setAccountOpen(false)}
-                        className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-body hover:bg-muted"
+                        className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-body dark:text-slate-200 hover:bg-muted dark:hover:bg-slate-800 hover:text-ink dark:hover:text-white"
                       >
-                        <User className="h-4 w-4 text-sky-600" />
+                        <User className="h-4 w-4 text-sky-600 dark:text-sky-400" />
                         Akun saya
                       </Link>
                       {user.is_admin && (
@@ -252,9 +252,9 @@ export function Header() {
                           to="/admin"
                           role="menuitem"
                           onClick={() => setAccountOpen(false)}
-                          className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-body hover:bg-muted"
+                          className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-body dark:text-slate-200 hover:bg-muted dark:hover:bg-slate-800 hover:text-ink dark:hover:text-white"
                         >
-                          <User className="h-4 w-4 text-violet-600" />
+                          <User className="h-4 w-4 text-violet-600 dark:text-violet-400" />
                           Panel CMS
                         </Link>
                       )}
@@ -262,7 +262,7 @@ export function Header() {
                         type="button"
                         role="menuitem"
                         onClick={() => void onLogout()}
-                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-rose-600 hover:bg-rose-50"
+                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40"
                       >
                         <LogOut className="h-4 w-4" />
                         Logout
@@ -285,7 +285,7 @@ export function Header() {
 
         <button
           type="button"
-          className="rounded-xl border border-line bg-white p-2.5 text-ink shadow-sm hover:bg-muted lg:hidden"
+          className="rounded-xl border border-line dark:border-slate-800 bg-white dark:bg-slate-800 p-2.5 text-ink dark:text-slate-200 shadow-sm hover:bg-muted dark:hover:bg-slate-700 lg:hidden"
           onClick={() => setOpen((v) => !v)}
           aria-label={open ? 'Tutup menu' : 'Buka menu'}
           aria-expanded={open}
@@ -297,7 +297,7 @@ export function Header() {
       <AnimatePresence>
         {open && (
           <motion.div
-            className="overflow-hidden border-t border-line bg-white lg:hidden"
+            className="overflow-hidden border-t border-line dark:border-slate-800 bg-white dark:bg-slate-900 lg:hidden"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
