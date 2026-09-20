@@ -506,31 +506,92 @@ a:hover .media-cover img,
   scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
 }
 
-/* Custom scrollbar utility */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+/* Dark mode comprehensive element overrides */
+.dark .bg-white {
+  background-color: var(--color-surface);
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-  border-radius: 10px;
+.dark .bg-slate-50,
+.dark .bg-slate-100 {
+  background-color: var(--color-muted);
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(15, 23, 42, 0.08); /* sleek neutral slate-900 transparent */
-  border-radius: 10px;
-  transition: background 0.2s;
+.dark .bg-peach-soft,
+.dark .bg-peach-soft\/40,
+.dark .bg-peach-soft\/50 {
+  background-color: var(--color-muted);
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(15, 23, 42, 0.2);
+.dark input:not([type="checkbox"]):not([type="radio"]),
+.dark textarea,
+.dark select {
+  background-color: #0f172a;
+  border-color: #334155;
+  color: #f8fafc;
 }
 
-/* Firefox */
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(15, 23, 42, 0.08) transparent;
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #64748b;
+}
+
+.dark table {
+  background-color: var(--color-surface);
+}
+
+.dark th {
+  background-color: #1e293b;
+  color: #f8fafc;
+  border-color: #334155;
+}
+
+.dark td {
+  border-color: #1e293b;
+}
+
+.dark tr:hover {
+  background-color: #1e293b;
+}
+
+.dark .prose-article,
+.dark .tiptap,
+.dark .ProseMirror {
+  color: #cbd5e1;
+}
+
+.dark .prose-article h1,
+.dark .prose-article h2,
+.dark .prose-article h3,
+.dark .prose-article h4,
+.dark .prose-article strong,
+.dark .prose-article p,
+.dark .prose-article li,
+.dark .tiptap h1,
+.dark .tiptap h2,
+.dark .tiptap h3,
+.dark .tiptap h4,
+.dark .tiptap strong,
+.dark .tiptap p,
+.dark .tiptap li,
+.dark .ProseMirror h1,
+.dark .ProseMirror h2,
+.dark .ProseMirror h3,
+.dark .ProseMirror h4,
+.dark .ProseMirror strong,
+.dark .ProseMirror p,
+.dark .ProseMirror li {
+  color: #f8fafc;
+}
+
+.dark .prose-article blockquote,
+.dark .tiptap blockquote {
+  background-color: #1e293b;
+  color: #e2e8f0;
+}
+
+.dark .ProseMirror {
+  background-color: #0f172a;
+  border-color: #334155;
 }
 
 

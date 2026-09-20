@@ -59,8 +59,8 @@ function isInternal(url: string) {
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
   cn(
-    'inline-flex items-center gap-1 rounded-[12px] px-3 py-2 text-sm font-medium text-body transition hover:bg-muted',
-    isActive && 'bg-cyan-soft font-semibold text-cyan-mid',
+    'inline-flex items-center gap-1 rounded-[12px] px-3 py-2 text-sm font-medium text-body dark:text-slate-300 transition hover:bg-muted dark:hover:bg-slate-800 dark:hover:text-white',
+    isActive && 'bg-cyan-soft dark:bg-sky-950/80 font-semibold text-cyan-mid dark:text-sky-300',
   )
 
 export function Header() {
@@ -103,7 +103,7 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-line bg-white/95 shadow-[var(--shadow-header)] backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-line dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 shadow-[var(--shadow-header)] backdrop-blur-md">
       <div className="container-page flex h-[72px] items-center justify-between gap-4 md:h-20">
         <Logo name={siteName} logoPath={siteLogo} />
 
@@ -115,13 +115,13 @@ export function Header() {
                   {item.label}
                   <ChevronDown className="h-3.5 w-3.5 opacity-55 transition group-hover:rotate-180" />
                 </NavLink>
-                <div className="invisible absolute left-0 top-full z-20 min-w-[200px] translate-y-1 rounded-2xl border border-line bg-white p-1.5 opacity-0 shadow-[var(--shadow-card-hover)] transition group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
+                <div className="invisible absolute left-0 top-full z-20 min-w-[200px] translate-y-1 rounded-2xl border border-line dark:border-slate-800 bg-white dark:bg-slate-900 p-1.5 opacity-0 shadow-[var(--shadow-card-hover)] transition group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
                   {item.children.map((child) =>
                     isInternal(child.url) ? (
                       <Link
                         key={child.id}
                         to={safeHref(child.url) || '/'}
-                        className="block rounded-xl px-3 py-2.5 text-sm text-body hover:bg-muted hover:text-ink"
+                        className="block rounded-xl px-3 py-2.5 text-sm text-body dark:text-slate-200 hover:bg-muted dark:hover:bg-slate-800 hover:text-ink dark:hover:text-white"
                       >
                         {child.label}
                       </Link>
@@ -131,14 +131,14 @@ export function Header() {
                         href={safeHref(child.url)}
                         target={child.open_in_new_tab ? '_blank' : undefined}
                         rel="noopener noreferrer"
-                        className="block rounded-xl px-3 py-2.5 text-sm text-body hover:bg-muted"
+                        className="block rounded-xl px-3 py-2.5 text-sm text-body dark:text-slate-200 hover:bg-muted dark:hover:bg-slate-800"
                       >
                         {child.label}
                       </a>
                     ) : (
                       <span
                         key={child.id}
-                        className="block rounded-xl px-3 py-2.5 text-sm text-subtle"
+                        className="block rounded-xl px-3 py-2.5 text-sm text-subtle dark:text-slate-400"
                       >
                         {child.label}
                       </span>
