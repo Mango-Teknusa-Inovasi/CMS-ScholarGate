@@ -215,8 +215,32 @@ class InstagramScraperService
                 continue;
             }
 
+            // 1. Coba decode langsung sebagai JSON murni
             $json = json_decode($s, true);
+
+            // 2. Coba ekstrak substring JSON jika dibungkus oleh JS wrapper (window.__additionalDataLoaded, window._sharedData, dll)
             if (! is_array($json)) {
+                if (preg_match('/(?:window\.__additionalDataLoaded\(.*?\s*,\s*|window\._sharedData\s*=\s*|\=\s*)(\{.*?\});?/s', $s, $mJson)) {
+                    $json = json_decode($mJson[1], true);
+                }
+            }
+
+            // 3. Coba cari blok JSON {...} yang mengandung shortcode
+            if (! is_array($json)) {
+                if (preg_match_all('/(\{(?:[^{}]|(?R))*\})/s', $s, $mBlocks)) {
+                    foreach ($mBlocks[1] as $block) {
+                        if (! str_contains($block, $shortcode)) {
+                            continue;
+                        }
+                        $decoded = json_decode($block, true);
+                        if (is_array($decoded)) {
+                            $found = $this->searchMediaRecursive($decoded, $shortcode);
+                            if ($found) {
+                                return $found;
+                            }
+                        }
+                    }
+                }
                 continue;
             }
 
@@ -285,8 +309,7 @@ class InstagramScraperService
     }
 
     /**
-     * Ekstrak gambar utama postingan dari OpenGraph / Twitter tags.
-     * Tidak mencari regex bebas ke seluruh HTML untuk menghindari foto profil & rekomendasi postingan lain.
+     * Ekstrak gambar utama dan slide carousel dari OpenGraph, Twitter tags, dan CDN regex.
      *
      * @return array<string>
      */
@@ -294,7 +317,7 @@ class InstagramScraperService
     {
         $images = [];
 
-        // Cover utama dari og:image dan twitter:image spesifik postingan ini
+        // 1. Cover utama dari og:image dan twitter:image
         if (preg_match_all('/<meta property="og:image" content="([^"]+)"/i', $html, $mOgImg)) {
             foreach ($mOgImg[1] as $raw) {
                 $images[] = html_entity_decode($raw, ENT_QUOTES | ENT_HTML5, 'UTF-8');
@@ -305,6 +328,14 @@ class InstagramScraperService
             $images[] = html_entity_decode($mTwImg[1], ENT_QUOTES | ENT_HTML5, 'UTF-8');
         }
 
+        // 2. Ekstrak gambar carousel dari URL CDN Instagram yang tertulis di HTML/script
+        $unescaped = str_replace('\/', '/', $html);
+        if (preg_match_all('#https://[a-zA-Z0-9.-]*(?:cdninstagram\.com|fbcdn\.net)/[^\s"\'<>]+#i', $unescaped, $mCdn)) {
+            foreach ($mCdn[0] as $cdnUrl) {
+                $images[] = html_entity_decode($cdnUrl, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            }
+        }
+
         return $this->filterPostImages($images);
     }
 
@@ -312,7 +343,7 @@ class InstagramScraperService
      * Filter ketat untuk membersihkan daftar gambar:
      * - Mengeliminasi foto profil (-19/, profile_pic, avatar, s150x150, dll)
      * - Mengeliminasi aset statis / icon Meta
-     * - Menghilangkan duplikasi
+     * - Menghilangkan duplikasi berdasarkan unik ID slide gambar
      *
      * @param  array<string>  $images
      * @return array<string>
@@ -320,7 +351,7 @@ class InstagramScraperService
     public function filterPostImages(array $images): array
     {
         $filtered = [];
-        $seenBasenames = [];
+        $seenKeys = [];
 
         foreach ($images as $url) {
             $trimmed = trim((string) $url);
@@ -328,14 +359,23 @@ class InstagramScraperService
                 continue;
             }
 
-            // Exclude profile pictures (-19/ adalah identifier internal CDN Instagram untuk avatar)
-            if (preg_match('#(/t51\.[0-9]+-19/|/s150x150/|/s320x320/|/s100x100/|150_n\.|profile_pic|rsrc\.php|static\.cdninstagram|avatar)#i', $trimmed)) {
+            // Exclude profile pictures (-19/ adalah identifier internal CDN Instagram untuk avatar) & static icons
+            if (preg_match('#(/t51\.[0-9]+-19/|/s150x150/|/s320x320/|/s100x100/|150_n\.|profile_pic|rsrc\.php|static\.cdninstagram|avatar|emoji)#i', $trimmed)) {
                 continue;
             }
 
-            $base = basename((string) parse_url($trimmed, PHP_URL_PATH));
-            if ($base !== '' && ! isset($seenBasenames[$base])) {
-                $seenBasenames[$base] = true;
+            $path = (string) parse_url($trimmed, PHP_URL_PATH);
+            $base = basename($path);
+
+            // Identifikasi slide unik berdasarkan ID numerik di nama file gambar
+            if (preg_match('/([0-9]{8,}_[0-9]{8,})/', $base, $mId)) {
+                $key = $mId[1];
+            } else {
+                $key = strtok($base, '?');
+            }
+
+            if ($key !== '' && ! isset($seenKeys[$key])) {
+                $seenKeys[$key] = true;
                 $filtered[] = $trimmed;
             }
         }

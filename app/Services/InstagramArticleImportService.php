@@ -132,7 +132,7 @@ HTML;
                 }
             }
 
-            // B. Jika masih ada gambar yang belum terpasang di placeholder, buat galeri rapi di bagian bawah
+            // B. Jika masih ada gambar yang belum terpasang di placeholder, SELIPKAN secara cerdas di sela-sela paragraf berita!
             $unplacedImages = [];
             foreach ($additionalImages as $relativeIdx => $img) {
                 if (! in_array($relativeIdx, $placedIndices, true)) {
@@ -141,21 +141,57 @@ HTML;
             }
 
             if (! empty($unplacedImages)) {
-                $galleryHtml = "\n\n<h2 class=\"mt-8 mb-4 text-xl font-bold tracking-tight text-slate-900 dark:text-white\">Dokumentasi Kegiatan Tambahan</h2>\n";
-                $galleryHtml .= "<div class=\"my-4 grid grid-cols-1 sm:grid-cols-2 gap-4 not-prose\">\n";
-
-                foreach ($unplacedImages as $uIdx => $uImg) {
-                    $picNum = $uIdx + 1;
-                    $galleryHtml .= <<<HTML
-  <figure class="group relative overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-    <img src="{$uImg['url']}" alt="{$uImg['alt']}" class="h-56 w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy" />
-    <figcaption class="p-2.5 text-center text-xs text-slate-500 dark:text-slate-400">Dokumentasi foto {$picNum}</figcaption>
-  </figure>
-HTML;
+                // Cari semua posisi penutup paragraf </p>
+                $pPositions = [];
+                $offset = 0;
+                while (($pos = strpos($bodyHtml, '</p>', $offset)) !== false) {
+                    $pPositions[] = $pos + strlen('</p>');
+                    $offset = $pos + strlen('</p>');
                 }
 
-                $galleryHtml .= "\n</div>\n";
-                $bodyHtml .= $galleryHtml;
+                $totalP = count($pPositions);
+                if ($totalP >= 2) {
+                    // Hitung langkah interval pembagian foto di antara paragraf
+                    $step = max(1, (int) floor($totalP / (count($unplacedImages) + 1)));
+
+                    $insertPlan = [];
+                    foreach ($unplacedImages as $uIdx => $uImg) {
+                        $targetPIndex = min($totalP - 1, max(0, ($uIdx + 1) * $step - 1));
+                        $picNum = $uIdx + 2;
+
+                        $imgFigure = <<<HTML
+
+<figure class="my-6 block overflow-hidden rounded-xl border border-slate-200 shadow-xs dark:border-slate-800">
+  <img src="{$uImg['url']}" alt="{$uImg['alt']}" class="w-full h-auto object-cover" loading="lazy" />
+  <figcaption class="px-4 py-2 text-center text-xs text-slate-500 bg-slate-50 dark:bg-slate-900/50">Dokumentasi foto kegiatan (Foto {$picNum})</figcaption>
+</figure>
+
+HTML;
+                        $insertPlan[] = [
+                            'pos' => $pPositions[$targetPIndex],
+                            'html' => $imgFigure,
+                        ];
+                    }
+
+                    // Urutkan posisi dari terbesar ke terkecil agar penggantian string presisi
+                    usort($insertPlan, fn ($a, $b) => $b['pos'] <=> $a['pos']);
+
+                    foreach ($insertPlan as $item) {
+                        $bodyHtml = substr_replace($bodyHtml, $item['html'], $item['pos'], 0);
+                    }
+                } else {
+                    // Jika paragraf < 2, selipkan gambar di bagian akhir secara berurutan
+                    foreach ($unplacedImages as $uIdx => $uImg) {
+                        $picNum = $uIdx + 2;
+                        $bodyHtml .= <<<HTML
+
+<figure class="my-6 block overflow-hidden rounded-xl border border-slate-200 shadow-xs dark:border-slate-800">
+  <img src="{$uImg['url']}" alt="{$uImg['alt']}" class="w-full h-auto object-cover" loading="lazy" />
+  <figcaption class="px-4 py-2 text-center text-xs text-slate-500 bg-slate-50 dark:bg-slate-900/50">Dokumentasi foto kegiatan (Foto {$picNum})</figcaption>
+</figure>
+HTML;
+                    }
+                }
             }
         }
 
