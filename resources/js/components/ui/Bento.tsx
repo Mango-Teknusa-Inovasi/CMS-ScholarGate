@@ -5,16 +5,16 @@ import { easeOutExpo, staggerContainer, staggerItem } from '../../lib/motion'
 
 /** Soft pastel fills for cheerful bento tiles */
 export const bentoTones = {
-  white: 'bg-white border-line',
-  sky: 'bg-soft-sky/80 border-sky-100',
-  teal: 'bg-soft-teal/90 border-teal-100',
-  mint: 'bg-soft-mint/90 border-emerald-100',
-  coral: 'bg-soft-coral/90 border-rose-100',
-  amber: 'bg-soft-amber/90 border-amber-100',
-  violet: 'bg-soft-violet/90 border-violet-100',
-  rose: 'bg-soft-rose/90 border-pink-100',
-  peach: 'bg-peach-soft border-peach-mid/40',
-  brand: 'bg-brand-soft border-sky-100',
+  white: 'bg-white dark:bg-slate-900 border-line dark:border-slate-800 text-ink dark:text-slate-100',
+  sky: 'bg-soft-sky/80 dark:bg-sky-950/70 border-sky-100 dark:border-sky-900/60 text-ink dark:text-slate-100',
+  teal: 'bg-soft-teal/90 dark:bg-teal-950/70 border-teal-100 dark:border-teal-900/60 text-ink dark:text-slate-100',
+  mint: 'bg-soft-mint/90 dark:bg-emerald-950/70 border-emerald-100 dark:border-emerald-900/60 text-ink dark:text-slate-100',
+  coral: 'bg-soft-coral/90 dark:bg-rose-950/70 border-rose-100 dark:border-rose-900/60 text-ink dark:text-slate-100',
+  amber: 'bg-soft-amber/90 dark:bg-amber-950/70 border-amber-100 dark:border-amber-900/60 text-ink dark:text-slate-100',
+  violet: 'bg-soft-violet/90 dark:bg-violet-950/70 border-violet-100 dark:border-violet-900/60 text-ink dark:text-slate-100',
+  rose: 'bg-soft-rose/90 dark:bg-pink-950/70 border-pink-100 dark:border-pink-900/60 text-ink dark:text-slate-100',
+  peach: 'bg-peach-soft dark:bg-slate-900/90 border-peach-mid/40 dark:border-slate-800 text-ink dark:text-slate-100',
+  brand: 'bg-brand-soft dark:bg-sky-950/80 border-sky-100 dark:border-sky-900/60 text-ink dark:text-slate-100',
 } as const
 
 export type BentoTone = keyof typeof bentoTones

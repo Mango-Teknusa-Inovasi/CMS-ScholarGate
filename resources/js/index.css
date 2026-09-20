@@ -427,6 +427,85 @@ a:hover .media-cover img,
   text-wrap: balance;
 }
 
+/* —— Dark Mode Design Tokens Scope —— */
+.dark {
+  color-scheme: dark;
+
+  /* Canvas soft — deep dark bento */
+  --color-page: #0b0f19;
+  --color-surface: #111827;
+  --color-muted: #1f2937;
+  --color-warm: #1e293b;
+  --color-warm-soft: #1e293b;
+  --color-peach: #1e293b;
+  --color-peach-soft: #1f2937;
+  --color-peach-mid: #334155;
+  --color-peach-deep: #475569;
+
+  --color-ink: #f9fafb;
+  --color-body: #cbd5e1;
+  --color-subtle: #94a3b8;
+  --color-line: #1e293b;
+
+  --color-brand: #38bdf8;
+  --color-brand-dark: #0284c7;
+  --color-brand-soft: #0c4a6e;
+  --color-cyan-soft: #083344;
+  --color-cyan-mid: #06b6d4;
+
+  /* Soft colorful accents (dark mode tuned) */
+  --color-soft-sky: #0c4a6e;
+  --color-soft-teal: #115e59;
+  --color-soft-mint: #064e3b;
+  --color-soft-coral: #881337;
+  --color-soft-amber: #78350f;
+  --color-soft-violet: #4c1d95;
+  --color-soft-rose: #831843;
+  --color-soft-peach-btn: #1e293b;
+
+  --color-success: #10b981;
+  --color-footer: #090d16;
+
+  --shadow-card: 0 1px 3px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.4);
+  --shadow-card-hover: 0 4px 12px rgb(0 0 0 / 0.4), 0 16px 36px rgb(0 0 0 / 0.5);
+  --shadow-header: 0 1px 0 rgb(30 41 59 / 0.8);
+}
+
+.dark body {
+  background:
+    radial-gradient(ellipse 80% 50% at 10% -10%, rgb(14 165 233 / 0.12), transparent 50%),
+    radial-gradient(ellipse 60% 40% at 90% 0%, rgb(245 158 11 / 0.08), transparent 45%),
+    radial-gradient(ellipse 50% 30% at 50% 100%, rgb(20 184 166 / 0.08), transparent 40%),
+    var(--color-page);
+}
+
+.dark .page-hero-band {
+  background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
+  border-bottom-color: var(--color-line);
+}
+
+.dark .skeleton {
+  background: linear-gradient(
+    90deg,
+    #1e293b 0%,
+    #334155 50%,
+    #1e293b 100%
+  );
+  background-size: 200% 100%;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.dark .custom-scrollbar {
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
 /* Custom scrollbar utility */
 .custom-scrollbar::-webkit-scrollbar {
   width: 5px;
@@ -453,5 +532,6 @@ a:hover .media-cover img,
   scrollbar-width: thin;
   scrollbar-color: rgba(15, 23, 42, 0.08) transparent;
 }
+
 
 

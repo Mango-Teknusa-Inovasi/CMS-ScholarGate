@@ -16,6 +16,7 @@ import { cn } from '../../lib/utils'
 import { easeOutExpo } from '../../lib/motion'
 import { Logo } from '../ui/Logo'
 import { Gravatar } from '../ui/Gravatar'
+import { ThemeToggle } from '../ui/ThemeToggle'
 import { useMemberAuth } from '../../hooks/useMemberAuth'
 import { safeHref } from '../../lib/sanitize'
 
@@ -176,11 +177,13 @@ export function Header() {
         </nav>
 
         <div className="hidden items-center gap-2 lg:flex">
+          <ThemeToggle />
+
           <a
             href={reportUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-[12px] border border-rose-400/80 bg-white px-4 py-2 text-sm font-semibold text-rose-500 shadow-sm transition hover:bg-rose-50 active:scale-[0.98]"
+            className="inline-flex items-center gap-2 rounded-[12px] border border-rose-400/80 bg-white dark:bg-slate-800 px-4 py-2 text-sm font-semibold text-rose-500 shadow-sm transition hover:bg-rose-50 dark:hover:bg-rose-950/50 active:scale-[0.98]"
           >
             <MessageSquareWarning className="h-4 w-4" />
             Lapor
@@ -320,48 +323,57 @@ export function Header() {
 
               {isLoggedIn && user ? (
                 <div className="mt-2 space-y-2 border-t border-line pt-3 pb-2">
-                  <div className="flex items-center gap-3 px-2">
-                    <Gravatar
-                      url={user.gravatar_url}
-                      email={user.email}
-                      name={user.name}
-                      size={40}
-                    />
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-ink">{user.name}</p>
-                      <p className="truncate text-xs text-subtle">{user.email}</p>
+                  <div className="flex items-center justify-between px-2">
+                    <div className="flex items-center gap-3">
+                      <Gravatar
+                        url={user.gravatar_url}
+                        email={user.email}
+                        name={user.name}
+                        size={40}
+                      />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-ink">{user.name}</p>
+                        <p className="truncate text-xs text-subtle">{user.email}</p>
+                      </div>
                     </div>
+                    <ThemeToggle />
                   </div>
                   <Link
                     to="/akun"
                     onClick={() => setOpen(false)}
-                    className="block rounded-[12px] bg-sky-50 px-3 py-2.5 text-center text-sm font-semibold text-sky-700"
+                    className="block rounded-[12px] bg-sky-50 dark:bg-sky-950/60 px-3 py-2.5 text-center text-sm font-semibold text-sky-700 dark:text-sky-300"
                   >
                     Akun saya
                   </Link>
                   <button
                     type="button"
                     onClick={() => void onLogout()}
-                    className="w-full rounded-[12px] bg-rose-50 px-3 py-2.5 text-sm font-semibold text-rose-600"
+                    className="w-full rounded-[12px] bg-rose-50 dark:bg-rose-950/60 px-3 py-2.5 text-sm font-semibold text-rose-600 dark:text-rose-400"
                   >
                     Logout
                   </button>
                 </div>
               ) : (
-                <div className="mt-2 flex gap-2 pb-2">
-                  <a
-                    href={reportUrl}
-                    className="flex-1 rounded-[12px] border border-rose-400/80 bg-white px-3 py-2.5 text-center text-sm font-semibold text-rose-500 hover:bg-rose-50"
-                  >
-                    Lapor
-                  </a>
-                  <Link
-                    to="/login"
-                    onClick={() => setOpen(false)}
-                    className="flex-1 rounded-[12px] bg-teal-500 px-3 py-2.5 text-center text-sm font-semibold text-white hover:bg-teal-600"
-                  >
-                    Login
-                  </Link>
+                <div className="mt-2 flex flex-col gap-2 pb-2 border-t border-line pt-3">
+                  <div className="flex items-center justify-between px-1">
+                    <span className="text-xs font-semibold text-subtle">Mode Tampilan</span>
+                    <ThemeToggle showLabel />
+                  </div>
+                  <div className="flex gap-2">
+                    <a
+                      href={reportUrl}
+                      className="flex-1 rounded-[12px] border border-rose-400/80 bg-white dark:bg-slate-800 px-3 py-2.5 text-center text-sm font-semibold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50"
+                    >
+                      Lapor
+                    </a>
+                    <Link
+                      to="/login"
+                      onClick={() => setOpen(false)}
+                      className="flex-1 rounded-[12px] bg-teal-500 px-3 py-2.5 text-center text-sm font-semibold text-white hover:bg-teal-600"
+                    >
+                      Login
+                    </Link>
+                  </div>
                 </div>
               )}
             </div>

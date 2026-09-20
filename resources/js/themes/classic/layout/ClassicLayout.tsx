@@ -2,6 +2,7 @@ import React, { type ReactNode } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import { Newspaper, Bell, Calendar, Search, LogIn, ShieldCheck, ChevronDown, Menu, X, ArrowUpRight } from 'lucide-react';
 import { HookSlot } from '@/components/ui/HookSlot';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 import type { PageProps } from '@inertiajs/core';
 
@@ -63,6 +64,8 @@ export function ClassicLayout({ children }: { children: ReactNode }) {
                             {new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                         </span>
                         <div className="h-3 w-px bg-slate-700 hidden md:block" />
+                        <ThemeToggle />
+                        <div className="h-3 w-px bg-slate-700" />
                         {user ? (
                             <Link href="/admin" className="flex items-center gap-1 text-slate-200 hover:text-white font-medium">
                                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
