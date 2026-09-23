@@ -41,7 +41,7 @@
     "gsap": "^3.15.0",
     "lowlight": "^3.3.0",
     "lucide-react": "^1.44.0",
-    "motion": "^13.2.0",
+    "motion": "^13.4.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-helmet-async": "^3.0.0",
