@@ -239,15 +239,15 @@ ScholarGate follows a modular monolith architecture separating presentation, dom
 
 ### 🛡️ Engineering Standards: Anti-Slop & Security Skills Alignment
 
-ScholarGate is engineered under strict code quality and security standards derived from specialized AI engineering skills:
+ScholarGate is engineered under strict code quality and security standards derived from open-source AI agent skill repositories:
 
-- 🧹 **Anti-Slop Standard (`antislop`, `antislop-code`, `antislop-ui`)**:
+- 🧹 **Anti-Slop Standard** — [miqdadbadjuber/anti-slop](https://github.com/miqdadbadjuber/anti-slop) (`antislop`, `antislop-code`, `antislop-ui`):
   - **No Code Slop**: Zero generic AI boilerplate comments, redundant fallback blocks, or unneeded transpilations. Clean, production-grade TypeScript & PHP.
   - **Premium UI & Motion Hygiene**: Hardware-accelerated CSS transitions, zero forced reflows, and vibrant glassmorphic Bento tiles.
   - **Human & Accessibility First (`antislop-human`, `antislop-layoutmobile`)**: Guaranteed WCAG 2.1 AA color contrast (> 4.5:1), responsive layout reflows across phone to desktop, semantic heading hierarchy (`h1 -> h2 -> h3`), and 36px+ touch target boxes.
   - **Copywriting Hygiene (`antislop-copywriting`)**: Natural, engaging institutional copy devoid of artificial AI writing patterns.
 
-- 🔒 **Security Audit Standard (`security-audit`)**:
+- 🔒 **Security Audit Standard** — [`security-audit`](./docs/SECURITY.md):
   - **Prompt Injection Boundary Shielding**: Input isolation using `filterPromptInjection` and `<untrusted_material>` XML boundaries for AI endpoints.
   - **XSS & HTML Sanitization**: HTMLPurifier backend filtering (`ezyang/htmlpurifier`) and DOMPurify frontend sanitization.
   - **Zero-Trust Access & RBAC**: Strict multi-guard authentication (Sanctum + OIDC Socialite), role-based middleware (`auth`, `admin`, `super_admin`), and model name masking (`custom_ai_model_name`).
