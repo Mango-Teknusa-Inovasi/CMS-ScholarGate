@@ -25,7 +25,9 @@ export function Logo({
       {src ? (
         <img
           src={src}
-          alt={name}
+          alt=""
+          width={180}
+          height={36}
           className={cn(
             'object-contain object-left shrink-0',
             size === 'sm' ? 'h-8 w-auto max-w-[140px]' : 'h-9 w-auto max-w-[180px]',

@@ -113,7 +113,6 @@ export function BentoTile({
   return (
     <motion.div
       variants={staggerItem}
-      whileHover={{ y: -2, transition: { duration: 0.2, ease: easeOutExpo } }}
       className={cn(
         'bento-tile group relative overflow-hidden rounded-[22px] border shadow-[var(--shadow-card)] transition duration-300',
         'hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)]',
@@ -153,7 +152,7 @@ export function BentoEyebrow({
   return (
     <p
       className={cn(
-        'mb-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-brand',
+        'mb-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-sky-700 dark:text-sky-400',
         className,
       )}
     >

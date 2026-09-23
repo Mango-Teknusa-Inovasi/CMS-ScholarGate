@@ -24,9 +24,10 @@
     @endif
     <link rel="manifest" href="/site.webmanifest">
 
-    <!-- Preconnect & Load Google Fonts asynchronously for optimized FCP/LCP -->
+    <!-- Preconnect & Load Google Fonts and Storage CDN asynchronously for optimized FCP/LCP -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://is3-storage.smage.my.id" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     @if(is_array($seo))

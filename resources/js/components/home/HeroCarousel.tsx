@@ -62,16 +62,22 @@ export function HeroCarousel({ banners, embedded = false, className }: Props) {
             className="absolute inset-0 flex items-end p-6 text-white sm:p-8 md:p-10 lg:p-12"
             role="img"
             aria-label={current.title}
-            style={{
-              backgroundImage: `linear-gradient(to top, rgb(17 24 39 / 0.62) 0%, rgb(17 24 39 / 0.2) 55%, rgb(17 24 39 / 0.08) 100%), url(${bg})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-            }}
             initial={reduce ? false : { opacity: 0, scale: 1.04 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={reduce ? undefined : { opacity: 0, scale: 0.99 }}
             transition={{ duration: 0.55, ease: easeOutExpo }}
           >
+            <img
+              src={bg}
+              alt={current.title}
+              fetchPriority={index === 0 ? 'high' : 'auto'}
+              loading={index === 0 ? 'eager' : 'lazy'}
+              decoding="async"
+              className="absolute inset-0 h-full w-full object-cover"
+              width={1600}
+              height={720}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/30 to-transparent" />
             <div className="relative z-10 max-w-2xl">
               <motion.h1
                 className="text-balance text-2xl font-bold leading-[1.15] tracking-tight sm:text-3xl md:text-4xl"
@@ -129,19 +135,23 @@ export function HeroCarousel({ banners, embedded = false, className }: Props) {
       </div>
 
       {items.length > 1 && (
-        <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 gap-2">
+        <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1">
           {items.map((b, i) => (
             <button
               key={b.id}
               type="button"
               onClick={() => setIndex(i)}
-              className={cn(
-                'h-2 rounded-full transition-all duration-300',
-                i === index ? 'w-6 bg-white' : 'w-2 bg-white/55 hover:bg-white/80',
-              )}
+              className="flex h-9 w-9 items-center justify-center p-1"
               aria-label={`Slide ${i + 1}`}
               aria-current={i === index}
-            />
+            >
+              <span
+                className={cn(
+                  'h-2 rounded-full transition-all duration-300',
+                  i === index ? 'w-6 bg-white' : 'w-2 bg-white/60 hover:bg-white',
+                )}
+              />
+            </button>
           ))}
         </div>
       )}

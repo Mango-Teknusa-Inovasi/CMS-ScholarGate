@@ -240,6 +240,7 @@ export function HomeBento({
               </div>
               <Link
                 to="/artikel"
+                aria-label="Lihat semua berita dan cerita"
                 className="inline-flex items-center gap-1 rounded-full bg-sky-500 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-sky-600"
               >
                 Semua
@@ -266,14 +267,14 @@ export function HomeBento({
                         src={coverSrc(
                           featuredArticle.cover_path,
                           featuredArticle.slug || featuredArticle.id,
-                          1200,
-                          700,
+                          960,
+                          540,
                         )}
                         alt={featuredArticle.title}
                         className="absolute inset-0 h-full w-full object-cover"
                         loading="lazy"
-                        width={1200}
-                        height={700}
+                        width={960}
+                        height={540}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-ink/75 via-ink/10 to-transparent" />
                       <div className="absolute inset-x-0 bottom-0 p-4 text-white md:p-6">
@@ -341,9 +342,9 @@ export function HomeBento({
                           )}
                           <span>{formatDate(article.published_at)}</span>
                         </div>
-                        <h4 className="line-clamp-2 text-sm font-bold leading-snug text-ink group-hover:text-brand">
+                        <h3 className="line-clamp-2 text-sm font-bold leading-snug text-ink group-hover:text-brand">
                           {article.title}
-                        </h4>
+                        </h3>
                       </div>
                     </Link>
                   </BentoTile>
@@ -362,7 +363,7 @@ export function HomeBento({
                   <Trophy className="h-4.5 w-4.5" strokeWidth={1.75} />
                 </span>
                 <div>
-                  <BentoEyebrow className="!mb-0 text-amber-700">Prestasi</BentoEyebrow>
+                  <BentoEyebrow className="!mb-0 text-amber-800 dark:text-amber-400">Prestasi</BentoEyebrow>
                   <h2 className="text-xl font-bold tracking-tight text-ink md:text-2xl">
                     Bangga bersama
                   </h2>
@@ -370,6 +371,7 @@ export function HomeBento({
               </div>
               <Link
                 to="/prestasi"
+                aria-label="Lihat semua prestasi sekolah"
                 className="inline-flex items-center gap-1 rounded-full bg-amber-400 px-3.5 py-1.5 text-xs font-semibold text-amber-950 shadow-sm transition hover:bg-amber-300"
               >
                 Semua
@@ -395,14 +397,14 @@ export function HomeBento({
                         src={coverSrc(
                           featuredAchievement.cover_path,
                           featuredAchievement.slug || featuredAchievement.id,
-                          900,
-                          560,
+                          800,
+                          500,
                         )}
                         alt={featuredAchievement.title}
                         className="h-full w-full object-cover"
                         loading="lazy"
-                        width={900}
-                        height={560}
+                        width={800}
+                        height={500}
                       />
                     </div>
                     <div className="flex flex-1 flex-col p-4 md:p-5">
@@ -452,9 +454,9 @@ export function HomeBento({
                           {item.badge_label}
                         </Badge>
                       )}
-                      <h4 className="line-clamp-2 text-sm font-bold text-ink group-hover:text-brand">
+                      <h3 className="line-clamp-2 text-sm font-bold text-ink group-hover:text-brand">
                         {item.title}
-                      </h4>
+                      </h3>
                     </Link>
                   </BentoTile>
                 )
@@ -562,6 +564,8 @@ export function HomeBento({
                         alt={p.name}
                         className="max-h-9 max-w-[80px] object-contain"
                         loading="lazy"
+                        width={80}
+                        height={36}
                       />
                     ) : (
                       <span className="text-[11px] font-semibold text-subtle">{p.name}</span>
