@@ -2,7 +2,7 @@
 
 **Language of this file:** English  
 **Audience:** Claude, Cursor, Grok, Copilot, and any coding agent  
-**Last updated:** 2026-08-06 (root monolith; English docs; PHPUnit unit/feature suite)  
+**Last updated:** 2026-09-23 (root monolith; English docs; PHPUnit unit/feature suite; v2.3.0)  
 
 ---
 

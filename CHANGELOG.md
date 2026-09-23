@@ -5,9 +5,25 @@ All notable changes to **ScholarGate** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.3.0] - 2026-09-19
+## [2.3.0] - 2026-09-23
 
 ### Added
+- **PageSpeed & Web Performance Engine**:
+  - **Dynamic Storage Preconnect**: Extracted storage CDN origin dynamically from `config('filesystems.disks.r2.url')` / `R2_PUBLIC_URL` in `app.blade.php`. Removed all hardcoded storage CDN domains.
+  - **LCP Preloader Optimization**: Rendered hero carousel banner using an explicit HTML `<img>` tag with `fetchpriority="high"`, `loading="eager"`, and `decoding="async"`, enabling instant preloader scanner discovery.
+  - **Responsive Image Payload Scaling**: Optimized image resolution dimensions across `HomeBento`, `ArticlesSection`, and `HeroCarousel` to prevent downloading unscaled 1080p images on mobile devices, saving ~721 KiB on mobile and ~1.38 MB on desktop.
+  - **Forced Reflow Elimination**: Replaced JS Framer Motion hover calculations on static Bento tiles with hardware-accelerated CSS `hover:-translate-y-0.5` transitions.
+- **Accessibility & UX Polish**:
+  - **Color Contrast**: Upgraded `BentoEyebrow` text contrast (`text-sky-700 dark:text-sky-400`) to exceed WCAG AA standards (> 4.5:1 ratio).
+  - **Heading Hierarchy**: Enforced strict semantic heading order (`h1 -> h2 -> h3`) across Bento sections.
+  - **Touch Target Expansion**: Expanded hero slider pagination dot touch targets from `8x8px` to `36x36px` (`p-1 flex h-9 w-9 items-center justify-center`).
+  - **Distinct Link Labels**: Added distinct `aria-label` attributes to duplicate section links ("Semua") for screen reader clarity.
+- **Bento Grid Theme & Dark Mode Support**:
+  - Full support for `light`, `dark`, and `auto-system` themes with single dynamic icon switcher.
+  - Complete dark mode coverage across all tables, forms, inputs, badges, and button states.
+- **Instagram Multi-Photo Scraper & Backup Suite**:
+  - Scraper support for multi-photo Instagram carousel posts with inline paragraph placement and local fallback storage handling.
+  - Comprehensive backup/restore coverage for all new theme assets, settings, and media records.
 - **Dual Theme & Hook Engine Architecture**:
   - Built-in `ThemeManager` service (`app/Services/Theme/ThemeManager.php`), `ThemeAdminController`, and `ThemesAdminPage` for ZIP theme uploading, live activation, and metadata inspection.
   - Dynamic client-side Inertia page resolver in `resources/js/app.tsx` with automatic fallback to `themes/default/pages/` for uncustomized views.
@@ -16,15 +32,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Introduced traditional white newspaper-style layout (`resources/js/themes/classic/`) featuring `ClassicLayout`, `HomePage`, `ArticlesPage`, `ArticleDetailPage`, `AchievementsPage`, `ExtracurricularPage`, `DownloadsPage`, and `ProfilePage`.
   - Classic news portal aesthetics: Top warta bar, official announcements ticker, multi-column story feed, and newspaper brand header.
   - 100% connected to live backend REST APIs (`/api/v1/*`) via `@tanstack/react-query`.
-- **Dynamic Branding & Zero Hardcoding Security**:
-  - Global `logo_url` and `tagline` distribution via `HandleInertiaRequests.php` middleware.
-  - Dynamic rendering of uploaded institution logos (`<img src={logoUrl} />`) across header, top bar, and footer in all themes.
-  - Removed all hardcoded institution names, contacts, emails, locations, and phone numbers.
-  - Dynamic `Layanan Penting` (Services) rendering connected directly to Admin Panel (`/admin/services`) with dynamic Lucide icon resolver (`getLucideIcon`).
-- **Comprehensive Documentation & Wiki**:
-  - Updated Theme Development Guide (`docs/THEMES.md`) in English and GitHub Wiki (`docs/wiki/Panduan-Pembuatan-Tema.md`) in Indonesian.
 
 ### Fixed
+- Fixed hardcoded CDN URL in Blade head preconnect tag.
 - Fixed `SafeHtml` prop name binding (`html` vs `content`) on article detail and school profile pages.
 - Fixed theme dataset parsing in `resources/js/app.tsx` during initial page load and SPA navigation.
 

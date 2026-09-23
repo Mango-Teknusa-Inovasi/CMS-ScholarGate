@@ -5,8 +5,8 @@
 | **Document** | Security Policy & Technical Controls |
 | **Product** | CMS Scholargate |
 | **Language** | English |
-| **Version** | 2.2 |
-| **Last updated** | 2026-09-06 |
+| **Version** | 2.3 |
+| **Last updated** | 2026-09-23 |
 | **Classification** | Public (implementation inventory; no secrets) |
 | **Standards alignment** | OWASP Top 10 (2021), OWASP ASVS L1/L2 themes, OWASP Secure Headers, NIST SSDF practices (selected) |
 

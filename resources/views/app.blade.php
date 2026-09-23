@@ -27,7 +27,19 @@
     <!-- Preconnect & Load Google Fonts and Storage CDN asynchronously for optimized FCP/LCP -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://is3-storage.smage.my.id" crossorigin>
+    @php
+        $r2PublicUrl = config('filesystems.disks.r2.url') ?: env('R2_PUBLIC_URL');
+        $r2Origin = null;
+        if ($r2PublicUrl) {
+            $parsed = parse_url($r2PublicUrl);
+            if (!empty($parsed['scheme']) && !empty($parsed['host'])) {
+                $r2Origin = $parsed['scheme'] . '://' . $parsed['host'] . (!empty($parsed['port']) ? ':' . $parsed['port'] : '');
+            }
+        }
+    @endphp
+    @if($r2Origin)
+        <link rel="preconnect" href="{{ $r2Origin }}" crossorigin>
+    @endif
     <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     @if(is_array($seo))
