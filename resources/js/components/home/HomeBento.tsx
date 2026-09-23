@@ -106,7 +106,9 @@ export function HomeBento({
                     src={coverSrc(welcome.image_path, welcome.key || 'home-welcome', 640, 800)}
                     alt={welcome.title || 'Foto pejabat'}
                     className="absolute inset-0 h-full w-full object-cover object-top"
-                    loading="lazy"
+                    loading="eager"
+                    fetchPriority="high"
+                    decoding="async"
                     width={640}
                     height={800}
                   />

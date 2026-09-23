@@ -77,6 +77,18 @@ export function coverSrc(
   return mediaUrl(path) || demoImage(seed, w, h)
 }
 
+export function coverSrcSet(
+  path: string | null | undefined,
+  seed: string | number,
+  aspectRatio = 16 / 9,
+  widths = [640, 960, 1280, 1600],
+) {
+  if (path) return undefined
+  return widths
+    .map((w) => `${demoImage(seed, w, Math.round(w / aspectRatio))} ${w}w`)
+    .join(', ')
+}
+
 /** @deprecated */
 export function placeholderGradient(seed = 0) {
   return softMediaClass(seed)

@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **PageSpeed & Web Performance Engine**:
   - **Dynamic Storage Preconnect**: Extracted storage CDN origin dynamically from `config('filesystems.disks.r2.url')` / `R2_PUBLIC_URL` in `app.blade.php`. Removed all hardcoded storage CDN domains.
-  - **LCP Preloader Optimization**: Rendered hero carousel banner using an explicit HTML `<img>` tag with `fetchpriority="high"`, `loading="eager"`, and `decoding="async"`, enabling instant preloader scanner discovery.
+  - **Non-Render-Blocking Fonts**: Replaced render-blocking Google Fonts link with asynchronous `preload` and `media="print" onload="this.media='all'"` pattern, cutting ~750ms off initial mobile FCP.
+  - **Mobile LCP Eager Discovery**: Set `loading="eager"`, `fetchPriority="high"`, and `decoding="async"` on both Hero carousel banner and Welcome block photos visible in initial mobile viewports.
   - **Responsive Image Payload Scaling**: Optimized image resolution dimensions across `HomeBento`, `ArticlesSection`, and `HeroCarousel` to prevent downloading unscaled 1080p images on mobile devices, saving ~721 KiB on mobile and ~1.38 MB on desktop.
   - **Forced Reflow Elimination**: Replaced JS Framer Motion hover calculations on static Bento tiles with hardware-accelerated CSS `hover:-translate-y-0.5` transitions.
 - **Accessibility & UX Polish**:
