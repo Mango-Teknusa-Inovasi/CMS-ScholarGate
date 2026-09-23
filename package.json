@@ -45,7 +45,7 @@
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-helmet-async": "^3.0.0",
-    "react-hook-form": "^7.87.0",
+    "react-hook-form": "^7.88.0",
     "tailwind-merge": "^3.6.0",
     "zod": "^4.6.2"
   },
