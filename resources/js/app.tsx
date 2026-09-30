@@ -70,6 +70,7 @@ const PUBLIC_LAYOUT_PAGES = new Set([
   'DownloadsPage',
   'MemberAccountPage',
   'LegalPage',
+  'ErrorPage',
 ])
 
 /** Admin CMS pages (not login) */

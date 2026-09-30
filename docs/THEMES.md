@@ -19,7 +19,8 @@ resources/js/themes/
 │       ├── AchievementsPage.tsx     # Achievements Directory
 │       ├── ExtracurricularPage.tsx  # Extracurricular Directory
 │       ├── DownloadsPage.tsx        # Downloads & Files Page
-│       └── ProfilePage.tsx          # School Profile View
+│       ├── ProfilePage.tsx          # School Profile View
+│       └── ErrorPage.tsx            # Custom Theme Error View (404, 403, 500, 419, 503)
 │
 └── classic/                         # Classic News Portal Theme (Polos Putih Model News Website)
     ├── theme.json
@@ -32,7 +33,8 @@ resources/js/themes/
         ├── AchievementsPage.tsx     # Classic Student Achievements Grid
         ├── ExtracurricularPage.tsx  # Classic Club & Extracurricular Directory
         ├── DownloadsPage.tsx        # Classic Downloads Directory
-        └── ProfilePage.tsx          # Classic School Profile Page
+        ├── ProfilePage.tsx          # Classic School Profile Page
+        └── ErrorPage.tsx            # Custom Classic Theme Error View
 ```
 
 ---
@@ -147,4 +149,34 @@ import { HookSlot } from '@/components/ui/HookSlot';
 3. Navigate to **Sistem -> Tema & Layout** (`/admin/themes`).
 4. Click **Unggah Tema (.ZIP)** and select your archive.
 5. Click **Aktifkan Tema** to switch the active theme instantly!
+
+---
+
+## 🚨 6. Custom Theme Error Pages (`ErrorPage.tsx`)
+
+Themes can define custom styled error views for status codes `404`, `403`, `419`, `500`, and `503`.
+
+### How Theme Error Page Resolution Works:
+1. When an HTTP error occurs, Laravel passes `status` and `message` props to Inertia `ErrorPage`.
+2. Inertia's `resolvePage` checks for an `ErrorPage.tsx` component inside your theme folder:
+   `resources/js/themes/{activeTheme}/pages/ErrorPage.tsx`
+3. If your theme provides `ErrorPage.tsx`, Inertia renders your theme's custom error page!
+4. If omitted, it automatically falls back to `resources/js/themes/default/pages/ErrorPage.tsx`.
+
+### Example `ErrorPage.tsx` in a Custom Theme:
+```tsx
+import { Link, Head } from '@inertiajs/react';
+
+export default function ErrorPage({ status = 404, message }: { status?: number; message?: string }) {
+    return (
+        <div className="error-container py-20 text-center">
+            <Head title={`Galat ${status}`} />
+            <h1 className="text-6xl font-bold">{status}</h1>
+            <p className="mt-4 text-lg">{message || 'Halaman tidak ditemukan.'}</p>
+            <Link href="/" className="btn-primary mt-6 inline-block">Kembali ke Beranda</Link>
+        </div>
+    );
+}
+```
+
 
