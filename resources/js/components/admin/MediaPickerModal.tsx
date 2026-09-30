@@ -19,6 +19,7 @@ import { api } from '../../lib/api'
 import { mediaUrl, cn } from '../../lib/utils'
 import { uploadSmart } from '../../lib/upload'
 import { useToast } from '../ui/Toast'
+import { MediaItemDetailSidebar } from './MediaItemDetailSidebar'
 
 export type MediaItem = {
   id: string | number
@@ -511,106 +512,22 @@ export function MediaPickerModal({
             </div>
 
             {/* Sidebar Details Panel */}
-            <div className="w-full md:w-80 shrink-0 bg-peach-soft/30 p-5 overflow-y-auto border-t md:border-t-0 border-line">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-subtle">
-                Detail Berkas
-              </h3>
-
+            <div className="w-full md:w-80 shrink-0 bg-peach-soft/30 overflow-y-auto border-t md:border-t-0 border-line">
               {selectedItem ? (
-                <div className="mt-3 space-y-4">
-                  {/* Thumbnail Preview */}
-                  <div className="overflow-hidden rounded-xl border border-line bg-white shadow-xs">
-                    {selectedItem.mime?.startsWith('image/') ||
-                    /\.(webp|jpg|jpeg|png|gif)$/i.test(selectedItem.filename) ? (
-                      <div className="aspect-video w-full overflow-hidden bg-muted">
-                        <img
-                          src={mediaUrl(selectedItem.url || selectedItem.path) || ''}
-                          alt={selectedItem.alt || selectedItem.filename}
-                          className="h-full w-full object-contain p-1"
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex h-32 items-center justify-center bg-muted">
-                        <FileText className="h-12 w-12 text-subtle" />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Metadata List */}
-                  <div className="space-y-1.5 text-xs">
-                    <p className="font-semibold text-ink break-all">
-                      {selectedItem.original_filename || selectedItem.filename}
-                    </p>
-                    <div className="flex items-center gap-2 text-subtle">
-                      <Calendar className="h-3.5 w-3.5 shrink-0" />
-                      <span>{formatDate(selectedItem.created_at)}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-subtle">
-                      <HardDrive className="h-3.5 w-3.5 shrink-0" />
-                      <span>{formatBytes(selectedItem.size)}</span>
-                      {selectedItem.optimized && (
-                        <span className="rounded bg-teal-50 px-1.5 py-0.5 text-[10px] font-bold text-teal-700">
-                          WebP Optimized
-                        </span>
-                      )}
-                    </div>
-                    {selectedItem.width && selectedItem.height ? (
-                      <div className="flex items-center gap-2 text-subtle">
-                        <Maximize2 className="h-3.5 w-3.5 shrink-0" />
-                        <span>
-                          {selectedItem.width} × {selectedItem.height} px
-                        </span>
-                      </div>
-                    ) : null}
-                  </div>
-
-                  {/* Alt Text Input */}
-                  <div className="space-y-1.5 pt-2 border-t border-line">
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-subtle">
-                      Teks Alternatif (Alt Text)
-                    </label>
-                    <input
-                      type="text"
-                      value={altDraft}
-                      onChange={(e) => setAltDraft(e.target.value)}
-                      placeholder="Jelaskan gambar ini untuk SEO…"
-                      className="w-full rounded-xl border border-line bg-white px-3 py-2 text-xs outline-none focus:border-sky-500"
-                    />
-                    {altDraft !== (selectedItem.alt || '') && (
-                      <button
-                        type="button"
-                        onClick={() => updateAlt.mutate({ id: selectedItem.id, alt: altDraft })}
-                        disabled={updateAlt.isPending}
-                        className="rounded-lg bg-sky-500 px-3 py-1 text-[11px] font-semibold text-white hover:bg-sky-600 disabled:opacity-60 transition"
-                      >
-                        {updateAlt.isPending ? 'Menyimpan…' : 'Simpan Alt'}
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Copy URL Button */}
-                  <div className="pt-2 border-t border-line">
-                    <button
-                      type="button"
-                      onClick={() => handleCopyUrl(selectedItem.url || selectedItem.path)}
-                      className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-line bg-white px-3 py-2 text-xs font-semibold text-body hover:bg-page transition"
-                    >
-                      {copied ? (
-                        <>
-                          <CheckCheck className="h-3.5 w-3.5 text-teal-600" />
-                          <span className="text-teal-600">Tautan Disalin!</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="h-3.5 w-3.5 text-subtle" />
-                          <span>Salin Tautan Media</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
+                <MediaItemDetailSidebar
+                  selectedItem={selectedItem}
+                  altDraft={altDraft}
+                  setAltDraft={setAltDraft}
+                  isUpdatingAlt={updateAlt.isPending}
+                  handleSaveAlt={() =>
+                    updateAlt.mutate({ id: selectedItem.id, alt: altDraft })
+                  }
+                  copied={copied}
+                  copyUrl={handleCopyUrl}
+                  handleConfirmSelect={handleConfirmSelect}
+                />
               ) : (
-                <div className="mt-12 text-center text-xs text-subtle">
+                <div className="p-5 text-center text-xs text-subtle mt-12">
                   <p>Klik salah satu media pada daftar untuk melihat detail dan memilihnya.</p>
                 </div>
               )}
