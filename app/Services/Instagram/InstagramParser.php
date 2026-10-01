@@ -82,7 +82,7 @@ class InstagramParser
             $path = (string) parse_url($trimmed, PHP_URL_PATH);
             $base = basename($path);
 
-            if (preg_match('/([0-9]{8_}[0-9]{8_})/', $base, $mId)) {
+            if (preg_match('/([0-9]{8,}_[0-9]{8,})/', $base, $mId)) {
                 $key = $mId[1];
             } else {
                 $key = strtok($base, '?');
@@ -98,7 +98,9 @@ class InstagramParser
     }
 
     /**
-     * Ekstrak gambar utama dan slide carousel dari OpenGraph, Twitter tags, dan CDN regex.
+     * Ekstrak gambar utama dan slide carousel dari OpenGraph dan Twitter tags.
+     * HANYA melakukan regex fallback CDN jika meta tag og:image/twitter:image tidak tersedia,
+     * untuk mencegah terambilnya foto postingan rekomendasi/footer dari postingan lain.
      *
      * @return array<string>
      */
@@ -116,10 +118,13 @@ class InstagramParser
             $images[] = html_entity_decode($mTwImg[1], ENT_QUOTES | ENT_HTML5, 'UTF-8');
         }
 
-        $unescaped = str_replace('\/', '/', $html);
-        if (preg_match_all('#https://[a-zA-Z0-9.-]*(?:cdninstagram\.com|fbcdn\.net)/[^\s"\'<>]+#i', $unescaped, $mCdn)) {
-            foreach ($mCdn[0] as $cdnUrl) {
-                $images[] = html_entity_decode($cdnUrl, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        // HANYA jika meta tag og:image & twitter:image kosong, lakukan fallback CDN
+        if (empty($images)) {
+            $unescaped = str_replace('\/', '/', $html);
+            if (preg_match_all('#https://[a-zA-Z0-9.-]*(?:cdninstagram\.com|fbcdn\.net)/[^\s"\'<>]+#i', $unescaped, $mCdn)) {
+                foreach ($mCdn[0] as $cdnUrl) {
+                    $images[] = html_entity_decode($cdnUrl, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                }
             }
         }
 
