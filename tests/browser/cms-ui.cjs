@@ -235,6 +235,7 @@ async function serve(route) {
         else if (e === "/settings/public" || e === "/admin/settings")
             data = settings;
         else if (e === "/menus") data = menus;
+        else if (e === "/profile") data = { page: {title:"Profil SMA ScholarGate",tabs:[]},welcome:home.welcome,contacts:[{id:1,title:"Alamat sekolah",value:"Jalan Pendidikan",icon:"map-pin"}],quick_services:[],services:[] };
         else if (e === "/home")
             data = empty
                 ? {
@@ -356,6 +357,38 @@ async function serve(route) {
         await page.waitForTimeout(700);
         if (!(await page.locator("#app").innerText()).trim())
             throw new Error("Empty render: " + errors.join(";"));
+    }
+    if (process.env.UI_NAV_ONLY) {
+        role = "guest";
+        for (const width of [375, 1440]) {
+            await page.setViewportSize({width,height:900});
+            await go("/profil");
+            if (width === 375) await page.getByRole("button",{name:"Buka menu",exact:true}).click();
+            const nav = page.getByRole("navigation",{name:width === 375 ? "Navigasi seluler" : "Navigasi utama",exact:true});
+            const trigger = nav.getByRole("button",{name:"Submenu Profil"});
+            await trigger.click();
+            assert((await trigger.innerText()).trim() === "Profil");
+            assert(await nav.getByRole("link",{name:"Profil",exact:true}).count() === 0);
+            assert(await nav.getByRole("link",{name:"Tentang sekolah"}).getAttribute("aria-current") === "page");
+            assert(await nav.getByRole("link",{name:"Kontak",exact:true}).getAttribute("aria-current") === null);
+            await page.screenshot({path:`${output}/profile-dropdown-${width}.png`});
+            await nav.getByRole("link",{name:"Kontak",exact:true}).click();
+            await page.waitForFunction(()=>window.location.hash === "#kontak");
+            if (width === 375) await page.getByRole("button",{name:"Buka menu",exact:true}).click();
+            await trigger.click();
+            assert(await nav.getByRole("link",{name:"Kontak",exact:true}).getAttribute("aria-current") === "location");
+            assert(await nav.getByRole("link",{name:"Tentang sekolah"}).getAttribute("aria-current") === null);
+            await trigger.focus();
+            await page.keyboard.press("Escape");
+            assert(await trigger.getAttribute("aria-expanded") === "false");
+            await page.keyboard.press("Enter");
+            assert(await trigger.getAttribute("aria-expanded") === "true");
+            assert(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth));
+        }
+        assert.deepEqual(errors, []);
+        console.log("PASS: unified profile trigger, exclusive hash-aware active links, keyboard, and mobile navigation");
+        await browser.close();
+        return;
     }
     for (const width of process.env.UI_SKIP_SCREENSHOTS ? [] : [375, 768, 1440])
         for (const dark of [false, true])

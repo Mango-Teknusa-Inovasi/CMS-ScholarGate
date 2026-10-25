@@ -107,12 +107,14 @@ export function PageBentoShell({ children, className, tight }: ShellProps) {
 }
 
 export function PageBentoSection({
+  id,
   eyebrow,
   title,
   action,
   children,
   className,
 }: {
+  id?: string
   eyebrow?: string
   title?: string
   action?: ReactNode
@@ -120,7 +122,7 @@ export function PageBentoSection({
   className?: string
 }) {
   return (
-    <section className={className}>
+    <section id={id} className={cn(id && 'scroll-mt-28', className)}>
       {(eyebrow || title || action) && (
         <div className="mb-3 flex items-end justify-between gap-3 px-0.5 md:mb-4">
           <div>

@@ -109,6 +109,7 @@ export function Link({
       target={target}
       rel={rel}
       title={title}
+      aria-current={rest['aria-current']}
     >
       {children}
     </InertiaLink>

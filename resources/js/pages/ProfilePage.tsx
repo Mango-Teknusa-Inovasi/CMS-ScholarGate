@@ -141,7 +141,7 @@ export function ProfilePage() {
         </BentoBoard>
 
         {data.contacts.length > 0 && (
-          <PageBentoSection eyebrow="Kontak" title="Hubungi kami">
+          <PageBentoSection id="kontak" eyebrow="Kontak" title="Hubungi kami">
             <BentoBoard>
               {data.contacts.map((c, i) => {
                 const Icon = getLucideIcon(c.icon)
