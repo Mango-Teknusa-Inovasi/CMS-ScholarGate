@@ -13,6 +13,8 @@ export type ArticlePromptResult = {
   focus_keyword: string
   meta_title: string
   meta_description: string
+  sources?: Array<{ type?: string; title: string; url: string }>
+  fact_check_notes?: string[]
 }
 
 type Props = {

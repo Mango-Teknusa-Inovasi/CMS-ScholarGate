@@ -29,6 +29,8 @@ export type InstagramImportResult = {
   images_count: number
   source_url: string
   author?: string | null
+  sources?: Array<{ type?: string; title: string; url: string }>
+  fact_check_notes?: string[]
 }
 
 interface Props {

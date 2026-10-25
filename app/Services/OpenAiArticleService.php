@@ -20,8 +20,11 @@ use App\Services\Ai\SpeechGenerator;
 class OpenAiArticleService
 {
     protected ArticleGenerator $articleGenerator;
+
     protected SpeechGenerator $speechGenerator;
+
     protected AchievementGenerator $achievementGenerator;
+
     protected RagChatbot $ragChatbot;
 
     public function __construct(
@@ -30,10 +33,10 @@ class OpenAiArticleService
         ?AchievementGenerator $achievementGenerator = null,
         ?RagChatbot $ragChatbot = null
     ) {
-        $this->articleGenerator = $articleGenerator ?? new ArticleGenerator();
-        $this->speechGenerator = $speechGenerator ?? new SpeechGenerator();
-        $this->achievementGenerator = $achievementGenerator ?? new AchievementGenerator();
-        $this->ragChatbot = $ragChatbot ?? new RagChatbot();
+        $this->articleGenerator = $articleGenerator ?? new ArticleGenerator;
+        $this->speechGenerator = $speechGenerator ?? new SpeechGenerator;
+        $this->achievementGenerator = $achievementGenerator ?? new AchievementGenerator;
+        $this->ragChatbot = $ragChatbot ?? new RagChatbot;
     }
 
     public static function getDisplayModelName(): string
@@ -53,7 +56,7 @@ class OpenAiArticleService
 
     public function testConnection(?string $apiKey = null, ?string $model = null, ?string $baseUrl = null): array
     {
-        return (new AiClient())->testConnection($apiKey, $model, $baseUrl);
+        return (new AiClient)->testConnection($apiKey, $model, $baseUrl);
     }
 
     public function generateArticle(array $context): array
@@ -66,10 +69,13 @@ class OpenAiArticleService
         if (is_string($params)) {
             $params = ['topic' => $params, 'category_hint' => $categoryName];
         }
+
         return $this->articleGenerator->generateArticle([
             'caption' => $params['topic'] ?? '',
+            'key_points' => $params['key_points'] ?? '',
+            'category_hint' => $params['category_hint'] ?? '',
             'tone' => $params['tone'] ?? 'formal_news',
-            'author' => 'AI Generator',
+            'author' => '',
             'image_count' => 1,
         ]);
     }
@@ -125,6 +131,7 @@ class OpenAiArticleService
             $params['prompt'] ?? '',
             $params
         );
+
         return [
             'result_html' => $result,
             'action' => $params['action'] ?? 'polish',
@@ -133,9 +140,12 @@ class OpenAiArticleService
 
     public function answerRagQuery(string $query, array|int $history = [], array $options = []): array
     {
+        $maxSources = (int) ($options['max_sources'] ?? 5);
         if (is_int($history)) {
+            $maxSources = $history;
             $history = [];
         }
-        return $this->ragChatbot->answerRagQuery($query, $history);
+
+        return $this->ragChatbot->answerRagQuery($query, $history, $maxSources);
     }
 }

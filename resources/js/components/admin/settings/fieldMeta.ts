@@ -131,6 +131,11 @@ export const fieldMeta: Record<string, FieldMeta> = {
     hint: 'Bebas isi model kustom atau klik rekomendasi di bawah. Default: gpt-4o-mini.',
     group: 'ai',
   },
+  openai_embedding_model: {
+    label: 'Model Embedding RAG (Opsional)',
+    hint: 'Isi nama model embedding yang didukung provider pada Base URL. Kosongkan untuk memakai pencarian leksikal saja.',
+    group: 'ai',
+  },
   openai_display_model_name: {
     label: 'Nama Tampilan Model AI (Brand Persona)',
     hint: 'Nama model/sistem AI publik yang akan selalu dijawab oleh asisten (misal: Portal AI Engine). Model dilarang membocorkan nama provider atau model aslinya.',

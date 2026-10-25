@@ -2,14 +2,17 @@
 
 namespace Tests\Feature;
 
+use App\Models\Achievement;
 use App\Models\Article;
 use App\Models\Category;
+use App\Models\ProfilePage;
 use App\Models\Setting;
 use App\Models\User;
+use App\Services\Ai\RagChatbot;
 use App\Services\OpenAiArticleService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
-use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class OpenAiRagSecurityTest extends TestCase
@@ -19,7 +22,7 @@ class OpenAiRagSecurityTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        \Illuminate\Support\Facades\Cache::flush();
+        Cache::flush();
     }
 
     public function test_custom_display_model_name_default_and_custom_setting(): void
@@ -101,7 +104,7 @@ Gunakan syntax `<?php echo "Halo Sekolah!"; ?>` dan perhatikan struktur controll
             $result = OpenAiArticleService::filterPromptInjection($article);
             $this->assertTrue($result['is_programming'], "Failed recognizing as programming: {$article}");
             $this->assertFalse($result['is_flagged'], "False positive flagging on authentic programming article: {$article}");
-            $this->assertSame($article, $result['sanitized_text'], "Programming content was inappropriately altered.");
+            $this->assertSame($article, $result['sanitized_text'], 'Programming content was inappropriately altered.');
         }
     }
 
@@ -171,5 +174,139 @@ Gunakan syntax `<?php echo "Halo Sekolah!"; ?>` dan perhatikan struktur controll
         $data = $response->json('data');
         $this->assertSame('ScholarGate Intelligence Core', $data['model_name']);
         $this->assertTrue($data['flagged']);
+    }
+
+    public function test_rag_retrieves_public_articles_profile_and_achievements_but_not_drafts_or_future_articles(): void
+    {
+        $user = User::factory()->create();
+        $category = Category::create(['name' => 'Prestasi', 'slug' => 'prestasi']);
+        Article::create([
+            'category_id' => $category->id,
+            'user_id' => $user->id,
+            'title' => 'Siswa Juara Robotika Nasional',
+            'slug' => 'siswa-juara-robotika-nasional',
+            'excerpt' => 'Tim robotika sekolah meraih juara nasional.',
+            'body' => '<p>Kompetisi robotika berlangsung di Surabaya.</p>',
+            'status' => 'published',
+            'published_at' => now()->subDay(),
+        ]);
+        Article::create([
+            'category_id' => $category->id,
+            'user_id' => $user->id,
+            'title' => 'Draf Robotika Rahasia',
+            'slug' => 'draft-robotika',
+            'body' => 'Robotika',
+            'status' => 'draft',
+        ]);
+        Article::create([
+            'category_id' => $category->id,
+            'user_id' => $user->id,
+            'title' => 'Robotika Masa Depan',
+            'slug' => 'robotika-masa-depan',
+            'body' => 'Robotika',
+            'status' => 'published',
+            'published_at' => now()->addDay(),
+        ]);
+        Achievement::create([
+            'title' => 'Medali Emas Robotika',
+            'slug' => 'medali-emas-robotika',
+            'excerpt' => 'Siswa meraih medali emas robotika tingkat nasional.',
+            'status' => 'published',
+        ]);
+        ProfilePage::create([
+            'title' => 'Profil SMA Negeri 1 Gedeg',
+            'subtitle' => 'Sekolah berprestasi di bidang teknologi',
+            'tabs' => [['key' => 'visi', 'label' => 'Visi', 'content_html' => '<p>Mendorong prestasi sains dan robotika.</p>']],
+        ]);
+
+        $context = app(RagChatbot::class)->buildSchoolKnowledgeContext('profil sekolah juara robotika');
+
+        $this->assertNotEmpty($context['sources']);
+        $this->assertContains('/artikel/siswa-juara-robotika-nasional', array_column($context['sources'], 'url'));
+        $this->assertContains('Prestasi', array_column($context['sources'], 'type'));
+        $this->assertContains('Profil Sekolah', array_column($context['sources'], 'type'));
+        $this->assertStringNotContainsString('Draf Robotika Rahasia', $context['context_text']);
+        $this->assertStringNotContainsString('Robotika Masa Depan', $context['context_text']);
+    }
+
+    public function test_rag_falls_back_to_lexical_retrieval_when_embedding_provider_fails(): void
+    {
+        $user = User::factory()->create();
+        $category = Category::create(['name' => 'Prestasi', 'slug' => 'prestasi']);
+        Article::create([
+            'category_id' => $category->id,
+            'user_id' => $user->id,
+            'title' => 'Siswa Meraih Juara Robotika',
+            'slug' => 'juara-robotika-fallback',
+            'body' => 'Tim siswa menjuarai kompetisi robotika.',
+            'status' => 'published',
+            'published_at' => now(),
+        ]);
+        Setting::setValue('openai_api_key', 'sk-mock-key-12345');
+        Setting::setValue('openai_embedding_model', 'embedding-test-model');
+        Http::fake([
+            'https://api.openai.com/v1/embeddings' => Http::response(['error' => ['message' => 'unsupported']], 404),
+            'https://api.openai.com/v1/chat/completions' => Http::response([
+                'choices' => [['message' => ['content' => 'Siswa meraih juara robotika.']]],
+            ], 200),
+        ]);
+
+        $result = app(OpenAiArticleService::class)->answerRagQuery('siapa juara robotika');
+
+        $this->assertSame('/artikel/juara-robotika-fallback', $result['sources'][0]['url']);
+        Http::assertSent(fn ($request) => str_contains($request->url(), '/embeddings'));
+        Http::assertSent(fn ($request) => str_contains($request->url(), '/chat/completions'));
+    }
+
+    public function test_rag_uses_configured_embeddings_to_retrieve_semantic_matches(): void
+    {
+        $user = User::factory()->create();
+        $category = Category::create(['name' => 'Prestasi', 'slug' => 'prestasi']);
+        Article::create([
+            'category_id' => $category->id,
+            'user_id' => $user->id,
+            'title' => 'Siswa Mengukir Prestasi di Kompetisi Robotika',
+            'slug' => 'kompetisi-robotika-semantic',
+            'body' => 'Tim siswa membawa pulang penghargaan dari ajang teknologi.',
+            'status' => 'published',
+            'published_at' => now(),
+        ]);
+        Setting::setValue('openai_api_key', 'sk-mock-key-12345');
+        Setting::setValue('openai_embedding_model', 'embedding-test-model');
+        Http::fake([
+            'https://api.openai.com/v1/embeddings' => Http::response([
+                'data' => [
+                    ['index' => 0, 'embedding' => [1.0, 0.0]],
+                    ['index' => 1, 'embedding' => [1.0, 0.0]],
+                ],
+            ], 200),
+            'https://api.openai.com/v1/chat/completions' => Http::response([
+                'choices' => [['message' => ['content' => 'Tim siswa membawa pulang penghargaan.']]],
+            ], 200),
+        ]);
+
+        $result = app(OpenAiArticleService::class)->answerRagQuery('Capaian peserta didik apa?');
+
+        $this->assertSame('/artikel/kompetisi-robotika-semantic', $result['sources'][0]['url']);
+        Http::assertSent(fn ($request) => str_contains($request->url(), '/embeddings'));
+    }
+
+    public function test_rag_returns_no_article_sources_when_the_query_has_no_relevant_match(): void
+    {
+        $category = Category::create(['name' => 'Prestasi', 'slug' => 'prestasi']);
+        $user = User::factory()->create();
+        Article::create([
+            'category_id' => $category->id,
+            'user_id' => $user->id,
+            'title' => 'Kegiatan Literasi Sekolah',
+            'slug' => 'kegiatan-literasi-sekolah',
+            'body' => 'Siswa membaca buku bersama di perpustakaan.',
+            'status' => 'published',
+            'published_at' => now(),
+        ]);
+
+        $context = app(RagChatbot::class)->buildSchoolKnowledgeContext('status beasiswa astronomi');
+
+        $this->assertSame([], $context['sources']);
     }
 }

@@ -29,7 +29,8 @@ class InstagramFetcher
         $html = '';
         foreach ($userAgents as $ua) {
             try {
-                $response = Http::timeout(15)
+                $response = Http::connectTimeout(5)->timeout(15)
+                    ->withOptions(['allow_redirects' => false])
                     ->withHeaders([
                         'User-Agent' => $ua,
                         'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -38,7 +39,7 @@ class InstagramFetcher
                     ])
                     ->get($cleanUrl);
 
-                if ($response->successful() && strlen($response->body()) > 200) {
+                if ($response->successful() && strlen($response->body()) > 200 && strlen($response->body()) <= 8 * 1024 * 1024) {
                     $html = $response->body();
                     break;
                 }
@@ -64,34 +65,42 @@ class InstagramFetcher
 
             if (! empty($parsed['caption']) || ! empty($filteredImages)) {
                 $parsed['images'] = $filteredImages;
+
                 return $parsed;
             }
         }
 
         $caption = '';
-        if (preg_match('/<meta property="og:title" content="([^"]+)"/i', $html, $mTitle)) {
-            $caption = $this->parser->cleanCaptionFromOgTitle($mTitle[1]);
+        $ogTitle = $this->parser->metaContent($html, 'og:title');
+        if ($ogTitle !== null) {
+            $caption = $this->parser->cleanCaptionFromOgTitle($ogTitle);
         }
-
-        if ($caption === '' && preg_match('/<meta property="og:description" content="([^"]+)"/i', $html, $mDesc)) {
-            $caption = $this->parser->cleanCaptionFromOgDesc($mDesc[1]);
+        $ogDescription = $this->parser->metaContent($html, 'og:description');
+        if ($caption === '' && $ogDescription !== null) {
+            $caption = $this->parser->cleanCaptionFromOgDesc($ogDescription);
         }
-
-        if ($caption === '' && preg_match('/<meta name="description" content="([^"]+)"/i', $html, $mMetaDesc)) {
-            $caption = $this->parser->cleanCaptionFromOgDesc($mMetaDesc[1]);
+        $description = $this->parser->metaContent($html, 'description');
+        if ($caption === '' && $description !== null) {
+            $caption = $this->parser->cleanCaptionFromOgDesc($description);
         }
 
         $author = null;
-        if (preg_match('/<meta name="twitter:title" content="([^"]+)"/i', $html, $mTwitter)) {
-            $decodedTwitter = html_entity_decode($mTwitter[1], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $twitterTitle = $this->parser->metaContent($html, 'twitter:title');
+        if ($twitterTitle !== null) {
+            $decodedTwitter = $twitterTitle;
             if (preg_match('/\(@([A-Za-z0-9._]+)\)/', $decodedTwitter, $mUser)) {
                 $author = $mUser[1];
             }
         }
 
-        if (! $author && preg_match('/<meta property="og:url" content="https?:\/\/(?:www\.)?instagram\.com\/([A-Za-z0-9._]+)\//i', $html, $mUrlUser)) {
-            if (! in_array(strtolower($mUrlUser[1]), ['p', 'reel', 'tv', 'explore'], true)) {
-                $author = $mUrlUser[1];
+        $openGraphUrl = $this->parser->metaContent($html, 'og:url');
+        if (! $author && $openGraphUrl !== null) {
+            $parts = parse_url($openGraphUrl);
+            $segments = explode('/', trim((string) ($parts['path'] ?? ''), '/'));
+            if (InstagramParser::isInstagramHost((string) ($parts['host'] ?? ''))
+                && isset($segments[0])
+                && ! in_array(strtolower($segments[0]), ['p', 'reel', 'tv', 'explore'], true)) {
+                $author = $segments[0];
             }
         }
 
@@ -128,7 +137,8 @@ class InstagramFetcher
             $headers['Cookie'] = $sessionCookie;
         }
 
-        $res = Http::timeout(15)
+        $res = Http::connectTimeout(5)->timeout(15)
+            ->withOptions(['allow_redirects' => false])
             ->withHeaders($headers)
             ->get("https://www.instagram.com/p/{$shortcode}/?__a=1&__d=dis");
 
@@ -165,7 +175,11 @@ class InstagramFetcher
             "/media_info?shortcode={$shortcode}",
         ];
 
-        $client = Http::withHeaders([
+        if (! filter_var($host, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) || str_contains($host, '/')) {
+            throw new \InvalidArgumentException('Host RapidAPI tidak valid.');
+        }
+
+        $client = Http::connectTimeout(5)->withOptions(['allow_redirects' => false])->withHeaders([
             'x-rapidapi-host' => $host,
             'x-rapidapi-key' => $apiKey,
         ])->timeout(20);
@@ -200,7 +214,7 @@ class InstagramFetcher
     public function fetchFromOembed(string $url, string $shortcode): array
     {
         $oembedUrl = 'https://api.instagram.com/oembed/?url='.urlencode($url);
-        $res = Http::timeout(10)->get($oembedUrl);
+        $res = Http::connectTimeout(5)->timeout(10)->withOptions(['allow_redirects' => false])->get($oembedUrl);
 
         if ($res->successful()) {
             $data = $res->json();

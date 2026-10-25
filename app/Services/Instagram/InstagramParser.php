@@ -14,11 +14,86 @@ class InstagramParser
             return null;
         }
 
-        if (preg_match('#instagram\.com/(?:p|reel|tv)/([A-Za-z0-9_-]+)#i', $url, $matches)) {
-            return $matches[1];
+        $parts = parse_url($url);
+        if (! is_array($parts)
+            || ! in_array(strtolower((string) ($parts['scheme'] ?? '')), ['http', 'https'], true)
+            || ! self::isInstagramHost((string) ($parts['host'] ?? ''))
+            || isset($parts['user'])
+            || isset($parts['pass'])) {
+            return null;
         }
 
-        return null;
+        return preg_match('#^/(?:p|reel|tv)/([A-Za-z0-9_-]+)/?$#i', (string) ($parts['path'] ?? ''), $matches)
+            ? $matches[1]
+            : null;
+    }
+
+    public static function isInstagramHost(string $host): bool
+    {
+        return in_array(strtolower(rtrim($host, '.')), ['instagram.com', 'www.instagram.com', 'm.instagram.com'], true);
+    }
+
+    public static function isAllowedImageUrl(string $url): bool
+    {
+        $parts = parse_url(trim($url));
+        if (! is_array($parts)
+            || strtolower((string) ($parts['scheme'] ?? '')) !== 'https'
+            || isset($parts['user'])
+            || isset($parts['pass'])) {
+            return false;
+        }
+
+        $host = strtolower(rtrim((string) ($parts['host'] ?? ''), '.'));
+        foreach (['cdninstagram.com', 'fbcdn.net'] as $suffix) {
+            if ($host === $suffix || str_ends_with($host, '.'.$suffix)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** @return list<string> */
+    public function metaContents(string $html, string $key): array
+    {
+        $contents = [];
+        if (class_exists(\DOMDocument::class)) {
+            $previous = libxml_use_internal_errors(true);
+            try {
+                $document = new \DOMDocument;
+                if ($document->loadHTML('<?xml encoding="UTF-8">'.$html, LIBXML_NONET | LIBXML_NOWARNING | LIBXML_NOERROR)) {
+                    foreach ($document->getElementsByTagName('meta') as $meta) {
+                        $name = strtolower($meta->getAttribute('property') ?: $meta->getAttribute('name'));
+                        if ($name === strtolower($key) && $meta->hasAttribute('content')) {
+                            $contents[] = html_entity_decode($meta->getAttribute('content'), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                        }
+                    }
+                }
+            } finally {
+                libxml_clear_errors();
+                libxml_use_internal_errors($previous);
+            }
+        }
+
+        if ($contents === [] && preg_match_all('/<meta\b[^>]*>/is', $html, $metaTags)) {
+            foreach ($metaTags[0] as $tag) {
+                preg_match_all('/([a-z_:.-]+)\s*=\s*(["\'])(.*?)\2/is', $tag, $attributes, PREG_SET_ORDER);
+                $values = [];
+                foreach ($attributes as $attribute) {
+                    $values[strtolower($attribute[1])] = html_entity_decode($attribute[3], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                }
+                if (strtolower((string) ($values['property'] ?? $values['name'] ?? '')) === strtolower($key) && isset($values['content'])) {
+                    $contents[] = $values['content'];
+                }
+            }
+        }
+
+        return array_values(array_unique(array_filter($contents, fn ($value) => trim($value) !== '')));
+    }
+
+    public function metaContent(string $html, string $key): ?string
+    {
+        return $this->metaContents($html, $key)[0] ?? null;
     }
 
     /**
@@ -71,7 +146,7 @@ class InstagramParser
 
         foreach ($images as $url) {
             $trimmed = trim((string) $url);
-            if (! filter_var($trimmed, FILTER_VALIDATE_URL)) {
+            if (! self::isAllowedImageUrl($trimmed)) {
                 continue;
             }
 
@@ -108,15 +183,8 @@ class InstagramParser
     {
         $images = [];
 
-        if (preg_match_all('/<meta property="og:image" content="([^"]+)"/i', $html, $mOgImg)) {
-            foreach ($mOgImg[1] as $raw) {
-                $images[] = html_entity_decode($raw, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-            }
-        }
-
-        if (preg_match('/<meta name="twitter:image" content="([^"]+)"/i', $html, $mTwImg)) {
-            $images[] = html_entity_decode($mTwImg[1], ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        }
+        $images = array_merge($images, $this->metaContents($html, 'og:image'));
+        $images = array_merge($images, $this->metaContents($html, 'twitter:image'));
 
         // HANYA jika meta tag og:image & twitter:image kosong, lakukan fallback CDN
         if (empty($images)) {
@@ -168,6 +236,7 @@ class InstagramParser
                         }
                     }
                 }
+
                 continue;
             }
 
@@ -275,7 +344,7 @@ class InstagramParser
         $filteredImages = [];
         foreach ($images as $imgUrl) {
             $trimmed = trim((string) $imgUrl);
-            if (filter_var($trimmed, FILTER_VALIDATE_URL) && ! in_array($trimmed, $filteredImages, true)) {
+            if (self::isAllowedImageUrl($trimmed) && ! in_array($trimmed, $filteredImages, true)) {
                 $filteredImages[] = $trimmed;
             }
         }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\Instagram\InstagramParser;
 use App\Services\InstagramArticleImportService;
 use App\Services\OpenAiArticleService;
 use Illuminate\Http\JsonResponse;
@@ -25,9 +26,9 @@ class ArticleAiController extends Controller
         ]);
 
         $url = $request->string('url')->toString();
-        if (! str_contains($url, 'instagram.com')) {
+        if (! InstagramParser::extractShortcode($url)) {
             return response()->json([
-                'message' => 'Tautan harus berasal dari instagram.com (contoh: https://www.instagram.com/p/...).',
+                'message' => 'Masukkan tautan postingan Instagram yang valid (contoh: https://www.instagram.com/p/...).',
             ], 422);
         }
 
@@ -49,8 +50,10 @@ class ArticleAiController extends Controller
         } catch (\InvalidArgumentException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         } catch (\Throwable $e) {
+            report($e);
+
             return response()->json([
-                'message' => $e->getMessage() ?: 'Terjadi kesalahan saat memproses data Instagram.',
+                'message' => 'Gagal memproses tautan Instagram. Coba lagi atau masukkan caption secara manual.',
             ], 500);
         }
     }

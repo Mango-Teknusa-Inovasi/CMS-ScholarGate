@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Modular Navigation System (`SiteNavItem`)**: Dedicated navigation item component supporting direct links, nested dropdown menus, active route detection, mobile sheet view, and accessible ARIA attributes.
   - **Error Boundary & Recovery UI (`LoadError`)**: Standardized error fallback component with retry actions for failed network requests and missing dataset states across themes.
   - **Automated Browser UI Testing (`tests/browser/cms-ui.cjs`)**: End-to-end Playwright test suite validating theme layouts, navigation integrity, mobile responsiveness, and dark mode toggling, runnable via `npm run test:ui`.
+- **AI Editorial Review & Semantic Embedding**:
+  - **Pre-Publish Draft Review Banner**: Added editorial inspection banner in `ArticleEditorPage` displaying sources attribution and fact-check verification notes for imported Instagram posts and prompt-generated drafts.
+  - **RAG Embedding Model Support**: Added configurable `openai_embedding_model` setting in Admin Settings Hub to support hybrid lexical and vector embeddings retrieval.
 - **Custom Theme Error Handling**:
   - Theme-aware custom HTTP error pages (`404`, `403`, `419`, `500`, `503`) blending with active site branding and layout, with graceful Blade fallbacks.
 - **Security & Anti-Slop Documentation**:
@@ -29,8 +32,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Enhanced button micro-interactions, responsive table overflows, badge contrast tokens, and Bento tile layouts across default and classic themes.
 
 ### Fixed
-- **Targeted Instagram Scraper Extraction**:
+- **Targeted Instagram Scraper Extraction & SSR Security**:
   - Restricted HTML scraper image discovery to official post meta tags (`og:image` and `twitter:image`), preventing thumbnail leakages from footer/recommendation carousels of other posts.
+  - Enforced strict hostname validation for Instagram URLs (`instagram.com`, `www.instagram.com`, `m.instagram.com`) and blocked spoofed hostnames or userinfo injection.
+  - Restricted parsed image sources strictly to verified Instagram/Meta CDN hosts (`cdninstagram.com`, `fbcdn.net`).
+  - Added single-quote and reversed attribute order parsing in HTML metadata extraction.
+  - Added strict HTML attribute escaping for injected image URLs and alt texts in generated figure elements.
   - Corrected regex quantifier typo (`{8_}` → `{8,}`) for accurate multi-slide Instagram image ID deduplication.
 - **Top Navbar Dropdown & Anchor Navigation**:
   - Unified submenu dropdown trigger button (eliminating split duplicate links for parent items).

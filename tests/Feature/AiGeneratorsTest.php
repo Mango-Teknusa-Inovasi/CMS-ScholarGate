@@ -70,12 +70,40 @@ class AiGeneratorsTest extends TestCase
             'topic' => 'Siswa menjuarai lomba robotik nasional di Surabaya',
             'key_points' => 'Membawa pulang piala bergilir dan beasiswa',
             'tone' => 'achievement',
+            'category_hint' => 'Prestasi',
         ]);
 
         $response->assertOk()
             ->assertJsonPath('success', true)
             ->assertJsonPath('data.title', 'Siswa SMAN 1 Raih Prestasi di Olimpiade Sains')
             ->assertJsonPath('data.category', 'Prestasi');
+
+        Http::assertSent(fn ($request) => str_contains($request->url(), '/chat/completions')
+            && str_contains($request['messages'][1]['content'], 'Membawa pulang piala bergilir dan beasiswa')
+            && str_contains($request['messages'][1]['content'], 'Prestasi'));
+    }
+
+    public function test_article_generator_sanitizes_html_and_returns_review_metadata(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        Sanctum::actingAs($admin);
+        Http::fake([
+            'https://api.openai.com/v1/chat/completions' => Http::response([
+                'choices' => [['message' => ['content' => json_encode([
+                    'title' => 'Kegiatan Sekolah',
+                    'body_html' => '<p>Aman</p><script>alert(1)</script><img src="x" onerror="alert(1)">',
+                    'fact_check_notes' => ['Tanggal perlu diperiksa'],
+                ])]]],
+            ], 200),
+        ]);
+
+        $response = $this->postJson('/api/v1/admin/ai/generate-article-prompt', ['topic' => 'Kegiatan sekolah']);
+
+        $response->assertOk()
+            ->assertJsonPath('data.fact_check_notes.0', 'Tanggal perlu diperiksa')
+            ->assertJsonPath('data.sources', []);
+        $this->assertStringNotContainsString('<script', $response->json('data.body_html'));
+        $this->assertStringNotContainsString('onerror', $response->json('data.body_html'));
     }
 
     public function test_generate_welcome_speech(): void

@@ -14,6 +14,10 @@ import { ArticlePromptModal, type ArticlePromptResult } from '../../components/a
 
 type Category = { id: string | number; name: string }
 type Tag = { id: string | number; name: string; slug: string }
+type AiReviewMeta = {
+  sources: Array<{ type?: string; title: string; url: string }>
+  factCheckNotes: string[]
+}
 
 const emptyForm = {
   title: '',
@@ -50,6 +54,7 @@ export function ArticleEditorPage() {
   const qc = useQueryClient()
   const toast = useToast()
   const [form, setForm] = useState(emptyForm)
+  const [aiReviewMeta, setAiReviewMeta] = useState<AiReviewMeta | null>(null)
   const [previewBusy, setPreviewBusy] = useState(false)
   const [isIgModalOpen, setIsIgModalOpen] = useState(false)
   const [isPromptModalOpen, setIsPromptModalOpen] = useState(false)
@@ -78,6 +83,7 @@ export function ArticleEditorPage() {
   }
 
   const handleInstagramImported = (data: InstagramImportResult) => {
+    setAiReviewMeta({ sources: data.sources || [], factCheckNotes: data.fact_check_notes || [] })
     if (data.category_id) {
       qc.invalidateQueries({ queryKey: ['admin-categories'] })
     }
@@ -97,6 +103,7 @@ export function ArticleEditorPage() {
   }
 
   const handlePromptGenerated = (data: ArticlePromptResult) => {
+    setAiReviewMeta({ sources: data.sources || [], factCheckNotes: data.fact_check_notes || [] })
     let matchedCatId = form.category_id
     if (data.category && categories.length > 0) {
       const found = categories.find((c) => c.name.toLowerCase() === data.category.toLowerCase())
@@ -326,6 +333,40 @@ export function ArticleEditorPage() {
 
           <div className="rounded-[16px] border border-line bg-white p-4 shadow-[var(--shadow-card)] md:p-5">
             <label className="mb-2 block text-sm font-semibold text-ink">Konten</label>
+            {aiReviewMeta && (aiReviewMeta.sources.length > 0 || aiReviewMeta.factCheckNotes.length > 0) && (
+              <aside className="mb-4 rounded-xl border border-amber-300/70 bg-amber-50/70 p-3 text-sm text-ink dark:border-amber-800 dark:bg-amber-950/20" aria-label="Catatan pemeriksaan draf AI">
+                <p className="font-semibold">Periksa sebelum menerbitkan</p>
+                {aiReviewMeta.factCheckNotes.length > 0 && (
+                  <ul className="mt-1.5 list-disc space-y-1 pl-5 text-xs text-body">
+                    {aiReviewMeta.factCheckNotes.map((note, index) => <li key={`${index}-${note}`}>{note}</li>)}
+                  </ul>
+                )}
+                {aiReviewMeta.sources.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs">
+                    {aiReviewMeta.sources.map((source, index) => {
+                      const isInternal = source.url.startsWith('/') && !source.url.startsWith('//')
+                      let isInstagram = false
+                      try {
+                        const sourceUrl = new URL(source.url)
+                        isInstagram = sourceUrl.protocol === 'https:' && ['www.instagram.com', 'instagram.com', 'm.instagram.com'].includes(sourceUrl.hostname)
+                      } catch { /* Invalid source URLs are omitted. */ }
+                      if (!isInternal && !isInstagram) return null
+                      return (
+                        <a
+                          key={`${index}-${source.url}`}
+                          href={source.url}
+                          target={isInternal ? undefined : '_blank'}
+                          rel={isInternal ? undefined : 'noopener noreferrer'}
+                          className="font-medium text-brand underline underline-offset-2"
+                        >
+                          {source.type ? `${source.type}: ` : ''}{source.title}
+                        </a>
+                      )
+                    })}
+                  </div>
+                )}
+              </aside>
+            )}
             <RichTextEditor
               value={form.body}
               onChange={(html) => setForm((f) => ({ ...f, body: html }))}

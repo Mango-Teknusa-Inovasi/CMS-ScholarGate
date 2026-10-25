@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Category;
 use App\Models\Media;
+use App\Services\Instagram\InstagramParser;
 use App\Support\MediaStorage;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -26,11 +27,29 @@ class InstagramArticleImportService
     public function importFromInstagram(string $url, array $options = [], ?string $userId = null): array
     {
         // 1. Ambil data dari Instagram
-        $scraped = $this->scraper->fetchPost($url);
-
         $caption = trim((string) ($options['manual_caption'] ?? ''));
+        $shortcode = InstagramScraperService::extractShortcode($url);
+        if (! $shortcode) {
+            throw new \InvalidArgumentException('Tautan postingan Instagram tidak valid.');
+        }
+
+        try {
+            $scraped = $this->scraper->fetchPost($url);
+        } catch (\RuntimeException $e) {
+            if ($caption === '') {
+                throw $e;
+            }
+            $scraped = [
+                'shortcode' => $shortcode,
+                'caption' => '',
+                'author' => null,
+                'taken_at' => null,
+                'images' => [],
+            ];
+        }
+
         if ($caption === '') {
-            $caption = $scraped['caption'];
+            $caption = trim((string) $scraped['caption']);
         }
 
         if ($caption === '' && empty($scraped['images'])) {
@@ -39,11 +58,16 @@ class InstagramArticleImportService
 
         // 2. Download dan simpan gambar-gambar dari Instagram ke Media Library
         $localImages = [];
-        $shortcode = $scraped['shortcode'] ?: 'post';
+        $shortcode = $scraped['shortcode'] ?: $shortcode;
 
-        foreach ($scraped['images'] as $idx => $remoteImgUrl) {
+        foreach (array_slice($scraped['images'], 0, 10) as $idx => $remoteImgUrl) {
             try {
-                $response = Http::timeout(25)
+                if (! InstagramParser::isAllowedImageUrl((string) $remoteImgUrl)) {
+                    continue;
+                }
+
+                $response = Http::timeout(20)
+                    ->withOptions(['allow_redirects' => false])
                     ->withHeaders([
                         'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
                         'Accept' => 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
@@ -55,8 +79,10 @@ class InstagramArticleImportService
                 }
 
                 $binary = $response->body();
-                if (strlen($binary) < 20) {
-                    continue; // Bukan gambar valid
+                $mime = strtolower(trim(explode(';', (string) $response->header('Content-Type'))[0]));
+                if (strlen($binary) < 20 || strlen($binary) > 12 * 1024 * 1024
+                    || ! in_array($mime, ['image/jpeg', 'image/png', 'image/webp', 'image/gif'], true)) {
+                    continue;
                 }
 
                 $originalName = "instagram-{$shortcode}-".($idx + 1);
@@ -121,9 +147,11 @@ class InstagramArticleImportService
                 $token = "{{IMAGE_{$placeholderIdx}}}";
 
                 if (str_contains($bodyHtml, $token)) {
+                    $imageUrl = e($img['url']);
+                    $imageAlt = e($img['alt']);
                     $imgFigure = <<<HTML
 <figure class="my-6 block overflow-hidden rounded-xl border border-slate-200 shadow-xs dark:border-slate-800">
-  <img src="{$img['url']}" alt="{$img['alt']}" class="w-full h-auto object-cover" loading="lazy" />
+  <img src="{$imageUrl}" alt="{$imageAlt}" class="w-full h-auto object-cover" loading="lazy" />
   <figcaption class="px-4 py-2 text-center text-xs text-slate-500 bg-slate-50 dark:bg-slate-900/50">Dokumentasi kegiatan (Foto {$placeholderIdx})</figcaption>
 </figure>
 HTML;
@@ -159,10 +187,12 @@ HTML;
                         $targetPIndex = min($totalP - 1, max(0, ($uIdx + 1) * $step - 1));
                         $picNum = $uIdx + 2;
 
+                        $imageUrl = e($uImg['url']);
+                        $imageAlt = e($uImg['alt']);
                         $imgFigure = <<<HTML
 
 <figure class="my-6 block overflow-hidden rounded-xl border border-slate-200 shadow-xs dark:border-slate-800">
-  <img src="{$uImg['url']}" alt="{$uImg['alt']}" class="w-full h-auto object-cover" loading="lazy" />
+  <img src="{$imageUrl}" alt="{$imageAlt}" class="w-full h-auto object-cover" loading="lazy" />
   <figcaption class="px-4 py-2 text-center text-xs text-slate-500 bg-slate-50 dark:bg-slate-900/50">Dokumentasi foto kegiatan (Foto {$picNum})</figcaption>
 </figure>
 
@@ -183,10 +213,12 @@ HTML;
                     // Jika paragraf < 2, selipkan gambar di bagian akhir secara berurutan
                     foreach ($unplacedImages as $uIdx => $uImg) {
                         $picNum = $uIdx + 2;
+                        $imageUrl = e($uImg['url']);
+                        $imageAlt = e($uImg['alt']);
                         $bodyHtml .= <<<HTML
 
 <figure class="my-6 block overflow-hidden rounded-xl border border-slate-200 shadow-xs dark:border-slate-800">
-  <img src="{$uImg['url']}" alt="{$uImg['alt']}" class="w-full h-auto object-cover" loading="lazy" />
+  <img src="{$imageUrl}" alt="{$imageAlt}" class="w-full h-auto object-cover" loading="lazy" />
   <figcaption class="px-4 py-2 text-center text-xs text-slate-500 bg-slate-50 dark:bg-slate-900/50">Dokumentasi foto kegiatan (Foto {$picNum})</figcaption>
 </figure>
 HTML;
@@ -227,6 +259,12 @@ HTML;
             'images' => $localImages,
             'source_url' => $url,
             'author' => $scraped['author'],
+            'sources' => array_merge($aiResult['sources'] ?? [], [[
+                'type' => 'Instagram',
+                'title' => 'Sumber materi Instagram',
+                'url' => $url,
+            ]]),
+            'fact_check_notes' => $aiResult['fact_check_notes'] ?? [],
         ];
     }
 }

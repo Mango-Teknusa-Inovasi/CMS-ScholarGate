@@ -49,6 +49,11 @@ export function AiSettingsTab({
             onChange={(v) => setForm({ ...form, openai_model: v })}
           />
           <Field
+            fieldKey="openai_embedding_model"
+            value={form.openai_embedding_model || ''}
+            onChange={(v) => setForm({ ...form, openai_embedding_model: v })}
+          />
+          <Field
             fieldKey="openai_display_model_name"
             value={form.openai_display_model_name || ''}
             onChange={(v) => setForm({ ...form, openai_display_model_name: v })}

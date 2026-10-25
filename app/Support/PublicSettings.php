@@ -71,6 +71,7 @@ class PublicSettings
         'openai_api_key',
         'openai_base_url',
         'openai_model',
+        'openai_embedding_model',
         'openai_display_model_name',
         'openai_custom_prompt',
         'instagram_scraper_provider',
@@ -109,7 +110,7 @@ class PublicSettings
                 $val = $all[$key];
                 if (in_array($key, $imageKeys, true) && is_string($val) && $val !== '') {
                     if (function_exists('app') && app()->bound('config')) {
-                        $val = \App\Support\MediaStorage::url($val);
+                        $val = MediaStorage::url($val);
                     }
                 }
                 $out[$key] = $val;
@@ -136,7 +137,7 @@ class PublicSettings
                 $val = $all[$key];
                 if (in_array($key, $imageKeys, true) && is_string($val) && $val !== '') {
                     if (function_exists('app') && app()->bound('config')) {
-                        $val = \App\Support\MediaStorage::url($val);
+                        $val = MediaStorage::url($val);
                     }
                 }
                 $out[$key] = $val;

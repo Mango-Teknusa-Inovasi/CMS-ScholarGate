@@ -33,6 +33,10 @@ class ArticleInstagramAiTest extends TestCase
 
         $response->assertStatus(422);
         $this->assertStringContainsString('instagram.com', $response->json('message'));
+
+        $this->postJson('/api/v1/admin/articles/generate-from-instagram', [
+            'url' => 'https://instagram.com.evil.example/p/DF123abc/',
+        ])->assertStatus(422);
     }
 
     public function test_successfully_processes_instagram_post_with_ai(): void
@@ -56,12 +60,12 @@ class ArticleInstagramAiTest extends TestCase
                     'carousel_media' => [
                         [
                             'image_versions2' => [
-                                'candidates' => [['url' => 'https://instagram.cdn/mock-slide1.jpg']],
+                                'candidates' => [['url' => 'https://scontent.cdninstagram.com/mock-slide1.jpg']],
                             ],
                         ],
                         [
                             'image_versions2' => [
-                                'candidates' => [['url' => 'https://instagram.cdn/mock-slide2.jpg']],
+                                'candidates' => [['url' => 'https://scontent.cdninstagram.com/mock-slide2.jpg']],
                             ],
                         ],
                     ],
@@ -69,7 +73,7 @@ class ArticleInstagramAiTest extends TestCase
             ], 200),
 
             // Mock Image CDN downloads
-            'https://instagram.cdn/*' => Http::response($fakePng, 200, ['Content-Type' => 'image/png']),
+            'https://scontent.cdninstagram.com/*' => Http::response($fakePng, 200, ['Content-Type' => 'image/png']),
 
             // Mock OpenAI chat completions
             'https://api.openai.com/v1/chat/completions' => Http::response([
@@ -107,6 +111,35 @@ class ArticleInstagramAiTest extends TestCase
         $this->assertStringContainsString('Upacara kemerdekaan', $data['body']);
         $this->assertSame('HUT RI, Upacara, Kesiswaan', $data['tags_text']);
         $this->assertSame(2, $data['images_count']);
+        $this->assertContains('Instagram', array_column($data['sources'], 'type'));
+    }
+
+    public function test_manual_caption_can_complete_import_when_instagram_is_unavailable(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        Sanctum::actingAs($admin);
+        Setting::setValue('openai_api_key', 'sk-test-mock-key');
+        Http::fake([
+            'https://www.instagram.com/*' => Http::response([], 403),
+            'https://api.instagram.com/*' => Http::response([], 403),
+            'https://api.openai.com/v1/chat/completions' => Http::response([
+                'choices' => [['message' => ['content' => json_encode([
+                    'title' => 'Kegiatan Sekolah Berlangsung',
+                    'body_html' => '<p>Kegiatan sekolah berlangsung.</p>',
+                    'tags' => [],
+                ])]]],
+            ], 200),
+        ]);
+
+        $response = $this->postJson('/api/v1/admin/articles/generate-from-instagram', [
+            'url' => 'https://www.instagram.com/p/DF123abc/',
+            'manual_caption' => 'Kegiatan literasi siswa dilaksanakan di perpustakaan sekolah.',
+        ]);
+
+        $response->assertOk()->assertJsonPath('data.images_count', 0);
+        $this->assertContains('Instagram', array_column($response->json('data.sources'), 'type'));
+        Http::assertSent(fn ($request) => str_contains($request->url(), '/chat/completions')
+            && str_contains($request['messages'][1]['content'], 'Kegiatan literasi siswa'));
     }
 
     public function test_can_save_article_with_tags_and_bulk_delete_with_uuids(): void
