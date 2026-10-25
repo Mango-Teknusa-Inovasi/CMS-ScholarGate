@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { LoadError } from '../../components/ui/LoadError'
+import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, Copy, ImagePlus, Loader2, Trash2 } from 'lucide-react'
 import { api } from '../../lib/api'
@@ -40,7 +41,7 @@ export function MediaLibraryPage() {
   const [editingAlt, setEditingAlt] = useState<number | null>(null)
   const [altDraft, setAltDraft] = useState('')
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin-media', q],
     queryFn: async () =>
       (
@@ -50,6 +51,7 @@ export function MediaLibraryPage() {
       ).data,
   })
 
+  useEffect(() => setSelected([]), [q])
   const items = data?.data || []
 
   const upload = async (files: FileList | null) => {
@@ -112,9 +114,9 @@ export function MediaLibraryPage() {
     <div>
       <AdminPageHeader
         title="Perpustakaan media"
-        description="Gambar: kompres lokal → R2. PDF/dokumen: presign langsung ke R2 (lebih cepat)."
+        description="Unggah, cari, dan kelola gambar serta dokumen yang digunakan di situs."
         actions={
-          <label className="inline-flex cursor-pointer items-center gap-2 rounded-[12px] bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(14_165_233/0.28)] transition hover:bg-sky-600">
+          <label className="inline-flex cursor-pointer items-center gap-2 rounded-[12px] bg-brand-dark px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-800">
             {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
             {uploading ? 'Mengunggah…' : 'Tambah file'}
             <input
@@ -134,7 +136,7 @@ export function MediaLibraryPage() {
 
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <input
-          value={q}
+          aria-label="Cari media" value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Cari nama file…"
           className="w-full max-w-md rounded-[12px] border border-line bg-white px-3 py-2.5 text-sm outline-none focus:border-brand"
@@ -159,12 +161,12 @@ export function MediaLibraryPage() {
         )}
       </div>
 
-      {isLoading ? (
+      {isError ? <LoadError onRetry={refetch} /> : isLoading ? (
         <MediaGridSkeleton count={12} />
       ) : items.length === 0 ? (
         <div className="rounded-[16px] border border-line bg-white px-5 py-14 text-center shadow-[var(--shadow-card)]">
-          <p className="font-semibold text-ink">Belum ada media</p>
-          <p className="mt-1 text-sm text-subtle">Upload gambar dari tombol di atas.</p>
+          <p className="font-semibold text-ink">{q ? 'Tidak ada media yang sesuai' : 'Belum ada media'}</p>
+          <p className="mt-1 text-sm text-subtle">{q ? 'Coba kata kunci lain atau hapus pencarian.' : 'Unggah gambar dari tombol di atas.'}</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-6">

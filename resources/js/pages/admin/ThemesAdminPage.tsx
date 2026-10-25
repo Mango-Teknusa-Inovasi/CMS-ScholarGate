@@ -1,3 +1,4 @@
+import { LoadError } from '../../components/ui/LoadError'
 import React, { useRef } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { CheckCircle2, Palette, Power, Upload, XCircle, LayoutTemplate } from 'lucide-react'
@@ -22,7 +23,7 @@ export function ThemesAdminPage() {
   const toast = useToast()
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin-themes'],
     queryFn: async () => (await api.get<{ data: ThemeItem[]; active_theme: string }>('/admin/themes')).data,
   })
@@ -87,7 +88,7 @@ export function ThemesAdminPage() {
               type="button"
               onClick={() => fileRef.current?.click()}
               disabled={upload.isPending}
-              className="inline-flex items-center gap-2 rounded-[12px] bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-sky-600 disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-[12px] bg-brand-dark px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-sky-800 disabled:opacity-60"
             >
               <Upload className="h-4 w-4" />
               {upload.isPending ? 'Mengunggah…' : 'Unggah Tema (.ZIP)'}
@@ -112,7 +113,7 @@ export function ThemesAdminPage() {
           </span>
         </div>
 
-        {isLoading ? (
+        {isError ? <LoadError onRetry={refetch} /> : isLoading ? (
           <div className="mt-6 space-y-3">
             <Skeleton className="h-24 w-full rounded-[14px]" />
             <Skeleton className="h-24 w-full rounded-[14px]" />

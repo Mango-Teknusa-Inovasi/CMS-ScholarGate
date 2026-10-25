@@ -1,3 +1,4 @@
+import { LoadError } from '../../components/ui/LoadError'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { usePage } from '@inertiajs/react'
@@ -28,7 +29,7 @@ export function ResourceEditorPage({ config }: Props) {
   const [ready, setReady] = useState(isNew)
   const [isAchievementAiOpen, setIsAchievementAiOpen] = useState(false)
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin', config.slug, id],
     queryFn: async () => {
       // generic resources don't have show endpoint - load from list
@@ -132,6 +133,8 @@ export function ResourceEditorPage({ config }: Props) {
       status: prev.status || 'published',
     }))
   }
+
+  if (isError) return <LoadError onRetry={refetch} />
 
   if ((!isNew && isLoading) || !ready) {
     return (
@@ -304,7 +307,7 @@ export function ResourceEditorPage({ config }: Props) {
             type="button"
             onClick={() => save.mutate()}
             disabled={save.isPending || remove.isPending}
-            className="inline-flex items-center gap-2 rounded-[12px] bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(14_165_233/0.25)] transition hover:bg-sky-600 disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-[12px] bg-brand-dark px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-800 disabled:opacity-60"
           >
             <Save className="h-4 w-4" />
             {save.isPending ? 'Menyimpan…' : isNew ? 'Terbitkan' : 'Perbarui'}

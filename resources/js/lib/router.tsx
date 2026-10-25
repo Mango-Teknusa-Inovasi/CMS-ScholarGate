@@ -146,7 +146,7 @@ export function NavLink({
   const content = typeof children === 'function' ? children({ isActive }) : children
 
   return (
-    <Link to={to} className={resolvedClass} onClick={onClick} {...rest}>
+    <Link to={to} className={resolvedClass} onClick={onClick} aria-current={isActive ? "page" : undefined} {...rest}>
       {content}
     </Link>
   )

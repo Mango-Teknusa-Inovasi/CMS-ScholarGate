@@ -1,3 +1,4 @@
+import { LoadError } from '@/components/ui/LoadError'
 import React from 'react';
 import { Head } from '@inertiajs/react';
 import { useQuery } from '@tanstack/react-query';
@@ -22,7 +23,7 @@ type DownloadItem = {
 export function ClassicDownloadsPage() {
     const siteName = useSiteName();
 
-    const { data = [], isLoading } = useQuery({
+    const { data = [], isLoading, isError, refetch } = useQuery({
         queryKey: ['downloads'],
         queryFn: async () => (await api.get<DownloadItem[]>('/downloads')).data,
     });
@@ -44,7 +45,7 @@ export function ClassicDownloadsPage() {
             </div>
 
             <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-                {isLoading ? (
+                {isError ? <LoadError onRetry={refetch} /> : isLoading ? (
                     <div className="p-12 text-center text-slate-500 text-xs">
                         Memuat daftar berkas unduhan...
                     </div>

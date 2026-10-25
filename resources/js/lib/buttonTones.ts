@@ -27,7 +27,7 @@ export const softTones: Record<
 > = {
   sky: {
     solid:
-      'bg-sky-500 text-white shadow-[0_2px_10px_rgb(14_165_233/0.28)] hover:bg-sky-600',
+      'bg-sky-700 text-white shadow-sm hover:bg-sky-800',
     soft: 'bg-sky-50 text-sky-700 ring-1 ring-inset ring-sky-200/80 hover:bg-sky-100',
     outline: 'border border-sky-400/70 bg-white text-sky-600 hover:bg-sky-50',
     chip: 'bg-sky-50 text-sky-600',
@@ -35,7 +35,7 @@ export const softTones: Record<
   },
   teal: {
     solid:
-      'bg-teal-500 text-white shadow-[0_2px_10px_rgb(20_184_166/0.28)] hover:bg-teal-600',
+      'bg-teal-700 text-white shadow-sm hover:bg-teal-800',
     soft: 'bg-teal-50 text-teal-700 ring-1 ring-inset ring-teal-200/80 hover:bg-teal-100',
     outline: 'border border-teal-400/70 bg-white text-teal-600 hover:bg-teal-50',
     chip: 'bg-teal-50 text-teal-600',

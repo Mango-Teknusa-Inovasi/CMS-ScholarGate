@@ -1,3 +1,4 @@
+import { LoadError } from '../../components/ui/LoadError'
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Pencil, Plus, Trash2, X } from 'lucide-react'
@@ -33,7 +34,7 @@ export function SimpleResourcePage({ title, description, resource, fields }: Pro
   const [editingId, setEditingId] = useState<string | number | null>(null)
   const [form, setForm] = useState<Record<string, string | boolean | null>>({})
 
-  const { data = [], isLoading } = useQuery({
+  const { data = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['admin', resource],
     queryFn: async () => (await api.get(`/admin/${resource}`)).data,
   })
@@ -106,7 +107,7 @@ export function SimpleResourcePage({ title, description, resource, fields }: Pro
       />
 
       <div className="overflow-hidden rounded-[16px] border border-line bg-white shadow-[var(--shadow-card)]">
-        {isLoading ? (
+        {isError ? <LoadError onRetry={refetch} /> : isLoading ? (
           <div className="space-y-3 p-5">
             <Skeleton className="h-12 w-full" />
             <Skeleton className="h-12 w-full" />
@@ -118,7 +119,7 @@ export function SimpleResourcePage({ title, description, resource, fields }: Pro
             <button
               type="button"
               onClick={openCreate}
-              className="mt-4 rounded-[12px] bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-600"
+              className="mt-4 rounded-[12px] bg-brand-dark px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-800"
             >
               + Tambah {title.toLowerCase()}
             </button>
@@ -320,7 +321,7 @@ export function SimpleResourcePage({ title, description, resource, fields }: Pro
                   type="button"
                   onClick={() => save.mutate()}
                   disabled={save.isPending || remove.isPending}
-                  className="rounded-[12px] bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(14_165_233/0.25)] transition hover:bg-sky-600 disabled:opacity-60"
+                  className="rounded-[12px] bg-brand-dark px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-800 disabled:opacity-60"
                 >
                   {save.isPending ? 'Menyimpan…' : 'Simpan'}
                 </button>

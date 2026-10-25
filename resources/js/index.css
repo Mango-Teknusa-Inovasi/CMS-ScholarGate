@@ -22,7 +22,7 @@
   --color-line: #e8edf2;
 
   --color-brand: #0ea5e9;
-  --color-brand-dark: #0284c7;
+  --color-brand-dark: #0369a1;
   --color-brand-soft: #e8f6fc;
   --color-cyan-soft: #eef9fc;
   --color-cyan-mid: #0891b2;
@@ -450,7 +450,7 @@ a:hover .media-cover img,
   --color-line: #1e293b;
 
   --color-brand: #38bdf8;
-  --color-brand-dark: #0284c7;
+  --color-brand-dark: #0369a1;
   --color-brand-soft: #0c4a6e;
   --color-cyan-soft: #083344;
   --color-cyan-mid: #06b6d4;
@@ -534,7 +534,7 @@ a:hover .media-cover img,
 
 .dark input::placeholder,
 .dark textarea::placeholder {
-  color: #64748b;
+  color: #94a3b8;
 }
 
 .dark table {
@@ -598,3 +598,33 @@ a:hover .media-cover img,
 
 
 
+
+
+/* Shared reading and operation surfaces keep their own density. */
+::selection { background: var(--color-brand-soft); color: var(--color-ink); }
+input, textarea { caret-color: var(--color-brand-dark); }
+.prose-article { overflow-wrap: anywhere; }
+.prose-article table { display: block; max-width: 100%; overflow-x: auto; }
+.prose-article pre { max-width: 100%; overflow-x: auto; }
+.bento-board > *, .classic-site main > * { min-width: 0; }
+.bento-tile h2, .bento-tile h3 { overflow-wrap: anywhere; }
+.admin-shell main { max-width: 1600px; width: 100%; margin-inline: auto; }
+.admin-shell :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea) {
+  border-radius: 12px;
+  min-height: 42px;
+}
+.admin-shell :is(input, textarea)::placeholder { color: var(--color-subtle); opacity: 1; }
+.admin-shell table { width: 100%; }
+.admin-shell td { vertical-align: middle; }
+.admin-shell th { white-space: nowrap; }
+.admin-shell td :is(a, span) { overflow-wrap: anywhere; }
+.admin-shell button:disabled { cursor: not-allowed; opacity: 0.55; }
+.dark .admin-shell :is(.text-brand-dark, .text-brand) { color: #7dd3fc; }
+.dark .bento-tile .text-subtle { color: #cbd5e1; }
+@media (max-width: 639px) {
+  .container-page { padding-inline: 1rem; }
+  .admin-shell main :is(button, a[role="button"]) { min-height: 44px; }
+  .admin-shell table { min-width: 560px; }
+}
+
+.dark .content-badge { color: #e2e8f0 !important; background-color: #334155 !important; }

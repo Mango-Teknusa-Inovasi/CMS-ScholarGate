@@ -51,7 +51,7 @@ export function ClassicNewsHomePage() {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
                             <div className="inline-flex items-center gap-2 text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-widest mb-1">
-                                <Newspaper className="w-4 h-4" /> TEMA KLASIK NEWS PORTAL
+                                <Newspaper className="w-4 h-4" /> Informasi sekolah
                             </div>
                             <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight font-serif">
                                 {siteName}
@@ -68,7 +68,7 @@ export function ClassicNewsHomePage() {
                                 href="/download"
                                 className="px-4 py-2 rounded bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-semibold hover:opacity-90 transition"
                             >
-                                Dokumen & Download
+                                Dokumen dan unduhan
                             </Link>
                         </div>
                     </div>
@@ -104,10 +104,10 @@ export function ClassicNewsHomePage() {
 
             {/* Main Newspaper Grid Container */}
             {!isLoading && !isError && (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
                     
                     {/* Main News Left Column (8 cols) */}
-                    <div className="lg:col-span-8 space-y-8">
+                    <div className="min-w-0 lg:col-span-8 space-y-8">
                         
                         {/* Lead Headline Story */}
                         {headline ? (
@@ -231,7 +231,7 @@ export function ClassicNewsHomePage() {
                     </div>
 
                     {/* Right Sidebar (4 cols) */}
-                    <div className="lg:col-span-4 space-y-6">
+                    <div className="min-w-0 lg:col-span-4 space-y-6">
                         
                         {/* Official Announcements Widget */}
                         <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">

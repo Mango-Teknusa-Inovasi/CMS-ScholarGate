@@ -1,3 +1,4 @@
+import { LoadError } from '@/components/ui/LoadError'
 import { useQuery } from '@tanstack/react-query'
 import { useSiteName } from '@/hooks/useSiteName'
 import {
@@ -53,7 +54,7 @@ const tones: BentoTone[] = ['sky', 'teal', 'mint', 'coral', 'amber', 'violet', '
 
 export function ExtracurricularPage() {
   const siteName = useSiteName()
-  const { data = [], isLoading } = useQuery({
+  const { data = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['ekstrakurikuler'],
     queryFn: async () => (await api.get<Extracurricular[]>('/ekstrakurikuler')).data,
   })
@@ -72,7 +73,7 @@ export function ExtracurricularPage() {
           />
         </BentoBoard>
 
-        {isLoading ? (
+        {isError ? <LoadError onRetry={refetch} /> : isLoading ? (
           <BentoBoard>
             {Array.from({ length: 6 }).map((_, i) => (
               <Skeleton

@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { LoadError } from '../ui/LoadError'
+import { useState, useEffect, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   X,
@@ -81,6 +82,32 @@ export function MediaPickerModal({
   filterType: defaultFilter = 'image',
   selectedPathOrUrl,
 }: Props) {
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const closeRef = useRef(onClose)
+  closeRef.current = onClose
+  useEffect(() => {
+    if (!isOpen) return
+    const previousFocus = document.activeElement as HTMLElement | null
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const controls = () => Array.from(dialogRef.current?.querySelectorAll<HTMLElement>('button:not([disabled]), a[href], input:not([disabled]), select, textarea, [tabindex="0"]') ?? []).filter((node) => node.getClientRects().length)
+    controls()[0]?.focus()
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { event.stopPropagation(); closeRef.current() }
+      if (event.key !== 'Tab') return
+      const items = controls()
+      const first = items[0]
+      const last = items[items.length - 1]
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus() }
+      if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus() }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = previousOverflow
+      previousFocus?.focus()
+    }
+  }, [isOpen])
   const qc = useQueryClient()
   const toast = useToast()
 
@@ -110,7 +137,7 @@ export function MediaPickerModal({
   }, [defaultFilter])
 
   // Query media list
-  const { data, isLoading, refetch, isFetching } = useQuery<PaginatedResponse>({
+  const { data, isLoading, isError, refetch, isFetching } = useQuery<PaginatedResponse>({
     queryKey: ['admin-media-picker', debouncedSearch, filterType, page],
     queryFn: async () => {
       const res = await api.get<PaginatedResponse>('/admin/media-library', {
@@ -211,6 +238,7 @@ export function MediaPickerModal({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 p-2 sm:p-4 md:p-6 backdrop-blur-xs animate-in fade-in duration-200"
+      ref={dialogRef}
       role="dialog"
       aria-modal="true"
       aria-labelledby="media-picker-title"
@@ -314,7 +342,7 @@ export function MediaPickerModal({
                 Mendukung gambar JPG, PNG, WebP, GIF, serta dokumen PDF & Office. Gambar akan dioptimasi otomatis.
               </p>
 
-              <label className="mt-6 inline-flex cursor-pointer items-center gap-2 rounded-xl bg-sky-500 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(14_165_233/0.25)] transition hover:bg-sky-600 disabled:opacity-60">
+              <label className="mt-6 inline-flex cursor-pointer items-center gap-2 rounded-xl bg-brand-dark px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-800 disabled:opacity-60">
                 {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}
                 <span>{uploading ? 'Sedang Memproses…' : 'Pilih File dari Komputer'}</span>
                 <input
@@ -394,7 +422,7 @@ export function MediaPickerModal({
 
               {/* Grid Content */}
               <div className="flex-1 overflow-y-auto p-4 sm:p-5 custom-scrollbar">
-                {isLoading ? (
+                {isError ? <LoadError onRetry={refetch} /> : isLoading ? (
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                     {Array.from({ length: 15 }).map((_, i) => (
                       <div
@@ -417,7 +445,7 @@ export function MediaPickerModal({
                     <button
                       type="button"
                       onClick={() => setActiveTab('upload')}
-                      className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-sky-500 px-4 py-2 text-xs font-semibold text-white hover:bg-sky-600 transition"
+                      className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-brand-dark px-4 py-2 text-xs font-semibold text-white hover:bg-sky-800 transition"
                     >
                       <UploadCloud className="h-3.5 w-3.5" />
                       Unggah File Baru
@@ -464,7 +492,7 @@ export function MediaPickerModal({
 
                           {/* Selected Checkmark Badge */}
                           {isSelected && (
-                            <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-lg bg-sky-500 text-white shadow-sm ring-2 ring-white">
+                            <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-lg bg-brand-dark text-white shadow-sm ring-2 ring-white">
                               <Check className="h-3.5 w-3.5 stroke-[3]" />
                             </div>
                           )}
@@ -562,7 +590,7 @@ export function MediaPickerModal({
               type="button"
               disabled={!selectedItem}
               onClick={handleConfirmSelect}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-sky-500 px-5 py-2 text-xs font-semibold text-white shadow-[0_2px_10px_rgb(14_165_233/0.25)] hover:bg-sky-600 disabled:opacity-50 transition"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-brand-dark px-5 py-2 text-xs font-semibold text-white shadow-sm hover:bg-sky-800 disabled:opacity-50 transition"
             >
               <Check className="h-4 w-4" />
               <span>Gunakan Media Ini</span>

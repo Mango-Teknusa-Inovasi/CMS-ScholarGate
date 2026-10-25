@@ -1,3 +1,4 @@
+import { LoadError } from '../../components/ui/LoadError'
 import { useRef } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { CheckCircle2, Package, Power, Puzzle, Trash2, Upload, XCircle } from 'lucide-react'
@@ -23,7 +24,7 @@ export function PluginsAdminPage() {
   const { confirm } = useConfirm()
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin-plugins'],
     queryFn: async () => (await api.get<{ plugins: PluginItem[] }>('/admin/plugins')).data,
   })
@@ -93,7 +94,7 @@ export function PluginsAdminPage() {
               type="button"
               onClick={() => fileRef.current?.click()}
               disabled={upload.isPending}
-              className="inline-flex items-center gap-2 rounded-[12px] bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-sky-600 disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-[12px] bg-brand-dark px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-sky-800 disabled:opacity-60"
             >
               <Upload className="h-4 w-4" />
               {upload.isPending ? 'Mengunggah…' : 'Unggah Plugin (.ZIP)'}
@@ -118,7 +119,7 @@ export function PluginsAdminPage() {
           </span>
         </div>
 
-        {isLoading ? (
+        {isError ? <LoadError onRetry={refetch} /> : isLoading ? (
           <div className="mt-6 space-y-3">
             <Skeleton className="h-20 w-full" />
             <Skeleton className="h-20 w-full" />

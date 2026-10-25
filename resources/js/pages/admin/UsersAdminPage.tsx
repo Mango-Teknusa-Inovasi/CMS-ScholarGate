@@ -1,3 +1,4 @@
+import { LoadError } from '../../components/ui/LoadError'
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
@@ -58,7 +59,7 @@ export function UsersAdminPage() {
   })
   const [showEditPassword, setShowEditPassword] = useState(false)
 
-  const { data = [], isLoading } = useQuery<UserRow[]>({
+  const { data = [], isLoading, isError, refetch } = useQuery<UserRow[]>({
     queryKey: ['admin-users'],
     queryFn: async () => (await api.get<UserRow[]>('/admin/users')).data,
   })
@@ -205,7 +206,7 @@ export function UsersAdminPage() {
 
       {/* Users Table */}
       <div className="overflow-hidden rounded-[16px] border border-line bg-white shadow-[var(--shadow-card)]">
-        {isLoading ? (
+        {isError ? <LoadError onRetry={refetch} /> : isLoading ? (
           <div className="space-y-3 p-5" aria-busy="true" aria-label="Memuat pengguna">
             {Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} className="h-12 w-full rounded-[10px]" />

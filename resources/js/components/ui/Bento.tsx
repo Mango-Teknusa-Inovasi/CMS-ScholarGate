@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { motion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 import { cn } from '../../lib/utils'
 import { easeOutExpo, staggerContainer, staggerItem } from '../../lib/motion'
 
@@ -29,11 +29,12 @@ type BoardProps = {
 }
 
 /** CSS grid board with exact Admin CMS stagger entrance — 2 col mobile, 4 / 6 / 12 desktop */
-export function BentoBoard({ children, className, layer = true, parallax = 8 }: BoardProps) {
+export function BentoBoard({ children, className, layer = true, parallax = 0 }: BoardProps) {
+  const reduce = useReducedMotion()
   return (
     <motion.div
       variants={staggerContainer}
-      initial="hidden"
+      initial={reduce ? false : "hidden"}
       animate="show"
       className={cn(
         'bento-board grid auto-rows-[minmax(120px,auto)] grid-cols-2 gap-3 sm:gap-3.5 md:grid-cols-4 md:gap-4 lg:grid-cols-6 xl:grid-cols-12',
@@ -107,15 +108,17 @@ export function BentoTile({
   spanXl,
   rowSpan = 1,
   padding = 'md',
+  as = 'div',
 }: TileProps) {
   const mobileSpan = span >= 2 ? 2 : 1
+  const Tile = motion[as]
 
   return (
-    <motion.div
+    <Tile
       variants={staggerItem}
       className={cn(
         'bento-tile group relative overflow-hidden rounded-[22px] border shadow-[var(--shadow-card)] transition duration-300',
-        'hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)]',
+        'has-[a]:hover:shadow-[var(--shadow-card-hover)] has-[a]:focus-within:ring-2 has-[a]:focus-within:ring-brand',
         bentoTones[tone],
         spanMobileMap[mobileSpan],
         spanMd != null && spanMdMap[spanMd],
@@ -138,7 +141,7 @@ export function BentoTile({
       )}
     >
       {children}
-    </motion.div>
+    </Tile>
   )
 }
 

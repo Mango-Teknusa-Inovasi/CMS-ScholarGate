@@ -9,7 +9,7 @@ export function Badge({ className, color = '#0EA5E9', style, ...props }: Props) 
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold',
+        'content-badge inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold',
         className,
       )}
       style={{

@@ -1,3 +1,4 @@
+import { LoadError } from '@/components/ui/LoadError'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useSiteName } from '../hooks/useSiteName'
@@ -50,11 +51,13 @@ type ProfilePayload = {
 
 export function ProfilePage() {
   const siteName = useSiteName()
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['profile'],
     queryFn: async () => (await api.get<ProfilePayload>('/profile')).data,
   })
   const [tab, setTab] = useState(0)
+
+  if (isError) return <div className="container-page py-8"><LoadError onRetry={refetch} /></div>
 
   if (isLoading || !data) {
     return <PageSkeleton />

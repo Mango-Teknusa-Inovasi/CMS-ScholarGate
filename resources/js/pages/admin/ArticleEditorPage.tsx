@@ -1,3 +1,4 @@
+import { LoadError } from '../../components/ui/LoadError'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -128,7 +129,7 @@ export function ArticleEditorPage() {
     queryFn: async () => (await api.get<Tag[]>('/admin/tags')).data,
   })
 
-  const { data: article, isLoading } = useQuery({
+  const { data: article, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin-article', id],
     queryFn: async () => (await api.get(`/admin/articles/${id}`)).data,
     enabled: !isNew,
@@ -201,6 +202,8 @@ export function ArticleEditorPage() {
     },
     onError: () => toast.error('Gagal menyimpan artikel.'),
   })
+
+  if (isError) return <LoadError onRetry={refetch} />
 
   if (!isNew && isLoading) {
     return <AdminFormSkeleton />
@@ -302,7 +305,7 @@ export function ArticleEditorPage() {
               save.mutate(true)
             }}
             disabled={save.isPending || !form.title}
-            className="inline-flex items-center gap-2 rounded-[12px] bg-sky-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-600 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-[12px] bg-brand-dark px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-800 disabled:opacity-50"
           >
             <Save className="h-4 w-4" />
             {form.status === 'published' ? 'Perbarui' : 'Terbitkan'}
@@ -314,10 +317,11 @@ export function ArticleEditorPage() {
         <div className="min-w-0 space-y-4">
           <input
             className="w-full rounded-[14px] border border-line bg-white px-4 py-3.5 text-xl font-bold tracking-tight text-ink shadow-[var(--shadow-card)] outline-none focus:border-brand md:text-2xl"
+            aria-label="Judul artikel"
             placeholder="Judul artikel"
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
-            autoFocus
+            autoFocus={isNew}
           />
 
           <div className="rounded-[16px] border border-line bg-white p-4 shadow-[var(--shadow-card)] md:p-5">
@@ -330,8 +334,8 @@ export function ArticleEditorPage() {
           </div>
 
           <div className="rounded-[16px] border border-line bg-white p-4 shadow-[var(--shadow-card)] md:p-5">
-            <label className="mb-1.5 block text-sm font-semibold text-ink">Kutipan (excerpt)</label>
-            <textarea
+            <label htmlFor="article-excerpt" className="mb-1.5 block text-sm font-semibold text-ink">Ringkasan artikel</label>
+            <textarea id="article-excerpt"
               className="w-full rounded-[12px] border border-line bg-page px-3 py-2.5 text-sm outline-none focus:border-brand focus:bg-white"
               rows={3}
               value={form.excerpt}
@@ -534,7 +538,7 @@ export function ArticleEditorPage() {
                         }}
                         disabled={isCreatingCategory}
                         className="flex-1 rounded-lg border border-line bg-white px-2.5 py-1.5 text-xs outline-none focus:border-brand dark:bg-slate-900"
-                        autoFocus
+                        autoFocus={isNew}
                       />
                       <button
                         type="button"

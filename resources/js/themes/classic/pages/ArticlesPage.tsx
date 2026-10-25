@@ -1,3 +1,4 @@
+import { LoadError } from '@/components/ui/LoadError'
 import React, { useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { useQuery } from '@tanstack/react-query';
@@ -24,12 +25,12 @@ type ArticlesResponse = {
 
 export function ClassicArticlesPage() {
     const siteName = useSiteName();
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchQuery, setSearchQuery] = useState(() => new URLSearchParams(window.location.search).get('q') || '');
     const [selectedCategory, setSelectedCategory] = useState('');
     const [sort, setSort] = useState('latest');
     const [page, setPage] = useState(1);
 
-    const { data, isLoading } = useQuery({
+    const { data, isLoading, isError, refetch } = useQuery({
         queryKey: ['articles', searchQuery, selectedCategory, sort, page],
         queryFn: async () =>
             (
@@ -69,6 +70,7 @@ export function ClassicArticlesPage() {
                             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                             <input
                                 type="text"
+                                aria-label="Cari berita dan artikel"
                                 value={searchQuery}
                                 onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
                                 placeholder="Cari berita & artikel..."
@@ -76,6 +78,7 @@ export function ClassicArticlesPage() {
                             />
                         </div>
                         <select
+                            aria-label="Filter kategori"
                             value={selectedCategory}
                             onChange={(e) => { setSelectedCategory(e.target.value); setPage(1); }}
                             className="px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-slate-900 dark:text-white"
@@ -87,7 +90,7 @@ export function ClassicArticlesPage() {
                         </select>
                     </div>
 
-                    {isLoading ? (
+                    {isError ? <LoadError onRetry={refetch} /> : isLoading ? (
                         <div className="bg-white dark:bg-slate-900 p-12 text-center rounded-lg border border-slate-200 dark:border-slate-800 text-xs text-slate-500">
                             Memuat daftar artikel...
                         </div>

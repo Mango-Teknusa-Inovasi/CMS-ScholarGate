@@ -132,7 +132,7 @@ export function ImageUploadField({
         <button
           type="button"
           onClick={() => setIsPickerOpen(true)}
-          className="inline-flex items-center gap-2 rounded-[12px] bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(14_165_233/0.25)] transition hover:bg-sky-600 active:scale-[0.98]"
+          className="inline-flex items-center gap-2 rounded-[12px] bg-brand-dark px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-800 active:scale-[0.98]"
         >
           <Images className="h-4 w-4" />
           <span>Pilih dari Pustaka Media</span>

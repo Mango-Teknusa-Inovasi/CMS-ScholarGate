@@ -17,7 +17,7 @@ export function StatusBadge({ status }: { status: string }) {
         styles[key] || styles.draft,
       )}
     >
-      {status}
+      {({ published: 'Terbit', draft: 'Draf', archived: 'Arsip', active: 'Aktif', inactive: 'Nonaktif' } as Record<string, string>)[key] || status}
     </span>
   )
 }

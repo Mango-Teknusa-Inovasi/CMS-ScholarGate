@@ -1,3 +1,4 @@
+import { LoadError } from '@/components/ui/LoadError'
 import React from 'react';
 import { Head } from '@inertiajs/react';
 import { useQuery } from '@tanstack/react-query';
@@ -21,7 +22,7 @@ type Extracurricular = {
 export function ClassicExtracurricularPage() {
     const siteName = useSiteName();
 
-    const { data = [], isLoading } = useQuery({
+    const { data = [], isLoading, isError, refetch } = useQuery({
         queryKey: ['ekstrakurikuler'],
         queryFn: async () => (await api.get<Extracurricular[]>('/ekstrakurikuler')).data,
     });
@@ -42,7 +43,7 @@ export function ClassicExtracurricularPage() {
                 </p>
             </div>
 
-            {isLoading ? (
+            {isError ? <LoadError onRetry={refetch} /> : isLoading ? (
                 <div className="bg-white dark:bg-slate-900 p-12 text-center rounded-lg border border-slate-200 text-xs text-slate-500">
                     Memuat daftar ekstrakurikuler...
                 </div>

@@ -1,3 +1,4 @@
+import { LoadError } from '../../components/ui/LoadError'
 import { Link } from 'react-router-dom'
 import { usePage } from '@inertiajs/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -16,7 +17,7 @@ export function ResourceListPage({ config }: Props) {
   const qc = useQueryClient()
   const { confirm } = useConfirm()
   const toast = useToast()
-  const { data = [], isLoading } = useQuery({
+  const { data = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['admin', config.slug],
     queryFn: async () => (await api.get(`/admin/${config.slug}`)).data,
   })
@@ -55,7 +56,7 @@ export function ResourceListPage({ config }: Props) {
       />
 
       <div className="overflow-hidden rounded-[16px] border border-line bg-white shadow-[var(--shadow-card)]">
-        {isLoading ? (
+        {isError ? <LoadError onRetry={refetch} /> : isLoading ? (
           <div className="space-y-3 p-5" aria-busy="true" aria-label="Memuat data">
             {Array.from({ length: 7 }).map((_, i) => (
               <Skeleton key={i} className="h-12 w-full rounded-[10px]" />

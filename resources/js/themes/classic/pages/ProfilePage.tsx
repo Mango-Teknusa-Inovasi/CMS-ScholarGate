@@ -1,3 +1,4 @@
+import { LoadError } from '@/components/ui/LoadError'
 import React, { useState } from 'react';
 import { Head } from '@inertiajs/react';
 import { useQuery } from '@tanstack/react-query';
@@ -23,7 +24,7 @@ export function ClassicProfilePage() {
     const siteName = useSiteName();
     const [activeTab, setActiveTab] = useState(0);
 
-    const { data, isLoading } = useQuery({
+    const { data, isLoading, isError, refetch } = useQuery({
         queryKey: ['profile'],
         queryFn: async () => (await api.get<ProfilePayload>('/profile')).data,
     });
@@ -48,7 +49,7 @@ export function ClassicProfilePage() {
                 </p>
             </div>
 
-            {isLoading ? (
+            {isError ? <LoadError onRetry={refetch} /> : isLoading ? (
                 <div className="bg-white dark:bg-slate-900 p-12 text-center rounded-lg border border-slate-200 text-xs text-slate-500">
                     Memuat profil sekolah...
                 </div>

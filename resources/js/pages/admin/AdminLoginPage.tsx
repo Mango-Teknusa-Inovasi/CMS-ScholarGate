@@ -147,7 +147,7 @@ export function AdminLoginPage() {
           <motion.button
             type="submit"
             disabled={loading}
-            className="w-full rounded-[12px] bg-violet-500 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(139_92_246/0.3)] transition hover:bg-violet-600 disabled:opacity-60"
+            className="w-full rounded-[12px] bg-brand-dark py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(139_92_246/0.3)] transition hover:bg-sky-800 disabled:opacity-60"
             whileHover={{ scale: loading ? 1 : 1.01 }}
             whileTap={{ scale: loading ? 1 : 0.985 }}
           >

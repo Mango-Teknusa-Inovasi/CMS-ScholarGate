@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import {
   ChevronDown,
@@ -19,6 +19,7 @@ import { Gravatar } from '../ui/Gravatar'
 import { ThemeToggle } from '../ui/ThemeToggle'
 import { useMemberAuth } from '../../hooks/useMemberAuth'
 import { safeHref } from '../../lib/sanitize'
+import { SiteNavItem } from './SiteNavItem'
 
 type MenuChild = {
   id: number
@@ -49,25 +50,26 @@ const fallbackNav: MenuItem[] = [
   { id: 3, label: 'Artikel', url: '/artikel' },
   { id: 4, label: 'Prestasi', url: '/prestasi' },
   { id: 5, label: 'Ekstrakurikuler', url: '/ekstrakurikuler' },
-  { id: 6, label: 'Download', url: '/download' },
+  { id: 6, label: 'Unduhan', url: '/download' },
 ]
-
-function isInternal(url: string) {
-  const safe = safeHref(url)
-  return Boolean(safe && safe.startsWith('/') && !safe.startsWith('//'))
-}
-
-const navClass = ({ isActive }: { isActive: boolean }) =>
-  cn(
-    'inline-flex items-center gap-1 rounded-[12px] px-3 py-2 text-sm font-medium text-body dark:text-slate-300 transition hover:bg-muted dark:hover:bg-slate-800 dark:hover:text-white',
-    isActive && 'bg-cyan-soft dark:bg-sky-950/80 font-semibold text-cyan-mid dark:text-sky-300',
-  )
 
 export function Header() {
   const [open, setOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
   const accountRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
+  const location = useLocation()
+  const mobileTrigger = useRef<HTMLButtonElement>(null)
+  useEffect(() => { setOpen(false); setAccountOpen(false) }, [location.pathname])
+  useEffect(() => {
+    const escape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      if (accountOpen) { setAccountOpen(false); accountRef.current?.querySelector('button')?.focus() }
+      if (open) { setOpen(false); mobileTrigger.current?.focus() }
+    }
+    document.addEventListener('keydown', escape)
+    return () => document.removeEventListener('keydown', escape)
+  }, [open, accountOpen])
   const { user, loading: authLoading, isLoggedIn, logout } = useMemberAuth()
 
   const { data: settings } = useQuery({
@@ -81,7 +83,7 @@ export function Header() {
   })
 
   const siteName = settings?.site_name || 'Portal Resmi'
-  const reportUrl = safeHref(settings?.report_url) || '#'
+  const reportUrl = settings?.report_url === '#' ? undefined : safeHref(settings?.report_url)
   const siteLogo = settings?.site_logo
   const nav = menus?.header?.length ? menus.header : fallbackNav
 
@@ -108,86 +110,21 @@ export function Header() {
         <Logo name={siteName} logoPath={siteLogo} />
 
         <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Navigasi utama">
-          {nav.map((item) =>
-            item.children && item.children.length > 0 ? (
-              <div key={item.url || item.id} className="group relative">
-                <NavLink to={item.url || '#'} className={navClass}>
-                  {item.label}
-                  <ChevronDown className="h-3.5 w-3.5 opacity-55 transition group-hover:rotate-180" />
-                </NavLink>
-                <div className="invisible absolute left-0 top-full z-20 min-w-[200px] translate-y-1 rounded-2xl border border-line dark:border-slate-800 bg-white dark:bg-slate-900 p-1.5 opacity-0 shadow-[var(--shadow-card-hover)] transition group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
-                  {item.children.map((child) =>
-                    isInternal(child.url) ? (
-                      <Link
-                        key={child.id}
-                        to={safeHref(child.url) || '/'}
-                        className="block rounded-xl px-3 py-2.5 text-sm text-body dark:text-slate-200 hover:bg-muted dark:hover:bg-slate-800 hover:text-ink dark:hover:text-white"
-                      >
-                        {child.label}
-                      </Link>
-                    ) : safeHref(child.url) ? (
-                      <a
-                        key={child.id}
-                        href={safeHref(child.url)}
-                        target={child.open_in_new_tab ? '_blank' : undefined}
-                        rel="noopener noreferrer"
-                        className="block rounded-xl px-3 py-2.5 text-sm text-body dark:text-slate-200 hover:bg-muted dark:hover:bg-slate-800"
-                      >
-                        {child.label}
-                      </a>
-                    ) : (
-                      <span
-                        key={child.id}
-                        className="block rounded-xl px-3 py-2.5 text-sm text-subtle dark:text-slate-400"
-                      >
-                        {child.label}
-                      </span>
-                    ),
-                  )}
-                </div>
-              </div>
-            ) : isInternal(item.url) ? (
-              <NavLink
-                key={item.url || item.id}
-                to={safeHref(item.url) || '/'}
-                className={navClass}
-                end={(safeHref(item.url) || '/') === '/'}
-              >
-                {item.label}
-              </NavLink>
-            ) : safeHref(item.url) ? (
-              <a
-                key={item.url || item.id}
-                href={safeHref(item.url)}
-                target={item.open_in_new_tab ? '_blank' : undefined}
-                rel="noopener noreferrer"
-                className="rounded-[12px] px-3 py-2 text-sm font-medium text-body dark:text-slate-300 hover:bg-muted dark:hover:bg-slate-800 dark:hover:text-white"
-              >
-                {item.label}
-              </a>
-            ) : (
-              <span
-                key={item.url || item.id}
-                className="rounded-[12px] px-3 py-2 text-sm font-medium text-subtle dark:text-slate-400"
-              >
-                {item.label}
-              </span>
-            ),
-          )}
+          {nav.map((item) => <SiteNavItem key={item.id} item={item} />)}
         </nav>
 
         <div className="hidden items-center gap-2 lg:flex">
           <ThemeToggle />
 
-          <a
+          {reportUrl && <a
             href={reportUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-[12px] border border-rose-400/80 bg-white dark:bg-slate-800 px-4 py-2 text-sm font-semibold text-rose-500 shadow-sm transition hover:bg-rose-50 dark:hover:bg-rose-950/50 active:scale-[0.98]"
+            className="inline-flex items-center gap-2 rounded-[12px] border border-rose-400/80 bg-white dark:bg-slate-800 px-4 py-2 text-sm font-semibold text-rose-700 dark:text-rose-300 shadow-sm transition hover:bg-rose-50 dark:hover:bg-rose-950/50 active:scale-[0.98]"
           >
             <MessageSquareWarning className="h-4 w-4" />
             Lapor
-          </a>
+          </a>}
 
           {/* Member area: login ATAU menu akun + Gravatar */}
           {authLoading ? (
@@ -199,7 +136,7 @@ export function Header() {
                 onClick={() => setAccountOpen((v) => !v)}
                 className="inline-flex items-center gap-2 rounded-[12px] border border-line dark:border-slate-800 bg-page dark:bg-slate-800 py-1 pl-1 pr-2.5 text-sm font-semibold text-ink dark:text-slate-200 transition hover:bg-muted dark:hover:bg-slate-700 active:scale-[0.98]"
                 aria-expanded={accountOpen}
-                aria-haspopup="menu"
+                aria-controls="account-panel"
               >
                 <Gravatar
                   url={user.gravatar_url}
@@ -215,8 +152,8 @@ export function Header() {
 
               <AnimatePresence>
                 {accountOpen && (
-                  <motion.div
-                    role="menu"
+                  <motion.div id="account-panel"
+
                     initial={{ opacity: 0, y: 6, scale: 0.98 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 4, scale: 0.98 }}
@@ -240,17 +177,17 @@ export function Header() {
                     <div className="p-1.5">
                       <Link
                         to="/akun"
-                        role="menuitem"
+
                         onClick={() => setAccountOpen(false)}
                         className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-body dark:text-slate-200 hover:bg-muted dark:hover:bg-slate-800 hover:text-ink dark:hover:text-white"
                       >
                         <User className="h-4 w-4 text-sky-600 dark:text-sky-400" />
                         Akun saya
                       </Link>
-                      {user.is_admin && (
+                      {(user.is_admin || user.role === 'admin' || user.role === 'editor') && (
                         <Link
                           to="/admin"
-                          role="menuitem"
+
                           onClick={() => setAccountOpen(false)}
                           className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-body dark:text-slate-200 hover:bg-muted dark:hover:bg-slate-800 hover:text-ink dark:hover:text-white"
                         >
@@ -260,12 +197,12 @@ export function Header() {
                       )}
                       <button
                         type="button"
-                        role="menuitem"
+
                         onClick={() => void onLogout()}
                         className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40"
                       >
                         <LogOut className="h-4 w-4" />
-                        Logout
+                        Keluar
                       </button>
                     </div>
                   </motion.div>
@@ -275,9 +212,9 @@ export function Header() {
           ) : (
             <Link
               to="/login"
-              className="inline-flex items-center gap-2 rounded-[12px] bg-teal-500 px-4 py-2 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(20_184_166/0.3)] transition hover:bg-teal-600 active:scale-[0.98]"
+              className="inline-flex items-center gap-2 rounded-[12px] bg-teal-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 active:scale-[0.98]"
             >
-              Login
+              Masuk
               <LogIn className="h-4 w-4" />
             </Link>
           )}
@@ -287,6 +224,8 @@ export function Header() {
           type="button"
           className="rounded-xl border border-line dark:border-slate-800 bg-white dark:bg-slate-800 p-2.5 text-ink dark:text-slate-200 shadow-sm hover:bg-muted dark:hover:bg-slate-700 lg:hidden"
           onClick={() => setOpen((v) => !v)}
+          ref={mobileTrigger}
+          aria-controls="public-mobile-nav"
           aria-label={open ? 'Tutup menu' : 'Buka menu'}
           aria-expanded={open}
         >
@@ -297,29 +236,17 @@ export function Header() {
       <AnimatePresence>
         {open && (
           <motion.div
-            className="overflow-hidden border-t border-line dark:border-slate-800 bg-white dark:bg-slate-900 lg:hidden"
+            id="public-mobile-nav"
+            className="max-h-[calc(100dvh-80px)] overflow-y-auto border-t border-line dark:border-slate-800 bg-white dark:bg-slate-900 lg:hidden"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.32, ease: easeOutExpo }}
           >
             <div className="container-page flex flex-col gap-0.5 py-3">
-              {nav.map((item, i) => (
-                <motion.div
-                  key={item.url || item.id}
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.03 + i * 0.03, duration: 0.28, ease: easeOutExpo }}
-                >
-                  <Link
-                    to={item.url || '#'}
-                    onClick={() => setOpen(false)}
-                    className="block rounded-xl px-3 py-3 text-sm font-medium text-body hover:bg-muted"
-                  >
-                    {item.label}
-                  </Link>
-                </motion.div>
-              ))}
+              <nav aria-label="Navigasi seluler">
+                {nav.map((item) => <SiteNavItem key={item.id} item={item} mobile onNavigate={() => setOpen(false)} />)}
+              </nav>
 
               {isLoggedIn && user ? (
                 <div className="mt-2 space-y-2 border-t border-line pt-3 pb-2">
@@ -350,7 +277,7 @@ export function Header() {
                     onClick={() => void onLogout()}
                     className="w-full rounded-[12px] bg-rose-50 dark:bg-rose-950/60 px-3 py-2.5 text-sm font-semibold text-rose-600 dark:text-rose-400"
                   >
-                    Logout
+                    Keluar
                   </button>
                 </div>
               ) : (
@@ -360,18 +287,20 @@ export function Header() {
                     <ThemeToggle showLabel />
                   </div>
                   <div className="flex gap-2">
-                    <a
+                    {reportUrl && <a
                       href={reportUrl}
-                      className="flex-1 rounded-[12px] border border-rose-400/80 bg-white dark:bg-slate-800 px-3 py-2.5 text-center text-sm font-semibold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 rounded-[12px] border border-rose-400/80 bg-white dark:bg-slate-800 px-3 py-2.5 text-center text-sm font-semibold text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/50"
                     >
                       Lapor
-                    </a>
+                    </a>}
                     <Link
                       to="/login"
                       onClick={() => setOpen(false)}
-                      className="flex-1 rounded-[12px] bg-teal-500 px-3 py-2.5 text-center text-sm font-semibold text-white hover:bg-teal-600"
+                      className="flex-1 rounded-[12px] bg-teal-700 px-3 py-2.5 text-center text-sm font-semibold text-white hover:bg-teal-800"
                     >
-                      Login
+                      Masuk
                     </Link>
                   </div>
                 </div>

@@ -86,7 +86,7 @@ export function Footer() {
                   </svg>
                 ),
               },
-            ].map((s) => (
+            ].filter((s) => s.href && s.href !== '#').map((s) => (
               <a
                 key={s.label}
                 href={s.href && s.href !== '#' ? s.href : '#'}
@@ -141,7 +141,7 @@ export function Footer() {
             {settings?.contact_phone && <li>{settings.contact_phone}</li>}
             <li>
               <Link to="/login" className="font-medium text-teal-600 hover:text-teal-700">
-                Login member
+                Masuk anggota
               </Link>
             </li>
           </ul>

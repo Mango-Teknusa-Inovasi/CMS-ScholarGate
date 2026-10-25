@@ -14,7 +14,6 @@ export function AdminPageHeader({ title, description, actions }: Props) {
   return (
     <motion.div
       data-layer
-      data-parallax="2"
       className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-start sm:justify-between"
       initial={reduce ? false : { opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}

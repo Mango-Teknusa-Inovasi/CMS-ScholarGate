@@ -1,3 +1,4 @@
+import { LoadError } from '../../components/ui/LoadError'
 import React, { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Building2, Globe, KeyRound, LayoutGrid, MapPin, Share2, Sparkles } from 'lucide-react'
@@ -31,7 +32,7 @@ export function SettingsAdminPage() {
   const [activeTab, setActiveTab] = useState<TabKey>('branding')
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({})
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin-settings'],
     queryFn: async () => (await api.get<Record<string, string>>('/admin/settings')).data,
   })
@@ -85,6 +86,8 @@ export function SettingsAdminPage() {
 
   const origin = typeof window !== 'undefined' ? window.location.origin : 'https://domain-anda.sch.id'
 
+  if (isError) return <LoadError onRetry={refetch} />
+
   if (isLoading) {
     return (
       <div className="space-y-4" aria-busy="true">
@@ -107,7 +110,7 @@ export function SettingsAdminPage() {
             type="button"
             onClick={() => save.mutate()}
             disabled={save.isPending}
-            className="rounded-[12px] bg-sky-500 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(14_165_233/0.25)] transition hover:bg-sky-600 disabled:opacity-60"
+            className="rounded-[12px] bg-brand-dark px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-800 disabled:opacity-60"
           >
             {save.isPending ? 'Menyimpan…' : 'Simpan Semua Perubahan'}
           </button>
@@ -124,11 +127,12 @@ export function SettingsAdminPage() {
               <button
                 key={tab.id}
                 type="button"
+                aria-pressed={active}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 whitespace-nowrap rounded-[12px] px-3.5 py-2.5 text-xs font-semibold transition sm:text-sm ${
                   active
-                    ? 'bg-sky-500 text-white shadow-[0_2px_8px_rgb(14_165_233/0.25)]'
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-ink'
+                    ? 'bg-brand-dark text-white shadow-[0_2px_8px_rgb(14_165_233/0.25)]'
+                    : 'text-body hover:bg-muted hover:text-ink'
                 }`}
               >
                 <Icon className="h-4 w-4 shrink-0" />

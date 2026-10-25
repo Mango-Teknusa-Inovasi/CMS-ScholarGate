@@ -1,3 +1,4 @@
+import { LoadError } from '@/components/ui/LoadError'
 import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { useQuery } from '@tanstack/react-query';
@@ -10,7 +11,7 @@ import ClassicLayout from '../layout/ClassicLayout';
 export function ClassicAchievementsPage() {
     const siteName = useSiteName();
 
-    const { data, isLoading } = useQuery({
+    const { data, isLoading, isError, refetch } = useQuery({
         queryKey: ['achievements'],
         queryFn: async () => (await api.get<{ data: Achievement[] }>('/achievements')).data,
     });
@@ -33,7 +34,7 @@ export function ClassicAchievementsPage() {
                 </p>
             </div>
 
-            {isLoading ? (
+            {isError ? <LoadError onRetry={refetch} /> : isLoading ? (
                 <div className="bg-white dark:bg-slate-900 p-12 text-center rounded-lg border border-slate-200 text-xs text-slate-500">
                     Memuat data prestasi...
                 </div>

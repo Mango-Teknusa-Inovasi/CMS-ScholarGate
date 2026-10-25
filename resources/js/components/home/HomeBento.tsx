@@ -118,7 +118,7 @@ export function HomeBento({
                     </span>
                   )}
                   {welcome.badge_right && (
-                    <span className="absolute bottom-4 right-3 z-10 rounded-full bg-sky-500 px-3 py-1 text-[11px] font-bold text-white shadow">
+                    <span className="absolute bottom-4 right-3 z-10 rounded-full bg-sky-700 px-3 py-1 text-[11px] font-bold text-white shadow">
                       {welcome.badge_right}
                     </span>
                   )}
@@ -171,7 +171,7 @@ export function HomeBento({
                 </div>
                 <h3 className="text-sm font-bold leading-snug text-ink">{item.title}</h3>
                 {item.description && (
-                  <p className="mt-1 line-clamp-2 text-[11px] leading-relaxed text-subtle">
+                  <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-body">
                     {item.description}
                   </p>
                 )}
@@ -191,7 +191,7 @@ export function HomeBento({
                   className={tileClass}
                   as="div"
                 >
-                  <Link to={href} className="flex h-full flex-col outline-none">
+                  <Link to={href} className="flex h-full min-w-0 flex-col outline-none">
                     {inner}
                   </Link>
                 </BentoTile>
@@ -208,7 +208,7 @@ export function HomeBento({
                   padding="md"
                   className={tileClass}
                 >
-                  <a href={href} target="_blank" rel="noopener noreferrer" className="flex h-full flex-col">
+                  <a href={href} target="_blank" rel="noopener noreferrer" className="flex h-full min-w-0 flex-col">
                     {inner}
                   </a>
                 </BentoTile>
@@ -243,7 +243,7 @@ export function HomeBento({
               <Link
                 to="/artikel"
                 aria-label="Lihat semua berita dan cerita"
-                className="inline-flex items-center gap-1 rounded-full bg-sky-500 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-sky-600"
+                className="inline-flex items-center gap-1 rounded-full bg-sky-700 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-sky-800"
               >
                 Semua
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -278,7 +278,7 @@ export function HomeBento({
                         width={960}
                         height={540}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-ink/75 via-ink/10 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/60 to-slate-950/30" />
                       <div className="absolute inset-x-0 bottom-0 p-4 text-white md:p-6">
                         <div className="mb-2 flex flex-wrap items-center gap-2 text-[11px] text-white/85">
                           {featuredArticle.category && (
@@ -440,7 +440,7 @@ export function HomeBento({
                     spanXl={i === 0 ? 4 : 3}
                     padding="sm"
                   >
-                    <Link to={`/prestasi/${item.slug}`} className="flex h-full flex-col gap-2">
+                    <Link to={`/prestasi/${item.slug}`} className="flex h-full min-w-0 flex-col gap-2">
                       <div className="media-cover aspect-[16/9] w-full rounded-xl">
                         <img
                           src={coverSrc(item.cover_path, item.slug || item.id, 480, 270)}

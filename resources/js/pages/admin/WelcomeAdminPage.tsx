@@ -1,3 +1,4 @@
+import { LoadError } from '../../components/ui/LoadError'
 import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../lib/api'
@@ -27,7 +28,7 @@ const welcomeGuide = MEDIA_GUIDES.find((g) => g.key === 'welcome')
 export function WelcomeAdminPage() {
   const qc = useQueryClient()
   const toast = useToast()
-  const { data = [], isLoading } = useQuery({
+  const { data = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['admin', 'welcome-blocks'],
     queryFn: async () => (await api.get<WelcomeBlock[]>('/admin/welcome-blocks')).data,
   })
@@ -76,6 +77,8 @@ export function WelcomeAdminPage() {
     },
     onError: () => toast.error('Gagal menyimpan sambutan.'),
   })
+
+  if (isError) return <LoadError onRetry={refetch} />
 
   if (isLoading) {
     return (
@@ -233,7 +236,7 @@ export function WelcomeAdminPage() {
                 type="button"
                 onClick={() => save.mutate(forms[block.id] || block)}
                 disabled={save.isPending}
-                className="mt-4 rounded-[12px] bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(14_165_233/0.25)] transition hover:bg-sky-600 disabled:opacity-60"
+                className="mt-4 rounded-[12px] bg-brand-dark px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-800 disabled:opacity-60"
               >
                 {save.isPending ? 'Menyimpan…' : `Simpan ${label}`}
               </button>

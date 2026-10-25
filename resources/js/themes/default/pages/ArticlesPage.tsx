@@ -1,3 +1,4 @@
+import { LoadError } from '@/components/ui/LoadError'
 import { useState } from 'react'
 import { useSiteName } from '@/hooks/useSiteName'
 import { Link, useSearchParams } from 'react-router-dom'
@@ -41,7 +42,7 @@ export function ArticlesPage() {
   const sort = params.get('sort') || 'latest'
   const page = Number(params.get('page') || 1)
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['articles', q, category, sort, page],
     queryFn: async () =>
       (
@@ -129,7 +130,7 @@ export function ArticlesPage() {
           </BentoTile>
         </BentoBoard>
 
-        {isLoading || !data ? (
+        {isError ? <LoadError onRetry={refetch} /> : isLoading || !data ? (
           <BentoBoard aria-busy="true">
             <Skeleton className="col-span-2 min-h-[240px] rounded-[22px] md:col-span-4 lg:col-span-4 xl:col-span-8" />
             <Skeleton className="col-span-2 min-h-[120px] rounded-[22px] md:col-span-4 lg:col-span-2 xl:col-span-4" />

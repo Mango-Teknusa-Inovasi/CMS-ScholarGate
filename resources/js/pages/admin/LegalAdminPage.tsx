@@ -1,3 +1,4 @@
+import { LoadError } from '../../components/ui/LoadError'
 import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ExternalLink, RefreshCw, Scale, Shield } from 'lucide-react'
@@ -40,7 +41,7 @@ export function LegalAdminPage() {
     is_published: true,
   })
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin-legal-pages'],
     queryFn: async () => (await api.get<IndexResponse>('/admin/legal-pages')).data,
   })
@@ -107,6 +108,8 @@ export function LegalAdminPage() {
     if (ok) resetDefaults.mutate(onlyCurrent)
   }
 
+  if (isError) return <LoadError onRetry={refetch} />
+
   if (isLoading) {
     return (
       <div className="space-y-4" aria-busy="true">
@@ -139,7 +142,7 @@ export function LegalAdminPage() {
               type="button"
               onClick={() => save.mutate()}
               disabled={save.isPending}
-              className="rounded-[12px] bg-sky-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-600 disabled:opacity-60"
+              className="rounded-[12px] bg-brand-dark px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-800 disabled:opacity-60"
             >
               {save.isPending ? 'Menyimpan…' : 'Simpan'}
             </button>
@@ -158,7 +161,7 @@ export function LegalAdminPage() {
               onClick={() => setTab(t.key)}
               className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition ${
                 active
-                  ? 'bg-sky-500 text-white shadow-sm'
+                  ? 'bg-brand-dark text-white shadow-sm'
                   : 'border border-line bg-white text-body hover:bg-muted'
               }`}
             >

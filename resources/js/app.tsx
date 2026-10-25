@@ -1,6 +1,7 @@
 import '../css/app.css'
 import { createInertiaApp } from '@inertiajs/react'
 import { createRoot, hydrateRoot } from 'react-dom/client'
+import { MotionConfig } from 'motion/react'
 import { StrictMode, type ComponentType, type ReactNode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { FeedbackProvider } from './components/ui/FeedbackProvider'
@@ -138,9 +139,11 @@ createInertiaApp({
     const app = (
       <StrictMode>
         <QueryClientProvider client={queryClient}>
-          <FeedbackProvider>
-            <App {...props} />
-          </FeedbackProvider>
+          <MotionConfig reducedMotion="user">
+            <FeedbackProvider>
+              <App {...props} />
+            </FeedbackProvider>
+          </MotionConfig>
         </QueryClientProvider>
       </StrictMode>
     )

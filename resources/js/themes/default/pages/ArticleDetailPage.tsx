@@ -1,3 +1,4 @@
+import { LoadError } from '@/components/ui/LoadError'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
@@ -39,7 +40,7 @@ export function ArticleDetailPage() {
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['article', slug],
     queryFn: async () => (await api.get<DetailResponse>(`/articles/${slug}`)).data,
     enabled: !!slug,
@@ -52,6 +53,10 @@ export function ArticleDetailPage() {
 
   if (isLoading) {
     return <ArticleDetailSkeleton />
+  }
+
+  if (isError && (error as { response?: { status?: number } })?.response?.status !== 404) {
+    return <div className="container-page py-8"><LoadError onRetry={refetch} /></div>
   }
 
   if (isError || !data) {

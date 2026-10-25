@@ -21,7 +21,7 @@ export function HomePage() {
         <div className="mx-auto max-w-md rounded-[22px] border border-line bg-white p-8 shadow-[var(--shadow-card)]">
           <p className="font-semibold text-ink">Tidak dapat memuat portal</p>
           <p className="mt-2 text-sm text-subtle">
-            Periksa koneksi API Laravel (port 8000), lalu coba lagi.
+            Halaman belum dapat dimuat. Periksa koneksi internet Anda, lalu coba lagi.
           </p>
           <button
             type="button"

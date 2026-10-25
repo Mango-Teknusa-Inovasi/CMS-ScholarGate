@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Head, Link as InertiaLink, usePage } from '@inertiajs/react'
 import { useQuery } from '@tanstack/react-query'
@@ -46,7 +46,6 @@ import {
 } from '../../lib/motion'
 import { Logo } from '../../components/ui/Logo'
 import { Skeleton } from '../../components/ui/Skeleton'
-import { AnimatedPage } from '../../components/motion/PageTransition'
 import { BrandIcons } from '../../components/seo/BrandIcons'
 
 type NavItem = {
@@ -97,7 +96,7 @@ const navGroups: NavGroup[] = [
     items: [
       { to: '/admin/achievements', label: 'Prestasi', icon: Trophy },
       { to: '/admin/ekstrakurikuler', label: 'Ekskul', icon: Users },
-      { to: '/admin/downloads', label: 'Download', icon: Download },
+      { to: '/admin/downloads', label: 'Unduhan', icon: Download },
       { to: '/admin/contacts', label: 'Kontak', icon: Contact },
       { to: '/admin/quick-services', label: 'Akses cepat', icon: PanelTop },
     ],
@@ -110,7 +109,7 @@ const navGroups: NavGroup[] = [
       { to: '/admin/themes', label: 'Tema & Layout', icon: Palette },
       { to: '/admin/plugins', label: 'Plugin & Add-on', icon: Puzzle },
       { to: '/admin/settings', label: 'Pengaturan', icon: Settings },
-      { to: '/admin/backups', label: 'Backup', icon: DatabaseBackup },
+      { to: '/admin/backups', label: 'Cadangan', icon: DatabaseBackup },
       { to: '/admin/media-guide', label: 'Ukuran gambar', icon: BookImage },
     ],
   },
@@ -137,10 +136,10 @@ const pathTitles: Record<string, string> = {
   '/admin/ekstrakurikuler': 'Ekskul',
   '/admin/contacts': 'Kontak',
   '/admin/quick-services': 'Akses cepat',
-  '/admin/downloads': 'Download',
+  '/admin/downloads': 'Unduhan',
   '/admin/media-guide': 'Ukuran gambar',
   '/admin/settings': 'Pengaturan',
-  '/admin/backups': 'Backup & restore',
+  '/admin/backups': 'Cadangan dan pemulihan',
 }
 
 function resolvePageTitle(pathname: string): string {
@@ -175,6 +174,7 @@ function NavItemLink({
   return (
     <InertiaLink
       href={item.to}
+      aria-current={isActive ? 'page' : undefined}
       onClick={onNavigate}
       className={cn(
         'group relative flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[13px] font-medium',
@@ -222,6 +222,7 @@ function SidebarNav({
   isSuperAdmin?: boolean
 }) {
   const reduce = useReducedMotion()
+  const navId = useId()
   const visibleGroups = navGroups
     .map((group) => {
       if (isSuperAdmin) return group
@@ -235,10 +236,15 @@ function SidebarNav({
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
     const init: Record<string, boolean> = {}
     visibleGroups.forEach((group) => {
-      init[group.id] = groupHasActive(pathname, group)
+      init[group.id] = group.id === 'utama' || groupHasActive(pathname, group)
     })
     return init
   })
+
+  useEffect(() => {
+    const active = navGroups.find((group) => groupHasActive(pathname, group))
+    if (active) setOpenGroups((previous) => ({ ...previous, [active.id]: true }))
+  }, [pathname])
 
   const toggleGroup = (id: string) => {
     setOpenGroups((prev) => ({ ...prev, [id]: !prev[id] }))
@@ -263,6 +269,8 @@ function SidebarNav({
             <button
               type="button"
               onClick={() => toggleGroup(group.id)}
+              aria-expanded={isOpen}
+              aria-controls={`${navId}-group-${group.id}`}
               className={cn(
                 'flex w-full items-center justify-between rounded-[10px] px-2.5 py-1.5 text-xs font-semibold uppercase tracking-wider transition',
                 hasActive ? 'text-brand-dark' : 'text-subtle hover:text-ink',
@@ -284,9 +292,9 @@ function SidebarNav({
                   initial="closed"
                   animate="open"
                   exit="closed"
-                  className="overflow-hidden"
+                  id={`${navId}-group-${group.id}`}
+                  className="overflow-hidden space-y-0.5 pl-1.5 pt-0.5"
                 >
-                  <div className="space-y-0.5 pl-1.5 pt-0.5">
                     {group.items.map((item) => (
                       <motion.li
                         key={item.to}
@@ -296,7 +304,6 @@ function SidebarNav({
                         <NavItemLink item={item} pathname={pathname} onNavigate={onNavigate} />
                       </motion.li>
                     ))}
-                  </div>
                 </motion.ul>
               )}
             </AnimatePresence>
@@ -379,7 +386,7 @@ function SidebarChrome({
             className="inline-flex items-center justify-center gap-1.5 rounded-[10px] px-2 py-2 text-xs font-semibold text-body dark:text-slate-300 transition hover:bg-white dark:hover:bg-slate-800 active:scale-[0.98]"
           >
             <ExternalLink className="h-3.5 w-3.5" />
-            Portal
+            Lihat situs
           </a>
 
           <button
@@ -404,6 +411,36 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
   const sharedToken = page.props.auth?.token ?? null
   const [mobileOpen, setMobileOpen] = useState(false)
   const reduce = useReducedMotion()
+  const drawerRef = useRef<HTMLElement>(null)
+  const menuButtonRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    if (!mobileOpen) return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const drawer = drawerRef.current
+    const focusable = () => Array.from(drawer?.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), [tabindex="0"]') ?? []).filter((node) => node.getClientRects().length)
+    focusable()[0]?.focus()
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMobileOpen(false)
+      if (event.key !== 'Tab') return
+      const elements = focusable()
+      const first = elements[0]
+      const last = elements[elements.length - 1]
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus() }
+      if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus() }
+    }
+    const desktop = window.matchMedia('(min-width: 1024px)')
+    const closeOnDesktop = () => { if (desktop.matches) setMobileOpen(false) }
+    desktop.addEventListener('change', closeOnDesktop)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      document.removeEventListener('keydown', onKey)
+      desktop.removeEventListener('change', closeOnDesktop)
+      menuButtonRef.current?.focus()
+    }
+  }, [mobileOpen])
 
   useEffect(() => {
     if (sharedToken) {
@@ -490,6 +527,8 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
 
   const siteTitle = publicSettings?.site_name || publicSettings?.site_title || publicSettings?.school_name || 'Portal Resmi'
   const pageTitle = resolvePageTitle(location.pathname)
+  const activeGroup = navGroups.find((group) => groupHasActive(location.pathname, group))
+  const activeItem = activeGroup?.items.find((item) => isItemActive(location.pathname, item))
   const documentTitle = `${pageTitle} | ${siteTitle}`
 
   const initials = user.name
@@ -510,7 +549,8 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-page lg:grid lg:grid-cols-[248px_1fr]">
+    <div className="admin-shell min-h-screen bg-page lg:grid lg:grid-cols-[248px_1fr]">
+      <a href="#admin-content" className="skip-link">Lewati ke konten</a>
       <Head>
         <title>{documentTitle}</title>
       </Head>
@@ -538,6 +578,11 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
               exit="closed"
             />
             <motion.aside
+              ref={drawerRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Navigasi admin"
+              id="admin-drawer"
               className="absolute inset-y-0 left-0 flex w-[min(100%,280px)] flex-col bg-white dark:bg-slate-900 shadow-xl"
               variants={drawerVariants}
               initial="closed"
@@ -561,29 +606,22 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
             <button
               type="button"
               className="rounded-xl border border-line bg-white p-2 transition active:scale-95 lg:hidden"
+              ref={menuButtonRef}
+              aria-expanded={mobileOpen}
+              aria-controls="admin-drawer"
               onClick={() => setMobileOpen(true)}
               aria-label="Buka menu"
             >
               <MenuIcon className="h-5 w-5" />
             </button>
             <div className="min-w-0">
-              <div className="hidden items-center gap-1 text-xs text-subtle sm:flex">
-                <span>Admin</span>
-                <ChevronRight className="h-3 w-3" />
-                <AnimatePresence mode="wait">
-                  <motion.span
-                    key={pageTitle}
-                    className="font-medium text-body"
-                    initial={reduce ? false : { opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={reduce ? undefined : { opacity: 0, y: -4 }}
-                    transition={{ duration: 0.22, ease: easeOutExpo }}
-                  >
-                    {pageTitle}
-                  </motion.span>
-                </AnimatePresence>
-              </div>
-              <p className="truncate text-sm font-semibold text-ink sm:hidden">{pageTitle}</p>
+              <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1.5 text-xs text-subtle">
+                <InertiaLink href="/admin" className="hover:text-brand-dark">Admin</InertiaLink>
+                {activeGroup && <><ChevronRight aria-hidden className="h-3 w-3" /><span>{activeGroup.title}</span></>}
+                {activeItem && location.pathname !== activeItem.to && <><ChevronRight aria-hidden className="h-3 w-3" /><InertiaLink href={activeItem.to}>{activeItem.label}</InertiaLink></>}
+                <ChevronRight aria-hidden className="h-3 w-3" />
+                <span aria-current="page" className="font-semibold text-ink">{pageTitle}</span>
+              </nav>
             </div>
           </div>
 
@@ -595,7 +633,7 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
               className="hidden items-center gap-1.5 rounded-[12px] border border-line px-3 py-2 text-xs font-semibold text-body transition hover:bg-muted active:scale-[0.98] sm:inline-flex"
             >
               <ExternalLink className="h-3.5 w-3.5" />
-              Portal
+              Lihat situs
             </a>
             <div className="flex items-center gap-2.5 rounded-[12px] border border-line bg-page px-2.5 py-1.5 sm:px-3 lg:hidden">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-xs font-bold text-white">
@@ -609,9 +647,9 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
           </div>
         </header>
 
-        <div className="p-4 md:p-6 lg:p-8">
-          <AnimatedPage>{children}</AnimatedPage>
-        </div>
+        <main id="admin-content" className="min-w-0 p-4 md:p-6 lg:p-8">
+          {children}
+        </main>
       </div>
     </div>
   )

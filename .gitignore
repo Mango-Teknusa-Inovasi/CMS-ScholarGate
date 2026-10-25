@@ -73,3 +73,8 @@ plan.md
 *.sql
 *.sql.gz
 *.zip
+
+# Project-local agent skills (all providers)
+**/skills/
+**/skills-lock.json
+/.impeccable/

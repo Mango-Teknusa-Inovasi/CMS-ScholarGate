@@ -11,7 +11,8 @@
     "test": "tsc --noEmit",
     "serve": "php artisan serve",
     "dev:all": "concurrently -c \"#93c5fd,#c4b5fd\" \"php artisan serve\" \"vite\" --names=php,vite",
-    "install:app": "php artisan scholargate:install"
+    "install:app": "php artisan scholargate:install",
+    "test:ui": "node tests/browser/cms-ui.cjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
@@ -58,6 +59,7 @@
     "@vitejs/plugin-react": "^6.1.1",
     "concurrently": "^10.0.5",
     "laravel-vite-plugin": "^3.2.0",
+    "playwright": "^1.64.1",
     "tailwindcss": "^4.3.2",
     "typescript": "^7.0.2",
     "vite": "^8.3.0"

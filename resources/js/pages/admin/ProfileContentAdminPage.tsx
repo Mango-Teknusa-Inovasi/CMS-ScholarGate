@@ -1,3 +1,4 @@
+import { LoadError } from '../../components/ui/LoadError'
 import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, Trash2, Sparkles } from 'lucide-react'
@@ -22,7 +23,7 @@ export function ProfileContentAdminPage() {
   const qc = useQueryClient()
   const toast = useToast()
   const { confirm } = useConfirm()
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin-profile-page'],
     queryFn: async () => (await api.get<ProfilePage | null>('/admin/profile-page')).data,
   })
@@ -91,6 +92,8 @@ export function ProfileContentAdminPage() {
     toast.info('Tab dihapus dari form. Klik simpan untuk menerapkan.')
   }
 
+  if (isError) return <LoadError onRetry={refetch} />
+
   if (isLoading) {
     return (
       <div className="space-y-4" aria-busy="true" aria-label="Memuat konten profil">
@@ -115,7 +118,7 @@ export function ProfileContentAdminPage() {
             type="button"
             onClick={() => save.mutate()}
             disabled={save.isPending}
-            className="rounded-[12px] bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(14_165_233/0.25)] transition hover:bg-sky-600 disabled:opacity-60"
+            className="rounded-[12px] bg-brand-dark px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-800 disabled:opacity-60"
           >
             {save.isPending ? 'Menyimpan…' : 'Simpan'}
           </button>

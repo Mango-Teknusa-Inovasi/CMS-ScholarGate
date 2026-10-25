@@ -167,7 +167,7 @@ export function MediaItemDetailSidebar({
               type="button"
               disabled={isUpdatingAlt || altDraft === (selectedItem.alt || '')}
               onClick={handleSaveAlt}
-              className="rounded-lg bg-sky-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-sky-600 disabled:opacity-40 shrink-0"
+              className="rounded-lg bg-brand-dark px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-sky-800 disabled:opacity-40 shrink-0"
             >
               {isUpdatingAlt ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Simpan'}
             </button>
@@ -180,7 +180,7 @@ export function MediaItemDetailSidebar({
         <button
           type="button"
           onClick={handleConfirmSelect}
-          className="w-full flex items-center justify-center gap-2 rounded-xl bg-sky-500 py-2.5 text-xs font-bold text-white shadow-[0_2px_10px_rgb(14_165_233/0.25)] transition hover:bg-sky-600"
+          className="w-full flex items-center justify-center gap-2 rounded-xl bg-brand-dark py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-sky-800"
         >
           <Check className="h-4 w-4 stroke-[3]" />
           <span>Gunakan Media Ini</span>

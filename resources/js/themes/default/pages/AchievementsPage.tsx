@@ -1,3 +1,4 @@
+import { LoadError } from '@/components/ui/LoadError'
 import { useSiteName } from '@/hooks/useSiteName'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
@@ -19,7 +20,7 @@ const tones: BentoTone[] = ['amber', 'coral', 'mint', 'violet', 'sky', 'peach']
 
 export function AchievementsPage() {
   const siteName = useSiteName()
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['achievements'],
     queryFn: async () =>
       (await api.get<{ data: Achievement[] }>('/achievements')).data,
@@ -41,7 +42,7 @@ export function AchievementsPage() {
           />
         </BentoBoard>
 
-        {isLoading ? (
+        {isError ? <LoadError onRetry={refetch} /> : isLoading ? (
           <BentoBoard>
             {Array.from({ length: 6 }).map((_, i) => (
               <Skeleton

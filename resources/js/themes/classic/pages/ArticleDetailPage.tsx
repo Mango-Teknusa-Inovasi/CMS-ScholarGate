@@ -1,3 +1,4 @@
+import { LoadError } from '@/components/ui/LoadError'
 import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { useQuery } from '@tanstack/react-query';
@@ -27,7 +28,7 @@ export function ClassicArticleDetailPage({ slug: propSlug, article: initialArtic
     const pathSlug = window.location.pathname.split('/artikel/')[1] || '';
     const currentSlug = propSlug || pathSlug;
 
-    const { data, isLoading, isError } = useQuery({
+    const { data, isLoading, isError, error, refetch } = useQuery({
         queryKey: ['article', currentSlug],
         queryFn: async () => (await api.get<DetailResponse>(`/articles/${currentSlug}`)).data,
         enabled: !initialArticle && !!currentSlug,
@@ -42,6 +43,10 @@ export function ClassicArticleDetailPage({ slug: propSlug, article: initialArtic
                 Memuat isi berita...
             </div>
         );
+    }
+
+    if (isError && (error as { response?: { status?: number } })?.response?.status !== 404) {
+        return <LoadError onRetry={refetch} />;
     }
 
     if (isError || !article) {

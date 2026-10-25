@@ -77,7 +77,7 @@ export function HeroCarousel({ banners, embedded = false, className }: Props) {
               width={1600}
               height={720}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/30 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/60 to-slate-950/50" />
             <div className="relative z-10 max-w-2xl">
               <motion.h1
                 className="text-balance text-2xl font-bold leading-[1.15] tracking-tight sm:text-3xl md:text-4xl"
@@ -107,7 +107,7 @@ export function HeroCarousel({ banners, embedded = false, className }: Props) {
                   {(() => {
                     const href = safeHref(current.cta_url) || '/artikel'
                     const cls =
-                      'inline-flex items-center rounded-full bg-teal-500 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_2px_12px_rgb(20_184_166/0.4)] transition hover:bg-teal-600 active:scale-[0.98]'
+                      'inline-flex items-center rounded-full bg-teal-700 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_2px_12px_rgb(20_184_166/0.4)] transition hover:bg-teal-800 active:scale-[0.98]'
                     if (href.startsWith('/')) {
                       return (
                         <Link to={href} className={cls} style={{ color: '#ffffff' }}>

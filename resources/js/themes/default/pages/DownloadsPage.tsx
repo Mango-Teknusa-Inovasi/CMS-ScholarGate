@@ -1,3 +1,4 @@
+import { LoadError } from '@/components/ui/LoadError'
 import { useQuery } from '@tanstack/react-query'
 import { useSiteName } from '@/hooks/useSiteName'
 import { Download as DownloadIcon, FileText } from 'lucide-react'
@@ -29,7 +30,7 @@ const tones: BentoTone[] = ['mint', 'sky', 'teal', 'peach', 'violet', 'amber']
 
 export function DownloadsPage() {
   const siteName = useSiteName()
-  const { data = [], isLoading } = useQuery({
+  const { data = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['downloads'],
     queryFn: async () => (await api.get<DownloadItem[]>('/downloads')).data,
   })
@@ -40,15 +41,15 @@ export function DownloadsPage() {
       <PageBentoShell>
         <BentoBoard>
           <PageBentoHero
-            crumbs={[{ label: 'Beranda', to: '/' }, { label: 'Download' }]}
-            title="Pusat Download"
+            crumbs={[{ label: 'Beranda', to: '/' }, { label: 'Unduhan' }]}
+            title="Pusat Unduhan"
             description="Dokumen resmi dan template yang dapat diunduh."
             tone="teal"
             icon={<DownloadIcon className="h-5 w-5 text-teal-600" strokeWidth={1.75} />}
           />
         </BentoBoard>
 
-        {isLoading ? (
+        {isError ? <LoadError onRetry={refetch} /> : isLoading ? (
           <BentoBoard>
             {Array.from({ length: 4 }).map((_, i) => (
               <Skeleton

@@ -1,3 +1,4 @@
+import { LoadError } from '../../components/ui/LoadError'
 import { useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Cloud, Download, HardDriveDownload, Trash2, Upload } from 'lucide-react'
@@ -27,7 +28,7 @@ export function BackupAdminPage() {
   const fileRef = useRef<HTMLInputElement>(null)
   const [mode, setMode] = useState<'merge' | 'replace'>('merge')
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin-backups'],
     queryFn: async () => (await api.get<{ backups: BackupItem[] }>('/admin/backups')).data,
   })
@@ -116,7 +117,7 @@ export function BackupAdminPage() {
             type="button"
             onClick={() => create.mutate()}
             disabled={create.isPending}
-            className="inline-flex items-center gap-2 rounded-[12px] bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-sky-600 disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-[12px] bg-brand-dark px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-sky-800 disabled:opacity-60"
           >
             <HardDriveDownload className="h-4 w-4" />
             {create.isPending ? 'Membuat & Sync Cloud…' : 'Buat backup'}
@@ -136,7 +137,7 @@ export function BackupAdminPage() {
             Tersimpan ganda: di Cloud Storage R2 (static-cdn-r2) dan server lokal.
           </p>
 
-          {isLoading ? (
+          {isError ? <LoadError onRetry={refetch} /> : isLoading ? (
             <div className="mt-4 space-y-2">
               <Skeleton className="h-12 w-full" />
               <Skeleton className="h-12 w-full" />

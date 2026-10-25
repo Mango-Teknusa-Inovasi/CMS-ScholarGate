@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { motion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 import {
   ArrowRight,
   Eye,
@@ -67,6 +67,7 @@ const quickLinks = [
 ]
 
 export function DashboardPage() {
+  const reduce = useReducedMotion()
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin-dashboard'],
     queryFn: async () => (await api.get<Dashboard>('/admin/dashboard')).data,
@@ -80,11 +81,11 @@ export function DashboardPage() {
     return (
       <div className="rounded-[16px] border border-line bg-white p-8 text-center shadow-[var(--shadow-card)]">
         <p className="font-semibold text-ink">Gagal memuat dashboard</p>
-        <p className="mt-1 text-sm text-subtle">Periksa koneksi API lalu coba lagi.</p>
+        <p className="mt-1 text-sm text-subtle">Periksa koneksi internet Anda, lalu coba lagi.</p>
         <button
           type="button"
           onClick={() => refetch()}
-          className="mt-4 rounded-[12px] bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-600"
+          className="mt-4 rounded-[12px] bg-brand-dark px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-800"
         >
           Muat ulang
         </button>
@@ -101,14 +102,14 @@ export function DashboardPage() {
       iconBg: 'bg-sky-100 text-sky-600',
     },
     {
-      label: 'Draft',
+      label: 'Draf',
       value: data.stats.articles_draft,
       icon: PenLine,
       tone: 'bg-amber-50 text-amber-950 ring-1 ring-inset ring-amber-100',
       iconBg: 'bg-amber-100 text-amber-700',
     },
     {
-      label: 'Total views',
+      label: 'Total tayangan',
       value: data.stats.total_views,
       icon: Eye,
       tone: 'bg-violet-50 text-violet-950 ring-1 ring-inset ring-violet-100',
@@ -129,7 +130,7 @@ export function DashboardPage() {
       iconBg: 'bg-rose-100 text-rose-500',
     },
     {
-      label: 'File download',
+      label: 'Berkas unduhan',
       value: data.stats.downloads,
       icon: Download,
       tone: 'bg-emerald-50 text-emerald-950 ring-1 ring-inset ring-emerald-100',
@@ -139,14 +140,14 @@ export function DashboardPage() {
 
   return (
     <div>
-      <div data-layer data-parallax="2">
+      <div data-layer>
         <AdminPageHeader
           title="Dashboard"
           description="Ringkasan konten portal. Kelola artikel, tampilan, dan data sekolah dari menu kiri."
           actions={
             <Link
               to="/admin/articles/new"
-              className="inline-flex items-center gap-2 rounded-[12px] bg-violet-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgb(139_92_246/0.28)] transition hover:bg-violet-600 active:scale-[0.98]"
+              className="inline-flex items-center gap-2 rounded-[12px] bg-brand-dark px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-800 active:scale-[0.98]"
             >
               <PenLine className="h-4 w-4" />
               Artikel baru
@@ -158,25 +159,23 @@ export function DashboardPage() {
       {/* Stats — muncul satu-satu */}
       <motion.div
         data-layer
-        data-parallax="3"
-        className="mb-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
+        className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 xl:grid-cols-6"
         variants={staggerContainer}
-        initial="hidden"
+        initial={reduce ? false : "hidden"}
         animate="show"
       >
         {cards.map((c) => (
           <motion.div
             key={c.label}
             variants={staggerItem}
-            whileHover={{ y: -3, transition: { duration: 0.2, ease: easeOutExpo } }}
-            className={`rounded-[16px] p-5 shadow-[var(--shadow-card)] ${c.tone}`}
+            className={`rounded-[16px] p-3 sm:p-4 shadow-[var(--shadow-card)] ${c.tone}`}
           >
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-sm font-medium opacity-80">{c.label}</p>
-                <p className="mt-1 text-3xl font-bold tabular-nums tracking-tight">{c.value}</p>
+                <p className="text-xs font-medium sm:text-sm">{c.label}</p>
+                <p className="mt-1 text-2xl font-bold tabular-nums tracking-tight">{c.value}</p>
               </div>
-              <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${c.iconBg}`}>
+              <div className={`hidden h-8 w-8 shrink-0 items-center sm:flex justify-center rounded-xl ${c.iconBg}`}>
                 <c.icon className="h-5 w-5" strokeWidth={1.75} />
               </div>
             </div>
@@ -184,12 +183,12 @@ export function DashboardPage() {
         ))}
       </motion.div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]" data-layer data-parallax="2">
+      <div className="grid gap-5 xl:grid-cols-12" data-layer>
         {/* Recent articles */}
         <motion.section
           data-stagger-child
-          className="overflow-hidden rounded-[16px] border border-line bg-white shadow-[var(--shadow-card)]"
-          initial={{ opacity: 0, y: 28, scale: 0.98 }}
+          className="min-w-0 xl:col-span-8 overflow-hidden rounded-[16px] border border-line bg-white shadow-[var(--shadow-card)]"
+          initial={reduce ? false : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.6, delay: 0.2, ease: easeOutExpo }}
         >
@@ -202,7 +201,7 @@ export function DashboardPage() {
               to="/admin/articles"
               className="inline-flex items-center gap-1 text-sm font-semibold text-brand hover:text-brand-dark"
             >
-              Semua
+              Lihat semua
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -211,7 +210,7 @@ export function DashboardPage() {
             <div className="px-5 py-10 text-center">
               <p className="text-sm text-subtle">Belum ada artikel.</p>
               <Link
-                to="/admin/articles"
+                to="/admin/articles/new"
                 className="mt-3 inline-flex text-sm font-semibold text-brand"
               >
                 Buat artikel pertama
@@ -226,7 +225,7 @@ export function DashboardPage() {
                     className="flex flex-col gap-2 px-5 py-4 transition hover:bg-page sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div className="min-w-0">
-                      <p className="truncate font-semibold text-ink">{a.title}</p>
+                      <p className="line-clamp-2 font-semibold text-ink">{a.title}</p>
                       <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-subtle">
                         <span>{a.category?.name || 'Tanpa kategori'}</span>
                         <span className="text-line">·</span>
@@ -250,8 +249,8 @@ export function DashboardPage() {
         {/* Quick actions */}
         <motion.section
           data-stagger-child
-          className="rounded-[16px] border border-line bg-white p-5 shadow-[var(--shadow-card)]"
-          initial={{ opacity: 0, y: 32, scale: 0.98 }}
+          className="xl:col-span-4 rounded-[16px] border border-line bg-white p-5 shadow-[var(--shadow-card)]"
+          initial={reduce ? false : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.6, delay: 0.28, ease: easeOutExpo }}
         >
@@ -264,7 +263,7 @@ export function DashboardPage() {
                 to={q.to}
                 className="group flex items-center gap-3 rounded-[14px] border border-line bg-page px-3.5 py-3 transition hover:border-brand/25 hover:bg-brand-soft/40 active:scale-[0.99]"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-brand shadow-sm ring-1 ring-line">
+                <div className="hidden h-8 w-8 shrink-0 items-center sm:flex justify-center rounded-xl bg-white text-brand shadow-sm ring-1 ring-line">
                   <q.icon className="h-4.5 w-4.5 h-5 w-5" strokeWidth={1.75} />
                 </div>
                 <div className="min-w-0 flex-1">
