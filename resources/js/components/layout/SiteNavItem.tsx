@@ -13,7 +13,7 @@ export type SiteMenuItem = {
 }
 
 const activeClass = 'bg-brand-soft font-semibold text-brand-dark dark:bg-sky-950 dark:text-sky-200'
-const linkClass = 'block min-w-0 rounded-xl px-3 py-3 text-sm font-medium text-body hover:bg-muted dark:text-slate-200 dark:hover:bg-slate-800'
+const linkClass = 'inline-flex min-h-11 items-center min-w-0 rounded-xl px-3 py-2 text-sm font-medium text-body hover:bg-muted dark:text-slate-200 dark:hover:bg-slate-800 transition-colors'
 
 function matchesPath(href: string, pathname: string) {
   const path = href.split(/[?#]/)[0]
@@ -89,6 +89,8 @@ export function SiteNavItem({ item, mobile = false, onNavigate }: {
 
   return (
     <div ref={root} className="relative min-w-0"
+      onMouseEnter={() => { if (!mobile && children.length) setOpen(true) }}
+      onMouseLeave={() => { if (!mobile && children.length) setOpen(false) }}
       onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false) }}
       onKeyDown={(event) => {
         if (event.key === 'Escape' && open) {
@@ -100,12 +102,12 @@ export function SiteNavItem({ item, mobile = false, onNavigate }: {
       {children.length ? (
         <button ref={trigger} type="button" aria-label={`Submenu ${item.label}`}
           aria-expanded={open} aria-controls={id} onClick={() => setOpen(!open)}
-          className={cn(linkClass, 'flex min-h-11 items-center gap-1.5', mobile && 'w-full justify-between', active && activeClass)}>
+          className={cn(linkClass, 'inline-flex items-center gap-1.5', mobile ? 'w-full justify-between' : '', active && activeClass)}>
           <span>{item.label}</span>
           <ChevronDown aria-hidden className={cn('h-3.5 w-3.5 shrink-0 opacity-70 transition-transform', open && 'rotate-180')} />
         </button>
       ) : (
-        <MenuLink item={item} pathname={location.pathname} hash={hash} onNavigate={navigate} className={linkClass} />
+        <MenuLink item={item} pathname={location.pathname} hash={hash} onNavigate={navigate} className={cn(linkClass, mobile && 'w-full')} />
       )}
       {!!children.length && open && (
         <div id={id} className={cn('space-y-1 border-line dark:border-slate-700',
