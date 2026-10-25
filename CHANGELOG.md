@@ -5,6 +5,38 @@ All notable changes to **ScholarGate** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] - 2026-10-25
+
+### Added
+- **UI Architecture & Component Hardening**:
+  - **Modular Navigation System (`SiteNavItem`)**: Dedicated navigation item component supporting direct links, nested dropdown menus, active route detection, mobile sheet view, and accessible ARIA attributes.
+  - **Error Boundary & Recovery UI (`LoadError`)**: Standardized error fallback component with retry actions for failed network requests and missing dataset states across themes.
+  - **Automated Browser UI Testing (`tests/browser/cms-ui.cjs`)**: End-to-end Playwright test suite validating theme layouts, navigation integrity, mobile responsiveness, and dark mode toggling, runnable via `npm run test:ui`.
+- **Custom Theme Error Handling**:
+  - Theme-aware custom HTTP error pages (`404`, `403`, `419`, `500`, `503`) blending with active site branding and layout, with graceful Blade fallbacks.
+- **Security & Anti-Slop Documentation**:
+  - Integrated GitHub Actions security audit workflows and formalized repository alignment with Anti-Slop and enterprise security standards.
+
+### Changed
+- **Architectural Refactoring & Decoupling**:
+  - **AI Intelligence Suite (`App\Services\Ai\*`)**: Decomposed monolithic 1,300+ line `OpenAiArticleService` into dedicated domain sub-services (`AiClient`, `ArticleGenerator`, `SpeechGenerator`, `AchievementGenerator`, `RagChatbot`) with a slim facade pattern (< 140 lines).
+  - **Admin Settings Hub (`resources/js/components/admin/settings/*`)**: Split bloated 1,290+ line `SettingsAdminPage` into modular tab components (`BrandingSettingsTab`, `ContactSettingsTab`, `SocialSettingsTab`, `WidgetsSettingsTab`, `SeoSettingsTab`, `AiSettingsTab`, `AuthSettingsTab`, `BrandLogoUpload`, `Field`, `fieldMeta`), shrinking the main controller page to ~148 lines.
+  - **Backup & Restore Engine (`App\Services\Backup\*`)**: Extracted 800+ line `BackupService` into focused domain modules (`BackupConfig`, `BackupStorage`, `BackupExporter`, `BackupImporter`), maintaining zero external database binary dependencies.
+  - **Instagram Scraping Pipeline (`App\Services\Instagram\*`)**: Refactored `InstagramScraperService` into isolated `InstagramParser` and `InstagramFetcher` classes.
+  - **Media Picker Modal**: Extracted file inspector and metadata editor into standalone `MediaItemDetailSidebar` component.
+- **Admin & Public Themes Polish**:
+  - Redesigned header navigation bar, mobile navigation drawer, and search input states.
+  - Enhanced button micro-interactions, responsive table overflows, badge contrast tokens, and Bento tile layouts across default and classic themes.
+
+### Fixed
+- **Targeted Instagram Scraper Extraction**:
+  - Restricted HTML scraper image discovery to official post meta tags (`og:image` and `twitter:image`), preventing thumbnail leakages from footer/recommendation carousels of other posts.
+  - Corrected regex quantifier typo (`{8_}` → `{8,}`) for accurate multi-slide Instagram image ID deduplication.
+- **Cross-Host Deployment & Environment Compatibility**:
+  - Resolved SSH authentication and deployment workflows for updated hosting infrastructure.
+
+---
+
 ## [2.3.0] - 2026-09-23
 
 ### Added
