@@ -32,6 +32,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Targeted Instagram Scraper Extraction**:
   - Restricted HTML scraper image discovery to official post meta tags (`og:image` and `twitter:image`), preventing thumbnail leakages from footer/recommendation carousels of other posts.
   - Corrected regex quantifier typo (`{8_}` → `{8,}`) for accurate multi-slide Instagram image ID deduplication.
+- **Top Navbar Dropdown & Anchor Navigation**:
+  - Unified submenu dropdown trigger button (eliminating split duplicate links for parent items).
+  - Added native scroll synchronization and browser `hashchange` event listening for in-page anchors (e.g. `/profil#kontak` scroll targeting with `scroll-mt-28`).
+  - Added exclusive active state detection distinguishing between `aria-current="location"` for anchor targets and `aria-current="page"` for exact pages.
 - **Cross-Host Deployment & Environment Compatibility**:
   - Resolved SSH authentication and deployment workflows for updated hosting infrastructure.
 
