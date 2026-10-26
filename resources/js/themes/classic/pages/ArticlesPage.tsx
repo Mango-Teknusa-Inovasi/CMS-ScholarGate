@@ -104,7 +104,9 @@ export function ClassicArticlesPage() {
                                     {art.cover_path && (
                                         <div className="w-full sm:w-48 aspect-video sm:aspect-square bg-slate-100 dark:bg-slate-800 rounded overflow-hidden flex-shrink-0">
                                             <img
-                                                src={coverSrc(art.cover_path, art.slug || art.id, 500, 500)}
+                                                src={coverSrc(art.cover_url || art.cover_path, art.slug || art.id, 500, 500)}
+                                                srcSet={art.cover_srcset || undefined}
+                                                sizes="(max-width: 639px) 92vw, 192px"
                                                 alt={art.title}
                                                 className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                                             />

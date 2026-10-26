@@ -155,7 +155,9 @@ export function ArticlesPage() {
                 >
                   <div className="media-cover relative min-h-[160px] flex-1">
                     <img
-                      src={coverSrc(data.featured.cover_path, data.featured.slug, 1400, 700)}
+                      src={coverSrc(data.featured.cover_url || data.featured.cover_path, data.featured.slug, 1400, 700)}
+                      srcSet={data.featured.cover_srcset || undefined}
+                      sizes="(max-width: 767px) 92vw, 60vw"
                       alt={data.featured.title}
                       className="absolute inset-0 h-full w-full object-cover"
                       loading="lazy"
@@ -236,7 +238,9 @@ export function ArticlesPage() {
                 <Link to={`/artikel/${article.slug}`} className="flex h-full flex-col gap-0 sm:flex-row">
                   <div className="media-cover aspect-video w-full shrink-0 sm:aspect-auto sm:h-auto sm:w-36 md:w-40">
                     <img
-                      src={coverSrc(article.cover_path, article.slug || article.id, 400, 280)}
+                      src={coverSrc(article.cover_url || article.cover_path, article.slug || article.id, 400, 280)}
+                      srcSet={article.cover_srcset || undefined}
+                      sizes="(max-width: 639px) 92vw, 160px"
                       alt=""
                       className="h-full w-full object-cover"
                       loading="lazy"

@@ -11,6 +11,7 @@ use App\Models\Category;
 use App\Models\Download;
 use App\Models\Setting;
 use App\Support\PublicSettings;
+use App\Services\ResponsiveMedia;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -18,7 +19,12 @@ class PublicDataController extends Controller
 {
     public function settings(): JsonResponse
     {
-        return response()->json(PublicSettings::filterPublic(Setting::allAsArray()));
+        $settings = PublicSettings::filterPublic(Setting::allAsArray());
+        if (! empty($settings['site_logo'])) {
+            $settings['site_logo_srcset'] = app(ResponsiveMedia::class)->srcsetFor($settings['site_logo']);
+        }
+
+        return response()->json($settings);
     }
 
     public function menus(): JsonResponse
@@ -47,17 +53,18 @@ class PublicDataController extends Controller
         return response()->json($categories);
     }
 
-    public function achievements(Request $request): JsonResponse
+    public function achievements(Request $request, ResponsiveMedia $responsiveMedia): JsonResponse
     {
         $items = Achievement::published()
             ->orderByDesc('is_featured')
             ->orderByDesc('achieved_at')
             ->paginate($request->integer('per_page', 12));
+        $responsiveMedia->attach($items->getCollection(), 'cover_path', 'cover_srcset');
 
         return response()->json($items);
     }
 
-    public function achievementShow(string $slug): JsonResponse
+    public function achievementShow(string $slug, ResponsiveMedia $responsiveMedia): JsonResponse
     {
         $item = Achievement::published()->where('slug', $slug)->firstOrFail();
 
@@ -73,6 +80,9 @@ class PublicDataController extends Controller
             ->orderByDesc('published_at')
             ->limit(5)
             ->get();
+        $responsiveMedia->attach(collect([$item]), 'cover_path', 'cover_srcset');
+        $responsiveMedia->attach($otherAchievements, 'cover_path', 'cover_srcset');
+        $responsiveMedia->attach($recentArticles, 'cover_path', 'cover_srcset');
 
         return response()->json([
             ...$item->toArray(),

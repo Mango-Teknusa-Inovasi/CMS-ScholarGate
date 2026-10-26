@@ -85,7 +85,9 @@ export function ArticlePreviewPage() {
         <article className="max-w-3xl">
           <div className="media-cover mb-8 aspect-[16/9] overflow-hidden rounded-[16px] border border-line">
             <img
-              src={coverSrc(article.cover_path, article.slug || article.id, 1600, 900)}
+              src={coverSrc(article.cover_url || article.cover_path, article.slug || article.id, 1600, 900)}
+              srcSet={article.cover_srcset || undefined}
+              sizes="(max-width: 767px) 100vw, 70vw"
               alt={article.title}
               className="h-full w-full object-cover"
             />

@@ -24,9 +24,7 @@
     @endif
     <link rel="manifest" href="/site.webmanifest">
 
-    <!-- Preconnect & Load Google Fonts and Storage CDN asynchronously for optimized FCP/LCP -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" href="/fonts/onest-latin.woff2" as="font" type="font/woff2" crossorigin>
     @php
         $r2PublicUrl = config('filesystems.disks.r2.url') ?: env('R2_PUBLIC_URL');
         $r2Origin = null;
@@ -40,11 +38,10 @@
     @if($r2Origin)
         <link rel="preconnect" href="{{ $r2Origin }}" crossorigin>
     @endif
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
-    <noscript>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap">
-    </noscript>
+    @foreach(($page['props']['lcp_preloads'] ?? []) as $preload)
+        <link rel="preload" as="image" href="{{ $preload['href'] }}" media="{{ $preload['media'] }}" fetchpriority="high"
+            @if(!empty($preload['srcset'])) imagesrcset="{{ $preload['srcset'] }}" imagesizes="{{ $preload['sizes'] }}" @endif>
+    @endforeach
 
     @if(is_array($seo))
         {{-- Blade {{ }} already escapes — do not pre-escape with e() --}}

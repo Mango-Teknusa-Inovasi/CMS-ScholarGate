@@ -65,6 +65,8 @@ export function ClassicProfilePage() {
                                     <div className="w-full sm:w-44 aspect-[4/5] rounded overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0 border border-slate-200 dark:border-slate-700">
                                         <img
                                             src={coverSrc(data.welcome.image_url || data.welcome.image_path, 'welcome', 400, 500)}
+                                            srcSet={data.welcome.image_srcset || undefined}
+                                            sizes="(max-width: 767px) 92vw, 400px"
                                             alt={data.welcome.title}
                                             className="w-full h-full object-cover"
                                         />

@@ -81,6 +81,7 @@ export type Article = {
   body?: string
   cover_path?: string | null
   cover_url?: string | null
+  cover_srcset?: string | null
   status: string
   is_featured: boolean
   views: number
@@ -100,6 +101,7 @@ export type Banner = {
   subtitle?: string
   image_path?: string | null
   image_url?: string | null
+  image_srcset?: string | null
   cta_label?: string
   cta_url?: string
 }
@@ -121,6 +123,7 @@ export type WelcomeBlock = {
   body?: string
   image_path?: string | null
   image_url?: string | null
+  image_srcset?: string | null
   badge_left?: string
   badge_right?: string
   chat_label?: string
@@ -133,6 +136,7 @@ export type Achievement = {
   excerpt?: string
   cover_path?: string | null
   cover_url?: string | null
+  cover_srcset?: string | null
   badge_label?: string
   is_featured: boolean
   achieved_at?: string
@@ -142,6 +146,7 @@ export type GalleryItem = {
   id: string | number
   title?: string
   image_path?: string | null
+  image_srcset?: string | null
   image_url?: string | null
   caption?: string
 }

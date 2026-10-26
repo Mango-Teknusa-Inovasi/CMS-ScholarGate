@@ -3,6 +3,7 @@ import { usePage } from '@inertiajs/react'
 import {
   type AuthUser,
   fetchMemberMe,
+  getMemberToken,
   memberLogin as doLogin,
   memberLogout as doLogout,
 } from '../lib/auth'
@@ -31,7 +32,13 @@ export function useMemberAuth() {
       setLoading(false)
       return
     }
-    void refresh()
+    // Anonymous public visitors need no member lookup; retain the legacy-token
+    // check only for clients carrying an older local session.
+    if (getMemberToken()) void refresh()
+    else {
+      setUser(null)
+      setLoading(false)
+    }
   }, [shared, refresh])
 
   const login = useCallback(async (email: string, password: string) => {

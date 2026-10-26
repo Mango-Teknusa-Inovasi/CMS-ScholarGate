@@ -143,7 +143,9 @@ export function ArticleDetailPage() {
             <div className="overflow-hidden rounded-[20px] border border-line bg-white shadow-[var(--shadow-card)]">
               <div className="media-cover aspect-[16/9] w-full">
                 <img
-                  src={coverSrc(article.cover_path, article.slug || article.id, 1600, 900)}
+                  src={coverSrc(article.cover_url || article.cover_path, article.slug || article.id, 1600, 900)}
+                  srcSet={article.cover_srcset || undefined}
+                  sizes="(max-width: 767px) 100vw, 70vw"
                   alt={article.title}
                   className="h-full w-full object-cover"
                   width={1600}
@@ -283,7 +285,9 @@ export function ArticleDetailPage() {
                     >
                       <div className="relative h-14 w-18 shrink-0 overflow-hidden rounded-lg bg-slate-100">
                         <img
-                          src={coverSrc(pop.cover_path, pop.slug || pop.id, 200, 140)}
+                          src={coverSrc(pop.cover_url || pop.cover_path, pop.slug || pop.id, 200, 140)}
+                          srcSet={pop.cover_srcset || undefined}
+                          sizes="72px"
                           alt=""
                           className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                           loading="lazy"
@@ -387,7 +391,9 @@ export function ArticleDetailPage() {
                 >
                   <div className="media-cover aspect-[16/10]">
                     <img
-                      src={coverSrc(rel.cover_path, rel.slug || rel.id, 600, 360)}
+                      src={coverSrc(rel.cover_url || rel.cover_path, rel.slug || rel.id, 600, 360)}
+                      srcSet={rel.cover_srcset || undefined}
+                      sizes="(max-width: 767px) 80vw, 40vw"
                       alt=""
                       className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                       loading="lazy"

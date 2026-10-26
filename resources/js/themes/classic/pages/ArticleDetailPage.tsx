@@ -118,7 +118,9 @@ export function ClassicArticleDetailPage({ slug: propSlug, article: initialArtic
                     {article.cover_path && (
                         <div className="mb-6 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800">
                             <img
-                                src={coverSrc(article.cover_path, article.slug || article.id, 1200, 600)}
+                                src={coverSrc(article.cover_url || article.cover_path, article.slug || article.id, 1200, 600)}
+                                srcSet={article.cover_srcset || undefined}
+                                sizes="(max-width: 767px) 100vw, 70vw"
                                 alt={article.title}
                                 className="w-full h-auto max-h-[450px] object-cover"
                             />

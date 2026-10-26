@@ -1,5 +1,5 @@
 import React from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { useQuery } from '@tanstack/react-query';
 import { api, type HomePayload, type Article } from '@/lib/api';
 import { coverSrc, formatDate } from '@/lib/utils';
@@ -10,11 +10,16 @@ import ClassicLayout from '../layout/ClassicLayout';
 
 export function ClassicNewsHomePage() {
     const siteName = useSiteName();
+    const initial = usePage<{ home?: HomePayload }>().props.home;
 
-    const { data, isLoading, isError, refetch } = useQuery({
+    const { data: fetched, isLoading: queryLoading, isError: queryError, refetch } = useQuery({
         queryKey: ['home'],
         queryFn: async () => (await api.get<HomePayload>('/home')).data,
+        enabled: !initial,
     });
+    const data = initial || fetched;
+    const isLoading = !data && queryLoading;
+    const isError = !data && queryError;
 
     const articles = data?.articles || [];
     const headline = articles[0];
@@ -115,7 +120,9 @@ export function ClassicNewsHomePage() {
                                 {headline.cover_path && (
                                     <div className="aspect-[21/9] bg-slate-100 dark:bg-slate-800 overflow-hidden relative">
                                         <img
-                                            src={coverSrc(headline.cover_path, headline.slug || headline.id, 1200, 600)}
+                                            src={coverSrc(headline.cover_url || headline.cover_path, headline.slug || headline.id, 1200, 600)}
+                                            srcSet={headline.cover_srcset || undefined}
+                                            sizes="(max-width: 767px) 100vw, 66vw"
                                             alt={headline.title}
                                             className="w-full h-full object-cover"
                                         />
@@ -169,7 +176,9 @@ export function ClassicNewsHomePage() {
                                                 {art.cover_path && (
                                                     <div className="aspect-video bg-slate-100 dark:bg-slate-800 rounded mb-3 overflow-hidden">
                                                         <img
-                                                            src={coverSrc(art.cover_path, art.slug || art.id, 600, 340)}
+                                                            src={coverSrc(art.cover_url || art.cover_path, art.slug || art.id, 600, 340)}
+                                                            srcSet={art.cover_srcset || undefined}
+                                                            sizes="(max-width: 639px) 92vw, 50vw"
                                                             alt={art.title}
                                                             className="w-full h-full object-cover"
                                                         />

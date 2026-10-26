@@ -93,6 +93,8 @@ export function ProfilePage() {
               >
                 <div className="relative aspect-[4/5] w-full min-h-[280px] md:min-h-full">
                   <img
+                    srcSet={data.welcome.image_srcset || undefined}
+                    sizes="(max-width: 767px) 92vw, 640px"
                     src={coverSrc(
                       data.welcome.image_url || data.welcome.image_path,
                       data.welcome.key || 'profile-welcome',

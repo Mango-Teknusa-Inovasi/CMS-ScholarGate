@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { usePage } from '@inertiajs/react'
 import { useSiteName } from '@/hooks/useSiteName'
 import { api, type HomePayload } from '@/lib/api'
 import { HomeBento } from '@/components/home/HomeBento'
@@ -8,12 +9,15 @@ import { SeoHead } from '@/components/seo/SeoHead'
 /** Portal homepage — bento grid fun & ceria */
 export function HomePage() {
   const siteName = useSiteName()
-  const { data, isLoading, isError, refetch } = useQuery({
+  const initial = usePage<{ home?: HomePayload }>().props.home
+  const { data: fetched, isLoading, isError, refetch } = useQuery({
     queryKey: ['home'],
     queryFn: async () => (await api.get<HomePayload>('/home')).data,
+    enabled: !initial,
   })
+  const data = initial || fetched
 
-  if (isLoading) return <HomeSkeleton />
+  if (!data && isLoading) return <HomeSkeleton />
 
   if (isError || !data) {
     return (

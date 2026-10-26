@@ -1,3 +1,4 @@
+import { StorageSettings } from '../../components/admin/StorageSettings'
 import { LoadError } from '../../components/ui/LoadError'
 import React, { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -117,6 +118,7 @@ export function SettingsAdminPage() {
         }
       />
 
+      <StorageSettings />
       {/* Modern Tabs Navigation */}
       <div className="flex overflow-x-auto rounded-[16px] border border-line bg-white p-1.5 shadow-sm scrollbar-none">
         <div className="flex space-x-1">

@@ -50,7 +50,9 @@ export function ClassicAchievementsPage() {
                                     {item.cover_path && (
                                         <div className="aspect-video bg-slate-100 dark:bg-slate-800 overflow-hidden">
                                             <img
-                                                src={coverSrc(item.cover_path, item.slug || item.id, 600, 360)}
+                                                src={coverSrc(item.cover_url || item.cover_path, item.slug || item.id, 600, 360)}
+                                                srcSet={item.cover_srcset || undefined}
+                                                sizes="(max-width: 767px) 92vw, 33vw"
                                                 alt={item.title}
                                                 className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                                             />

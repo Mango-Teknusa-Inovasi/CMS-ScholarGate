@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react'
+import { Head, usePage } from '@inertiajs/react'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '../../lib/api'
 
@@ -36,6 +36,7 @@ type Props = {
 }
 
 export function SeoHead({ kind, page, articleSlug, fallbackTitle }: Props) {
+  const initial = usePage<{ seo?: SeoMeta }>().props.seo
   const endpoint =
     kind === 'home'
       ? '/seo/home'
@@ -43,11 +44,13 @@ export function SeoHead({ kind, page, articleSlug, fallbackTitle }: Props) {
         ? `/seo/article/${articleSlug}`
         : `/seo/page/${page || 'artikel'}`
 
-  const { data } = useQuery({
+  const { data: fetched } = useQuery({
     queryKey: ['seo', kind, page, articleSlug],
     queryFn: async () => (await api.get<SeoMeta>(endpoint)).data,
     staleTime: 60_000,
+    enabled: !initial,
   })
+  const data = initial || fetched
 
   const title = data?.title || fallbackTitle || 'Portal Resmi'
   const description = data?.description || ''

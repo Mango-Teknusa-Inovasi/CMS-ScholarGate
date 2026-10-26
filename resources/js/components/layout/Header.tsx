@@ -1,3 +1,4 @@
+import { usePage } from '@inertiajs/react'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
@@ -57,6 +58,7 @@ export function Header() {
   const [open, setOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
   const accountRef = useRef<HTMLDivElement>(null)
+  const page = usePage<{ ppid_enabled?: boolean }>()
   const navigate = useNavigate()
   const location = useLocation()
   const mobileTrigger = useRef<HTMLButtonElement>(null)
@@ -85,7 +87,8 @@ export function Header() {
   const siteName = settings?.site_name || 'Portal Resmi'
   const reportUrl = settings?.report_url === '#' ? undefined : safeHref(settings?.report_url)
   const siteLogo = settings?.site_logo
-  const nav = menus?.header?.length ? menus.header : fallbackNav
+  const baseNav = menus?.header?.length ? menus.header : fallbackNav
+  const nav = page.props.ppid_enabled && !baseNav.some(n => n.url === '/ppid') ? [...baseNav, { id: -1000, label: 'PPID', url: '/ppid' }] : baseNav
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
@@ -107,7 +110,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-line dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 shadow-[var(--shadow-header)] backdrop-blur-md">
       <div className="container-page flex h-[72px] items-center justify-between gap-4 md:h-20">
-        <Logo name={siteName} logoPath={siteLogo} />
+        <Logo name={siteName} logoPath={siteLogo} logoSrcSet={settings?.site_logo_srcset} />
 
         <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Navigasi utama">
           {nav.map((item) => <SiteNavItem key={item.id} item={item} />)}
@@ -184,9 +187,9 @@ export function Header() {
                         <User className="h-4 w-4 text-sky-600 dark:text-sky-400" />
                         Akun saya
                       </Link>
-                      {(user.is_admin || user.role === 'admin' || user.role === 'editor') && (
+                      {(user.ppid_access || user.is_admin || user.role === 'admin' || user.role === 'editor') && (
                         <Link
-                          to="/admin"
+                          to={user.is_admin ? "/admin" : "/admin/ppid"}
 
                           onClick={() => setAccountOpen(false)}
                           className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-body dark:text-slate-200 hover:bg-muted dark:hover:bg-slate-800 hover:text-ink dark:hover:text-white"

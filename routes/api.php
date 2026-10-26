@@ -4,18 +4,29 @@ use App\Http\Controllers\Api\Admin\ArticleAdminController;
 use App\Http\Controllers\Api\Admin\ArticleAiController;
 use App\Http\Controllers\Api\Admin\BackupAdminController;
 use App\Http\Controllers\Api\Admin\DashboardController;
-use App\Http\Controllers\Api\Admin\MediaAdminController;
-use App\Http\Controllers\Api\Admin\ResourceAdminController;
-use App\Http\Controllers\Api\Admin\TagAdminController;
-use App\Http\Controllers\Api\Admin\UserAdminController;
 use App\Http\Controllers\Api\Admin\LegalPageAdminController;
+use App\Http\Controllers\Api\Admin\MediaAdminController;
+use App\Http\Controllers\Api\Admin\PluginAdminController;
+use App\Http\Controllers\Api\Admin\ResourceAdminController;
+use App\Http\Controllers\Api\Admin\StorageController;
+use App\Http\Controllers\Api\Admin\TagAdminController;
+use App\Http\Controllers\Api\Admin\ThemeAdminController;
+use App\Http\Controllers\Api\Admin\UserAdminController;
 use App\Http\Controllers\Api\ArticleController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\LegalPageController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\PublicDataController;
+use App\Http\Controllers\SeoController;
 use Illuminate\Support\Facades\Route;
+
+require __DIR__.'/ppid.php';
+
+Route::prefix('v1/admin/storage')->middleware(['auth:sanctum', 'super_admin'])->group(function () {
+    Route::get('/', [StorageController::class, 'show']);
+    Route::put('/', [StorageController::class, 'update']);
+});
 
 Route::prefix('v1')->group(function () {
     /*
@@ -59,9 +70,9 @@ Route::prefix('v1')->group(function () {
     });
 
     Route::middleware('throttle:seo')->group(function () {
-        Route::get('/seo/home', [\App\Http\Controllers\SeoController::class, 'metaHome']);
-        Route::get('/seo/page/{page}', [\App\Http\Controllers\SeoController::class, 'metaPage']);
-        Route::get('/seo/article/{slug}', [\App\Http\Controllers\SeoController::class, 'metaArticle']);
+        Route::get('/seo/home', [SeoController::class, 'metaHome']);
+        Route::get('/seo/page/{page}', [SeoController::class, 'metaPage']);
+        Route::get('/seo/article/{slug}', [SeoController::class, 'metaArticle']);
     });
 
     /*
@@ -145,15 +156,15 @@ Route::prefix('v1')->group(function () {
                 Route::post('/backups/restore', [BackupAdminController::class, 'restore']);
 
                 // Plugins / Add-ons — super admin only
-                Route::get('/plugins', [\App\Http\Controllers\Api\Admin\PluginAdminController::class, 'index']);
-                Route::post('/plugins/{slug}/toggle', [\App\Http\Controllers\Api\Admin\PluginAdminController::class, 'toggle']);
-                Route::post('/plugins/upload', [\App\Http\Controllers\Api\Admin\PluginAdminController::class, 'upload']);
-                Route::delete('/plugins/{slug}', [\App\Http\Controllers\Api\Admin\PluginAdminController::class, 'destroy']);
+                Route::get('/plugins', [PluginAdminController::class, 'index']);
+                Route::post('/plugins/{slug}/toggle', [PluginAdminController::class, 'toggle']);
+                Route::post('/plugins/upload', [PluginAdminController::class, 'upload']);
+                Route::delete('/plugins/{slug}', [PluginAdminController::class, 'destroy']);
 
                 // Themes — super admin only
-                Route::get('/themes', [\App\Http\Controllers\Api\Admin\ThemeAdminController::class, 'index']);
-                Route::post('/themes/{slug}/activate', [\App\Http\Controllers\Api\Admin\ThemeAdminController::class, 'activate']);
-                Route::post('/themes/upload', [\App\Http\Controllers\Api\Admin\ThemeAdminController::class, 'upload']);
+                Route::get('/themes', [ThemeAdminController::class, 'index']);
+                Route::post('/themes/{slug}/activate', [ThemeAdminController::class, 'activate']);
+                Route::post('/themes/upload', [ThemeAdminController::class, 'upload']);
             });
 
             // Settings & profile

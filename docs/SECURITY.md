@@ -394,3 +394,8 @@ If you discover a security issue:
 ---
 
 *End of security document.*
+
+
+## PPID access and documents
+
+PPID identity documents are private, permission-checked, and audited. Published DIP copies alone use CDN URLs. Private data is excluded from public media/RAG. The optional shared storage override is encrypted, editable only by administrators, and never returns access/secret keys. Tracking uses a hashed access code and a bounded session; recovery links expire and are single-use. See PPID.md.

@@ -6,7 +6,6 @@ import { StrictMode, type ComponentType, type ReactNode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { FeedbackProvider } from './components/ui/FeedbackProvider'
 import { PublicLayout } from './components/layout/PublicLayout'
-import { AdminLayout } from './pages/admin/AdminLayout'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -17,41 +16,28 @@ const queryClient = new QueryClient({
   },
 })
 
-const pages = import.meta.glob('./pages/**/*.tsx', { eager: true }) as Record<
+const pages = import.meta.glob('./pages/**/*.tsx') as Record<
   string,
-  { default: ComponentType; layout?: (page: ReactNode) => ReactNode }
+  () => Promise<{ default: ComponentType; layout?: (page: ReactNode) => ReactNode }>
 >
 
-const themePages = import.meta.glob('./themes/**/*.tsx', { eager: true }) as Record<
+const themePages = import.meta.glob('./themes/**/*.tsx') as Record<
   string,
-  { default: ComponentType; layout?: (page: ReactNode) => ReactNode }
+  () => Promise<{ default: ComponentType; layout?: (page: ReactNode) => ReactNode }>
 >
 
-function resolvePage(name: string, activeTheme: string = 'default'): ComponentType {
-  // Admin pages stay in ./pages/
-  if (name.startsWith('admin/')) {
-    const path = `./pages/${name}.tsx`
-    if (pages[path]) {
-      return pages[path].default
-    }
-  }
+async function resolvePage(name: string, activeTheme: string = 'default'): Promise<ComponentType> {
+  const candidates = name.startsWith('admin/')
+    ? [`./pages/${name}.tsx`]
+    : [
+        `./themes/${activeTheme}/pages/${name}.tsx`,
+        `./themes/default/pages/${name}.tsx`,
+        `./pages/${name}.tsx`,
+      ]
 
-  // 1. Try active theme path: ./themes/{activeTheme}/pages/{name}.tsx
-  const activePath = `./themes/${activeTheme}/pages/${name}.tsx`
-  if (themePages[activePath]) {
-    return themePages[activePath].default
-  }
-
-  // 2. Fallback to default theme path: ./themes/default/pages/{name}.tsx
-  const defaultPath = `./themes/default/pages/${name}.tsx`
-  if (themePages[defaultPath]) {
-    return themePages[defaultPath].default
-  }
-
-  // 3. Fallback to legacy pages folder: ./pages/{name}.tsx
-  const legacyPath = `./pages/${name}.tsx`
-  if (pages[legacyPath]) {
-    return pages[legacyPath].default
+  for (const path of candidates) {
+    const load = path.startsWith('./themes/') ? themePages[path] : pages[path]
+    if (load) return (await load()).default
   }
 
   throw new Error(`Inertia page not found: ${name} (active theme: ${activeTheme})`)
@@ -114,14 +100,14 @@ router.on('navigate', (event) => {
 
 createInertiaApp({
   title: (title) => (title ? `${title}` : 'Portal Resmi'),
-  resolve: (name) => {
+  resolve: async (name) => {
     const activeTheme = getInitialActiveTheme()
     if (activeTheme !== 'default') {
       currentActiveTheme = activeTheme
     }
     const finalTheme = currentActiveTheme || activeTheme || 'default'
 
-    const page = resolvePage(name, finalTheme) as ComponentType & {
+    const page = (await resolvePage(name, finalTheme)) as ComponentType & {
       layout?: (page: ReactNode) => ReactNode
     }
 
@@ -129,6 +115,7 @@ createInertiaApp({
       if (PUBLIC_LAYOUT_PAGES.has(name)) {
         page.layout = (p) => <PublicLayout>{p}</PublicLayout>
       } else if (isAdminPage(name)) {
+        const { AdminLayout } = await import('./pages/admin/AdminLayout')
         page.layout = (p) => <AdminLayout>{p}</AdminLayout>
       }
     }

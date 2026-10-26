@@ -2,13 +2,16 @@
 
 namespace App\Providers;
 
+use App\Models\PersonalAccessToken;
 use App\Services\HtmlSanitizer;
+use App\Services\Plugin\HookManager;
+use App\Services\Plugin\PluginManager;
 use App\Support\Installer;
+use App\Support\StorageConfiguration;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
-
 use Laravel\Sanctum\Sanctum;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,8 +22,8 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(HtmlSanitizer::class);
-        $this->app->singleton(\App\Services\Plugin\HookManager::class);
-        $this->app->singleton(\App\Services\Plugin\PluginManager::class);
+        $this->app->singleton(HookManager::class);
+        $this->app->singleton(PluginManager::class);
 
         // Saat aplikasi belum ter-install, paksa session & cache pakai 'file'
         // agar halaman /install bisa diakses tanpa error DB/session table.
@@ -37,15 +40,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Sanctum::usePersonalAccessTokenModel(\App\Models\PersonalAccessToken::class);
+        Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
 
         $this->configureRateLimiting();
 
         if (Installer::isInstalled()) {
-            app(\App\Services\Plugin\PluginManager::class)->bootActivePlugins();
+            StorageConfiguration::apply();
+            app(PluginManager::class)->bootActivePlugins();
         }
     }
-
 
     /**
      * Named rate limiters — pakai di routes: throttle:nama
@@ -104,4 +107,3 @@ class AppServiceProvider extends ServiceProvider
         });
     }
 }
-

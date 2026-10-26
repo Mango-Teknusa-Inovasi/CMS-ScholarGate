@@ -87,6 +87,7 @@ class MediaAdminController extends Controller
             'width' => $result['width'],
             'height' => $result['height'],
             'optimized' => $result['optimized'],
+            'variants' => $result['variants'] ?? null,
         ]);
 
         return response()->json([

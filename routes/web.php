@@ -1,11 +1,15 @@
 <?php
 
-use App\Http\Controllers\InstallController;
+use App\Http\Controllers\Auth\SocialAuthController;
 use App\Http\Controllers\Inertia\PageController;
+use App\Http\Controllers\InstallController;
 use App\Http\Controllers\SeoController;
 use App\Http\Controllers\UpdateController;
+use App\Services\Ppid\Access;
+use App\Services\Ppid\Settings;
 use App\Support\Installer;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
@@ -44,7 +48,7 @@ Route::get('/', function () {
         return redirect()->route('install.show');
     }
 
-    return app(PageController::class)->home(request());
+    return app()->call([app(PageController::class), 'home'], ['request' => request()]);
 })->name('home');
 
 /*
@@ -76,9 +80,8 @@ Route::controller(PageController::class)->group(function () {
     Route::get('/admin/login', 'adminLogin')->name('admin.login');
 });
 
-Route::get('/auth/{provider}/redirect', [\App\Http\Controllers\Auth\SocialAuthController::class, 'redirect'])->name('social.redirect');
-Route::get('/auth/{provider}/callback', [\App\Http\Controllers\Auth\SocialAuthController::class, 'callback'])->name('social.callback');
-
+Route::get('/auth/{provider}/redirect', [SocialAuthController::class, 'redirect'])->name('social.redirect');
+Route::get('/auth/{provider}/callback', [SocialAuthController::class, 'callback'])->name('social.callback');
 
 /*
 |--------------------------------------------------------------------------
@@ -104,7 +107,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/plugins', [$p, 'adminPlugins'])->name('plugins');
     Route::get('/themes', [$p, 'adminThemes'])->name('themes');
 
-
     $resources = [
         'categories', 'menus', 'banners', 'services', 'contacts',
         'quick-services', 'achievements', 'gallery', 'partners',
@@ -120,3 +122,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
             ->name("{$resource}.edit");
     }
 });
+
+Route::get('/ppid/{section?}/{id?}', function (string $section = 'beranda', ?string $id = null) {
+    Settings::enabled();
+    abort_unless(in_array($section, ['beranda', 'informasi', 'profil', 'standar', 'formulir', 'lacak', 'laporan']), 404);
+
+    return Inertia::render('ppid/PublicPage', ['section' => $section, 'itemId' => $id]);
+});
+Route::get('/admin/ppid/{section?}/{id?}', function (string $section = 'ringkasan', ?string $id = null) {
+    Access::require(request()->user(), ...Access::ROLES);
+
+    return Inertia::render('ppid/AdminPage', ['section' => $section, 'itemId' => $id]);
+})->middleware('auth');

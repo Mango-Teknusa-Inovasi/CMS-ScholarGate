@@ -103,7 +103,9 @@ export function HomeBento({
               >
                 <div className="relative h-full min-h-[260px] w-full md:min-h-[320px]">
                   <img
-                    src={coverSrc(welcome.image_path, welcome.key || 'home-welcome', 640, 800)}
+                    src={coverSrc(welcome.image_url || welcome.image_path, welcome.key || 'home-welcome', 640, 800)}
+                    srcSet={welcome.image_srcset || undefined}
+                    sizes="(max-width: 767px) 85vw, 640px"
                     alt={welcome.title || 'Foto pejabat'}
                     className="absolute inset-0 h-full w-full object-cover object-top"
                     loading="eager"
@@ -146,7 +148,7 @@ export function HomeBento({
                   />
                 </div>
                 {welcome.chat_label && (
-                  <div className="mt-4 inline-flex w-fit items-center gap-2 rounded-full border border-white/80 bg-white/90 px-3 py-1.5 text-xs font-semibold text-body shadow-sm">
+                  <div className="mt-4 inline-flex w-fit items-center gap-2 rounded-full border border-white/80 bg-white/90 px-3 py-1.5 text-xs font-semibold text-body shadow-sm dark:text-slate-800">
                     <MessageCircle className="h-3.5 w-3.5 text-brand" />
                     {welcome.chat_label}
                   </div>
@@ -267,11 +269,13 @@ export function HomeBento({
                     <div className="media-cover relative min-h-[160px] flex-1 md:min-h-[200px]">
                       <img
                         src={coverSrc(
-                          featuredArticle.cover_path,
+                          featuredArticle.cover_url || featuredArticle.cover_path,
                           featuredArticle.slug || featuredArticle.id,
                           960,
                           540,
                         )}
+                        srcSet={featuredArticle.cover_srcset || undefined}
+                        sizes="(max-width: 767px) 92vw, 48vw"
                         alt={featuredArticle.title}
                         className="absolute inset-0 h-full w-full object-cover"
                         loading="lazy"
@@ -325,11 +329,13 @@ export function HomeBento({
                       <div className="media-cover h-[88px] w-[100px] shrink-0 rounded-2xl ring-1 ring-black/5">
                         <img
                           src={coverSrc(
-                            article.cover_path,
+                            article.cover_url || article.cover_path,
                             article.slug || article.id,
                             320,
                             240,
                           )}
+                          srcSet={article.cover_srcset || undefined}
+                          sizes="100px"
                           alt=""
                           className="h-full w-full object-cover"
                           loading="lazy"
@@ -397,11 +403,13 @@ export function HomeBento({
                     <div className="media-cover relative aspect-[16/10] w-full">
                       <img
                         src={coverSrc(
-                          featuredAchievement.cover_path,
+                          featuredAchievement.cover_url || featuredAchievement.cover_path,
                           featuredAchievement.slug || featuredAchievement.id,
                           800,
                           500,
                         )}
+                        srcSet={featuredAchievement.cover_srcset || undefined}
+                        sizes="(max-width: 767px) 92vw, 48vw"
                         alt={featuredAchievement.title}
                         className="h-full w-full object-cover"
                         loading="lazy"
@@ -443,7 +451,9 @@ export function HomeBento({
                     <Link to={`/prestasi/${item.slug}`} className="flex h-full min-w-0 flex-col gap-2">
                       <div className="media-cover aspect-[16/9] w-full rounded-xl">
                         <img
-                          src={coverSrc(item.cover_path, item.slug || item.id, 480, 270)}
+                          src={coverSrc(item.cover_url || item.cover_path, item.slug || item.id, 480, 270)}
+                          srcSet={item.cover_srcset || undefined}
+                          sizes="(max-width: 767px) 85vw, (max-width: 1279px) 50vw, 480px"
                           alt=""
                           className="h-full w-full object-cover"
                           loading="lazy"
@@ -487,7 +497,7 @@ export function HomeBento({
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Link
                     to="/ekstrakurikuler"
-                    className="rounded-full bg-white px-3 py-1.5 text-xs font-bold text-sky-700 shadow-sm transition hover:bg-sky-50"
+                    className="rounded-full bg-white px-3 py-1.5 text-xs font-bold text-sky-700 shadow-sm transition hover:bg-sky-50 dark:text-sky-200"
                   >
                     Ekskul
                   </Link>
@@ -528,7 +538,9 @@ export function HomeBento({
                   >
                     <figure className="relative h-full min-h-[140px] w-full md:min-h-full">
                       <img
-                        src={coverSrc(item.image_path, `gallery-${item.id || i}`, 800, 600)}
+                        src={coverSrc(item.image_url || item.image_path, `gallery-${item.id || i}`, 800, 600)}
+                        srcSet={item.image_srcset || undefined}
+                        sizes="(max-width: 767px) 90vw, 33vw"
                         alt={item.title || item.caption || `Galeri ${i + 1}`}
                         className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105"
                         loading="lazy"

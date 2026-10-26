@@ -24,7 +24,7 @@ export function AdminLoginPage() {
         const me = await fetchAdminMe()
         if (cancelled) return
         if (me) {
-          navigate('/admin', { replace: true })
+          navigate(me.is_admin ? '/admin' : '/admin/ppid', { replace: true })
           return
         }
       } catch {
@@ -60,7 +60,7 @@ export function AdminLoginPage() {
       if (data.user.id) {
         qc.setQueryData(['auth-me-admin', data.user.id], { user: data.user })
       }
-      navigate('/admin', { replace: true })
+      navigate(data.user.is_admin ? '/admin' : '/admin/ppid', { replace: true })
     } catch (err: unknown) {
       const ax = err as { response?: { data?: { message?: string; errors?: { email?: string[] } } } }
       const msg =

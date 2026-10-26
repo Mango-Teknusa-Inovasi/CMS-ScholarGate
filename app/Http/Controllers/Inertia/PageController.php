@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Achievement;
 use App\Models\Article;
 use App\Services\SeoService;
+use App\Services\PublicHomeData;
+use App\Services\ResponsiveMedia;
 use App\Support\Installer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,15 +22,45 @@ class PageController extends Controller
 {
     public function __construct(private SeoService $seo) {}
 
-    public function home(Request $request): Response|RedirectResponse
+    public function home(Request $request, PublicHomeData $home): Response|RedirectResponse
     {
         if ($redirect = $this->installRedirect()) {
             return $redirect;
         }
 
+        $homeData = $home->make();
+
         return Inertia::render('HomePage', [
             'seo' => $this->seo->pageMeta('/'),
+            'home' => $homeData,
+            'lcp_preloads' => $this->homeImagePreloads($homeData),
         ]);
+    }
+
+    private function homeImagePreloads(array $data): array
+    {
+        $welcome = $data['welcome'] ?? null;
+        $banner = $data['banners'][0] ?? null;
+        $preloads = [];
+
+        if ($welcome?->image_url) {
+            $preloads[] = [
+                'href' => $welcome->image_url,
+                'srcset' => $welcome->image_srcset ?: null,
+                'sizes' => '(max-width: 767px) 85vw, 640px',
+                'media' => '(max-width: 767px)',
+            ];
+        }
+        if ($banner?->image_url) {
+            $preloads[] = [
+                'href' => $banner->image_url,
+                'srcset' => $banner->image_srcset ?: null,
+                'sizes' => '(max-width: 767px) 86vw, (max-width: 1279px) 90vw, 1280px',
+                'media' => '(min-width: 768px)',
+            ];
+        }
+
+        return $preloads;
     }
 
     public function profile(): Response

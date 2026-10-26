@@ -7,6 +7,7 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import type { PageProps } from '@inertiajs/core';
 
 interface SharedProps extends PageProps {
+    ppid_enabled?: boolean;
     app?: {
         name?: string;
         url?: string;
@@ -38,6 +39,7 @@ export function ClassicLayout({ children }: { children: ReactNode }) {
 
     const navLinks = [
         { href: '/', label: 'Beranda' },
+        ...(props.ppid_enabled ? [{ href: '/ppid', label: 'PPID' }] : []),
         { href: '/profil', label: 'Profil' },
         { href: '/artikel', label: 'Artikel & Berita' },
         { href: '/prestasi', label: 'Prestasi' },

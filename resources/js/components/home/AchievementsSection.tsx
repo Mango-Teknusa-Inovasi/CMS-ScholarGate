@@ -26,7 +26,9 @@ export function AchievementsSection({ items }: { items: Achievement[] }) {
         >
           <div className="media-cover aspect-[16/9]">
             <img
-              src={coverSrc(featured.cover_path, featured.slug || featured.id, 1200, 675)}
+              src={coverSrc(featured.cover_url || featured.cover_path, featured.slug || featured.id, 1200, 675)}
+              srcSet={featured.cover_srcset || undefined}
+              sizes="(max-width: 767px) 92vw, 60vw"
               alt={featured.title}
               loading="lazy"
             />
@@ -54,7 +56,9 @@ export function AchievementsSection({ items }: { items: Achievement[] }) {
             >
               <div className="media-cover h-20 w-28 shrink-0 rounded-xl">
                 <img
-                  src={coverSrc(item.cover_path, item.slug || item.id, 320, 240)}
+                  src={coverSrc(item.cover_url || item.cover_path, item.slug || item.id, 320, 240)}
+                  srcSet={item.cover_srcset || undefined}
+                  sizes="(max-width: 767px) 92vw, 320px"
                   alt={item.title}
                   loading="lazy"
                   width={320}

@@ -65,3 +65,8 @@ Single **app** service (Laravel + built assets) + **db** (PostgreSQL).
 PostgreSQL recommended; MySQL and MariaDB supported. See [DATABASE.md](./DATABASE.md).
 
 Portable JSON backup/restore via Admin → Backup (cross-engine).
+
+
+## Deploying PPID
+
+Run the normal migrations and asset build. Configure a separate private R2/S3 bucket, assign staff, configure mail and scheduler, then open intake. Verify actual cloud upload/download and CDN cache policy. See PPID.md for activation, notification queue, and protected backup procedures.

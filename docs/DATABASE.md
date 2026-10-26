@@ -84,3 +84,8 @@ The `settings` table stores dynamic configurations (exposed to admin tabs):
 ## Not covered by JSON backup
 
 - Raw binary media files stored on local disks or R2 — JSON backup is **database content & metadata only**. Use R2 bucket replication or disk rsync for binary files.
+
+
+## PPID tables
+
+Migration 2026_10_26_000001 adds ppid_roles to users and ppid_settings, ppid_forms, ppid_documents, ppid_submissions, ppid_files, ppid_events, ppid_notifications. Schemas use portable Laravel columns. Request answers, event text, notice content, and storage snapshots use encrypted casts. Form definitions and publication snapshots preserve historical versions. See PPID.md for protected backup/restore.

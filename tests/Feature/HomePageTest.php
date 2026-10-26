@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Tests\TestCase;
+use Inertia\Testing\AssertableInertia as Assert;
 
 class HomePageTest extends TestCase
 {
@@ -31,6 +32,11 @@ class HomePageTest extends TestCase
         $response->assertOk();
         $response->assertSee('HomePage', false);
         $response->assertSee('data-page', false);
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('HomePage')
+            ->has('home')
+            ->has('seo')
+            ->has('lcp_preloads'));
     }
 
     public function test_seo_endpoints_are_public(): void

@@ -1,0 +1,14 @@
+import { useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { api } from '../../lib/api'
+import { Button } from '../ui/Button'
+import { Panel, FieldInput, ErrorMessage, inputClass } from '../ppid/shared'
+export function StorageSettings() {
+  const q = useQuery({ queryKey: ['storage-configuration'], queryFn: async () => (await api.get('/admin/storage')).data, retry: false })
+  const [form, setForm] = useState<Record<string, any>>(); const [error, setError] = useState<unknown>(); const [busy, setBusy] = useState(false); const [saved, setSaved] = useState(false)
+  useEffect(() => { if (q.data) setForm(q.data) }, [q.data])
+  if ((q.error as any)?.response?.status === 403) return null
+  if (!form) return q.isError ? <ErrorMessage error={q.error} /> : null
+  const provider = form.provider
+  return <div id="storage"><Panel><h2 className="text-xl font-semibold">Penyimpanan media dan dokumen</h2><p className="mb-5 mt-2 max-w-prose text-sm text-body">Media CMS dan PPID menggunakan provider yang sama. Dokumen pribadi PPID memerlukan bucket privat terpisah. Perubahan provider berlaku untuk unggahan baru.</p><form className="space-y-4" onSubmit={async e => { e.preventDefault(); setBusy(true); setError(null); setSaved(false); try { await api.put('/admin/storage', form); await q.refetch(); setSaved(true) } catch (err) { setError(err) } finally { setBusy(false) } }}><FieldInput label="Provider aktif"><select className={inputClass} value={provider} onChange={e => setForm({ ...form, provider: e.target.value })}><option value="public">Penyimpanan lokal</option><option value="r2">Cloudflare R2</option><option value="s3">Amazon S3 / S3-compatible</option></select></FieldInput>{['r2', 's3'].includes(provider) && <div className="grid gap-4 sm:grid-cols-2">{[['endpoint', 'Endpoint penyimpanan'], ['region', 'Region'], ['bucket', 'Bucket media publik'], ['private_bucket', 'Bucket privat PPID'], ['url', 'URL CDN / domain media publik'], ['folder', 'Folder aplikasi'], ['key', 'Access key — isi untuk mengganti'], ['secret', 'Secret key — isi untuk mengganti']].map(([key, label]) => <FieldInput key={key} label={label}><input autoComplete="off" className={inputClass} type={['key', 'secret'].includes(key) ? 'password' : ['endpoint', 'url'].includes(key) ? 'url' : 'text'} value={form[provider]?.[key] || ''} onChange={e => setForm({ ...form, [provider]: { ...form[provider], [key]: e.target.value } })} /></FieldInput>)}<p className="text-sm text-body sm:col-span-2">{form[provider]?.credentials_set ? 'Kredensial tersimpan. Kolom kosong mempertahankan kredensial yang ada.' : 'Lengkapi kredensial sebelum mengunggah berkas.'}</p></div>}<ErrorMessage error={error} /><Button disabled={busy} type="submit">{busy ? 'Menyimpan…' : 'Simpan penyimpanan'}</Button>{saved && <p role="status" className="text-sm">Pengaturan penyimpanan disimpan.</p>}</form></Panel></div>
+}

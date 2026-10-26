@@ -4,6 +4,7 @@ import { cn, mediaUrl } from '../../lib/utils'
 type Props = {
   name?: string
   logoPath?: string | null
+  logoSrcSet?: string | null
   size?: 'sm' | 'md'
   to?: string
   className?: string
@@ -13,6 +14,7 @@ type Props = {
 export function Logo({
   name = 'Portal Resmi',
   logoPath,
+  logoSrcSet,
   size = 'md',
   to = '/',
   className,
@@ -25,6 +27,8 @@ export function Logo({
       {src ? (
         <img
           src={src}
+          srcSet={logoSrcSet || undefined}
+          sizes={size === 'sm' ? '140px' : '180px'}
           alt=""
           width={180}
           height={36}

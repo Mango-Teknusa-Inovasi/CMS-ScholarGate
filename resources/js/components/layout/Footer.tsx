@@ -39,7 +39,7 @@ export function Footer() {
     <footer className="mt-16 border-t border-line bg-footer">
       <div className="container-page grid gap-10 py-12 md:grid-cols-2 lg:grid-cols-4">
         <div className="lg:col-span-1">
-          <Logo name={siteName} logoPath={settings?.site_logo} size="sm" to="/" />
+          <Logo name={siteName} logoPath={settings?.site_logo} logoSrcSet={settings?.site_logo_srcset} size="sm" to="/" />
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-subtle">
             {settings?.footer_text ||
               'Portal informasi dan layanan pendidikan terintegrasi berbasis teknologi.'}
@@ -103,7 +103,7 @@ export function Footer() {
         </div>
 
         <div>
-          <h4 className="mb-3 text-sm font-bold tracking-wide text-ink">Navigasi</h4>
+          <h2 className="mb-3 text-sm font-bold tracking-wide text-ink">Navigasi</h2>
           <ul className="space-y-2.5 text-sm text-subtle">
             {colA.map((l) => (
               <li key={l.id}>
@@ -116,7 +116,7 @@ export function Footer() {
         </div>
 
         <div>
-          <h4 className="mb-3 text-sm font-bold tracking-wide text-ink">Layanan</h4>
+          <h2 className="mb-3 text-sm font-bold tracking-wide text-ink">Layanan</h2>
           <ul className="space-y-2.5 text-sm text-subtle">
             {colB.map((l) => (
               <li key={l.id}>
@@ -129,7 +129,7 @@ export function Footer() {
         </div>
 
         <div>
-          <h4 className="mb-3 text-sm font-bold tracking-wide text-ink">Kontak</h4>
+          <h2 className="mb-3 text-sm font-bold tracking-wide text-ink">Kontak</h2>
           <ul className="space-y-2.5 text-sm text-subtle">
             {settings?.contact_email && (
               <li>

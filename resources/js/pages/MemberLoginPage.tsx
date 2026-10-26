@@ -13,7 +13,7 @@ import { SocialLoginButtons } from '../components/auth/SocialLoginButtons'
 export function MemberLoginPage() {
   const siteName = useSiteName()
   const navigate = useNavigate()
-  const { isLoggedIn, loading: authLoading } = useMemberAuth()
+  const { user, isLoggedIn, loading: authLoading } = useMemberAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -22,7 +22,7 @@ export function MemberLoginPage() {
   // Sudah login member → ke beranda
   useEffect(() => {
     if (!authLoading && isLoggedIn) {
-      navigate('/', { replace: true })
+      navigate(user?.ppid_access && !user.is_admin ? '/admin/ppid' : '/akun', { replace: true })
     }
   }, [authLoading, isLoggedIn, navigate])
 
@@ -40,8 +40,8 @@ export function MemberLoginPage() {
     setLoading(true)
     setError('')
     try {
-      await memberLogin(email, password)
-      navigate('/', { replace: true })
+      const data = await memberLogin(email, password)
+      navigate(data.user.ppid_access && !data.user.is_admin ? '/admin/ppid' : '/akun', { replace: true })
     } catch {
       setError('Email atau password tidak valid.')
     } finally {

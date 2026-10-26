@@ -192,3 +192,8 @@ Do not commit secrets, `vendor/`, `node_modules/`, local sqlite dumps, or screen
 ---
 
 *If this file conflicts with runtime code, fix the code or update this file in the same change set — never leave silent drift.*
+
+
+## PPID conventions
+
+PPID is a built-in module. Keep CMS roles separate from ppid_roles; every private-file endpoint must authorize the relevant request/document. Shared storage selection must respect FILESYSTEM_DISK or the encrypted administrator override. Private PPID objects must not share a publicly exposed bucket. Do not include PPID identities in public-content backups or RAG. Operational details: docs/PPID.md.

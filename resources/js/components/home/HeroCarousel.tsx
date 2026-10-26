@@ -37,7 +37,7 @@ export function HeroCarousel({ banners, embedded = false, className }: Props) {
   }, [items.length, reduce])
 
   const current = items[index]
-  const bg = coverSrc(current.image_path, `banner-${current.id || index}`, 1600, 720)
+  const bg = coverSrc(current.image_url || current.image_path, `banner-${current.id || index}`, 1600, 720)
 
   const frame = (
     <motion.div
@@ -69,8 +69,10 @@ export function HeroCarousel({ banners, embedded = false, className }: Props) {
           >
             <img
               src={bg}
+              srcSet={current.image_srcset || undefined}
+              sizes="(max-width: 767px) 86vw, (max-width: 1279px) 90vw, 1280px"
               alt={current.title}
-              fetchPriority={index === 0 ? 'high' : 'auto'}
+              fetchPriority={index === 0 ? 'high' : 'low'}
               loading={index === 0 ? 'eager' : 'lazy'}
               decoding="async"
               className="absolute inset-0 h-full w-full object-cover"
@@ -160,7 +162,9 @@ export function HeroCarousel({ banners, embedded = false, className }: Props) {
         i !== index ? (
           <img
             key={`preload-${b.id}`}
-            src={coverSrc(b.image_path, `banner-${b.id || i}`, 1600, 720)}
+            src={coverSrc(b.image_url || b.image_path, `banner-${b.id || i}`, 1600, 720)}
+            srcSet={b.image_srcset || undefined}
+            sizes="(max-width: 767px) 86vw, (max-width: 1279px) 90vw, 1280px"
             alt=""
             className="hidden"
             loading="lazy"

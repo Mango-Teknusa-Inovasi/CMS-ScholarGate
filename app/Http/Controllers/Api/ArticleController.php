@@ -5,13 +5,14 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Article;
 use App\Models\Category;
+use App\Services\ResponsiveMedia;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 class ArticleController extends Controller
 {
-    public function index(Request $request): JsonResponse
+    public function index(Request $request, ResponsiveMedia $responsiveMedia): JsonResponse
     {
         $query = Article::published()->with(['category:id,name,slug,color', 'tags:id,name,slug']);
 
@@ -39,6 +40,8 @@ class ArticleController extends Controller
         }
 
         $articles = $query->paginate($request->integer('per_page', 10));
+        $responsiveMedia->attach($articles->getCollection(), 'cover_path', 'cover_srcset');
+        if ($featured) $responsiveMedia->attach(collect([$featured]), 'cover_path', 'cover_srcset');
 
         $categories = Category::query()
             ->withCount(['articles' => fn ($q) => $q->published()])
@@ -50,6 +53,7 @@ class ArticleController extends Controller
             ->orderByDesc('views')
             ->limit(5)
             ->get();
+        $responsiveMedia->attach($popular, 'cover_path', 'cover_srcset');
 
         return response()->json([
             'featured' => $featured,
@@ -68,7 +72,7 @@ class ArticleController extends Controller
     /**
      * Pratinjau draf lewat secret token (noindex, tidak naikkan views).
      */
-    public function preview(string $token): JsonResponse
+    public function preview(string $token, ResponsiveMedia $responsiveMedia): JsonResponse
     {
         $article = Article::query()
             ->with(['category:id,name,slug,color', 'tags:id,name,slug', 'author:id,name'])
@@ -78,6 +82,8 @@ class ArticleController extends Controller
         if (! $article->isPreviewTokenValid($token)) {
             abort(410, 'Link pratinjau kedaluwarsa atau tidak valid.');
         }
+
+        $responsiveMedia->attach(collect([$article]), 'cover_path', 'cover_srcset');
 
         return response()->json([
             'article' => $article,
@@ -90,7 +96,7 @@ class ArticleController extends Controller
         ]);
     }
 
-    public function show(Request $request, string $slug): JsonResponse
+    public function show(Request $request, string $slug, ResponsiveMedia $responsiveMedia): JsonResponse
     {
         $article = Article::published()
             ->with(['category:id,name,slug,color', 'tags:id,name,slug', 'author:id,name'])
@@ -123,12 +129,13 @@ class ArticleController extends Controller
             ->orderBy('sort_order')
             ->get();
 
+        $article = $article->fresh(['category:id,name,slug,color', 'tags:id,name,slug', 'author:id,name']);
+        $responsiveMedia->attach(collect([$article]), 'cover_path', 'cover_srcset');
+        $responsiveMedia->attach($related, 'cover_path', 'cover_srcset');
+        $responsiveMedia->attach($popular, 'cover_path', 'cover_srcset');
+
         return response()->json([
-            'article' => $article->fresh([
-                'category:id,name,slug,color',
-                'tags:id,name,slug',
-                'author:id,name',
-            ]),
+            'article' => $article,
             'related' => $related,
             'sidebar' => [
                 'categories' => $categories,

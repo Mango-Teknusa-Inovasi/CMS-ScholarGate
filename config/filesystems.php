@@ -14,6 +14,8 @@ return [
 
     'default' => env('FILESYSTEM_DISK', 'r2'),
 
+    'ppid_private_buckets' => ['r2' => env('R2_PRIVATE_BUCKET_NAME'), 's3' => env('AWS_PRIVATE_BUCKET')],
+
     'disks' => [
 
         'local' => [
@@ -72,7 +74,7 @@ return [
             'throw' => true,
             'report' => false,
             'visibility' => 'private',
-            'folder' => env('R2_FOLDER_PATH', 'scholargate'),
+            'folder' => env('AWS_FOLDER_PATH', env('R2_FOLDER_PATH', 'scholargate')),
         ],
 
     ],

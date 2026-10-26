@@ -16,10 +16,6 @@ class MediaStorage
     {
         $disk = (string) config('filesystems.default', 'public');
 
-        if (self::r2Configured()) {
-            return 'r2';
-        }
-
         return in_array($disk, ['r2', 's3', 'public', 'local'], true) ? $disk : 'public';
     }
 
@@ -46,9 +42,9 @@ class MediaStorage
     /**
      * Folder prefix di bucket, mis. scholargate/uploads/2026/07/file.webp
      */
-    public static function prefixPath(string $path): string
+    public static function prefixPath(string $path, ?string $disk = null): string
     {
-        $folder = trim((string) (config('filesystems.disks.r2.folder') ?: env('R2_FOLDER_PATH', 'scholargate')), '/');
+        $folder = trim((string) (config('filesystems.disks.'.($disk ?: self::diskName()).'.folder', 'scholargate')), '/');
         $path = ltrim($path, '/');
 
         if ($folder === '') {
@@ -91,7 +87,7 @@ class MediaStorage
 
         // 2. Jika file secara fisik ADA di storage lokal (storage/app/public/...),
         // utamakan sebagai fallback lokal agar tidak broken
-        if (Storage::disk('public')->exists($cleanPath)) {
+        if (! $disk && Storage::disk('public')->exists($cleanPath)) {
             return asset('storage/'.$cleanPath);
         }
 
@@ -100,7 +96,7 @@ class MediaStorage
         // 3. Jika disk R2/S3 dan file tidak ada di lokal -> gunakan CDN / Public R2 URL
         if (in_array($effectiveDisk, ['r2', 's3'], true)) {
             $public = self::publicBaseUrl($effectiveDisk);
-            $key = self::prefixPath($cleanPath);
+            $key = self::prefixPath($cleanPath, $effectiveDisk);
 
             if ($public !== '') {
                 return $public.'/'.$key;
@@ -116,12 +112,38 @@ class MediaStorage
         return asset('storage/'.$cleanPath);
     }
 
+    /** Resolve a stored public URL back to its provider-relative object path. */
+    public static function relativePath(?string $path, ?string $disk = null): ?string
+    {
+        if (! $path) return null;
+
+        foreach (array_filter([$disk, 'r2', 's3', 'public', 'local']) as $candidate) {
+            $base = self::publicBaseUrl($candidate);
+            if ($base !== '' && str_starts_with($path, $base.'/')) {
+                $path = substr($path, strlen($base) + 1);
+                $folder = trim((string) config("filesystems.disks.{$candidate}.folder", ''), '/');
+                if ($folder !== '' && str_starts_with($path, $folder.'/')) $path = substr($path, strlen($folder) + 1);
+                return ltrim(str_replace('/storage/', '', $path), '/');
+            }
+        }
+
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            $urlPath = (string) parse_url($path, PHP_URL_PATH);
+            if (str_contains($urlPath, '/storage/')) return ltrim(substr($urlPath, strpos($urlPath, '/storage/') + 9), '/');
+            $uploadsPosition = strpos($urlPath, '/uploads/');
+            if ($uploadsPosition !== false) return ltrim(substr($urlPath, $uploadsPosition + 1), '/');
+            return null;
+        }
+
+        return ltrim(str_replace('/storage/', '', $path), '/');
+    }
+
     public static function delete(?string $path, ?string $disk = null): void
     {
         if (! $path || str_starts_with($path, 'http')) {
-            // Coba ekstrak key dari public URL R2
+            // Resolve public URLs only against the recorded provider's own base URL.
             if ($path && str_starts_with($path, 'http')) {
-                $public = rtrim((string) config('filesystems.disks.r2.url', ''), '/');
+                $public = self::publicBaseUrl($disk ?: self::diskName());
                 if ($public && str_starts_with($path, $public.'/')) {
                     $key = substr($path, strlen($public) + 1);
                     Storage::disk($disk ?: self::diskName())->delete($key);
@@ -134,7 +156,7 @@ class MediaStorage
         }
 
         $disk = $disk ?: self::diskName();
-        $key = in_array($disk, ['r2', 's3'], true) ? self::prefixPath($path) : $path;
+        $key = in_array($disk, ['r2', 's3'], true) ? self::prefixPath($path, $disk) : $path;
         Storage::disk($disk)->delete($key);
     }
 }

@@ -61,10 +61,8 @@ class SecurityHeaders
     private function contentSecurityPolicy(Request $request): string
     {
         // Vite HMR runs on a different port than artisan serve → not "self"
-        $vite = "http://127.0.0.1:5173 http://127.0.0.1:5174 http://localhost:5173 http://localhost:5174 "
-            ."http://[::1]:5173 http://[::1]:5174";
-        $viteWs = "ws://127.0.0.1:5173 ws://127.0.0.1:5174 ws://localhost:5173 ws://localhost:5174 "
-            ."ws://[::1]:5173 ws://[::1]:5174";
+        $vite = "http://127.0.0.1:5173 http://127.0.0.1:5174 http://localhost:5173 http://localhost:5174";
+        $viteWs = "ws://127.0.0.1:5173 ws://127.0.0.1:5174 ws://localhost:5173 ws://localhost:5174";
 
         if ($this->isLocalDev($request)) {
             return implode('; ', [

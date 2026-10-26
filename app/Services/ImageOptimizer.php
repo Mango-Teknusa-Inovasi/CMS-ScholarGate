@@ -20,7 +20,7 @@ class ImageOptimizer
     public function __construct(private ImageManager $manager) {}
 
     /**
-     * @return array{path: string, filename: string, mime: string, size: int, width: ?int, height: ?int, optimized: bool, disk: string, url: string, mode: string}
+     * @return array{path: string, filename: string, mime: string, size: int, width: ?int, height: ?int, optimized: bool, disk: string, url: string, mode: string, variants: array<int, string>}
      */
     public function store(UploadedFile $file, string $directory = 'uploads', int $maxWidth = 1920, int $quality = 82): array
     {
@@ -85,6 +85,8 @@ class ImageOptimizer
             Storage::disk('local')->delete($tmpRelative);
         }
 
+        $variants = $this->storeVariants($file->getPathname(), $directory, pathinfo($filename, PATHINFO_FILENAME), $disk, $maxWidth, $quality);
+
         return [
             'path' => $relative,
             'filename' => $filename,
@@ -96,13 +98,14 @@ class ImageOptimizer
             'disk' => $disk,
             'url' => MediaStorage::url($relative) ?: '',
             'mode' => 'local_then_r2',
+            'variants' => $variants,
         ];
     }
 
     /**
      * Simpan gambar dari binary/string (misal unduhan dari URL eksternal / CDN Instagram)
      *
-     * @return array{path: string, filename: string, mime: string, size: int, width: ?int, height: ?int, optimized: bool, disk: string, url: string, mode: string}
+     * @return array{path: string, filename: string, mime: string, size: int, width: ?int, height: ?int, optimized: bool, disk: string, url: string, mode: string, variants: array<int, string>}
      */
     public function storeBinary(string $binary, string $originalName = 'image', string $directory = 'uploads', int $maxWidth = 1920, int $quality = 82): array
     {
@@ -160,6 +163,8 @@ class ImageOptimizer
                 Storage::disk('local')->delete($tmpRelative);
             }
 
+            $variants = $this->storeVariants($tempInputAbsolute, $directory, pathinfo($filename, PATHINFO_FILENAME), $disk, $maxWidth, $quality);
+
             return [
                 'path' => $relative,
                 'filename' => $filename,
@@ -171,6 +176,7 @@ class ImageOptimizer
                 'disk' => $disk,
                 'url' => MediaStorage::url($relative) ?: '',
                 'mode' => 'local_then_r2',
+                'variants' => $variants,
             ];
         } finally {
             Storage::disk('local')->delete($tempInputRelative);
@@ -252,9 +258,86 @@ class ImageOptimizer
     private function objectKey(string $relative, string $disk): string
     {
         if (in_array($disk, ['r2', 's3'], true)) {
-            return MediaStorage::prefixPath($relative);
+            return MediaStorage::prefixPath($relative, $disk);
         }
 
         return $relative;
+    }
+
+    public function generateVariantsForStoredPath(string $path, string $disk, int $maxWidth = 1920, int $quality = 82): array
+    {
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            throw new \InvalidArgumentException('URL eksternal tidak dapat diproses sebagai berkas media lokal.');
+        }
+
+        $sourceKey = $this->objectKey($path, $disk);
+        $stream = Storage::disk($disk)->readStream($sourceKey);
+        if (! is_resource($stream)) throw new \RuntimeException("Berkas sumber tidak ditemukan: {$path}");
+
+        $tempPath = 'tmp/variants/'.Str::uuid().'.bin';
+        try {
+            Storage::disk('local')->put($tempPath, $stream);
+        } finally {
+            fclose($stream);
+        }
+
+        try {
+            return $this->storeVariants(
+                Storage::disk('local')->path($tempPath),
+                dirname($path),
+                pathinfo($path, PATHINFO_FILENAME),
+                $disk,
+                $maxWidth,
+                $quality,
+            );
+        } finally {
+            Storage::disk('local')->delete($tempPath);
+        }
+    }
+
+    /** Generate immutable WebP renditions alongside the original optimized image. */
+    private function storeVariants(string $sourcePath, string $directory, string $base, string $disk, int $maxWidth, int $quality): array
+    {
+        $variants = [];
+        $source = $this->manager->decodePath($sourcePath);
+        $source->orient();
+        $sourceWidth = min($source->width(), $maxWidth);
+
+        foreach ([320, 480, 640, 960, 1280, 1600] as $width) {
+            if ($width >= $sourceWidth) {
+                continue;
+            }
+
+            $image = $this->manager->decodePath($sourcePath);
+            $image->orient()->scaleDown(width: $width);
+            $name = $base.'-w'.$width.'.webp';
+            $relative = trim($directory, '/').'/'.date('Y/m').'/'.$name;
+            $key = $this->objectKey($relative, $disk);
+            $binary = (string) $image->encodeUsingMediaType('image/webp', quality: $quality);
+            $tmpRelative = 'tmp/optimize/'.date('Y/m').'/'.$name;
+            Storage::disk('local')->put($tmpRelative, $binary);
+            $absolute = Storage::disk('local')->path($tmpRelative);
+
+            try {
+                $stream = fopen($absolute, 'r');
+                if ($stream === false) {
+                    throw new \RuntimeException('Gagal membuka varian gambar sementara.');
+                }
+                try {
+                    Storage::disk($disk)->put($key, $stream, [
+                        'ContentType' => 'image/webp',
+                        'CacheControl' => 'public, max-age=31536000, immutable',
+                    ]);
+                } finally {
+                    if (is_resource($stream)) fclose($stream);
+                }
+            } finally {
+                Storage::disk('local')->delete($tmpRelative);
+            }
+
+            $variants[$width] = $relative;
+        }
+
+        return $variants;
     }
 }

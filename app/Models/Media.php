@@ -14,7 +14,7 @@ class Media extends Model
 
     protected $fillable = [
         'user_id', 'path', 'filename', 'original_filename', 'disk', 'mime', 'size',
-        'alt', 'width', 'height', 'optimized',
+        'alt', 'width', 'height', 'optimized', 'variants',
     ];
 
     protected $appends = ['url'];
@@ -26,6 +26,7 @@ class Media extends Model
             'width' => 'integer',
             'height' => 'integer',
             'optimized' => 'boolean',
+            'variants' => 'array',
         ];
     }
 
@@ -41,6 +42,10 @@ class Media extends Model
 
     public function deleteFile(): void
     {
-        MediaStorage::delete($this->path, $this->disk ?: MediaStorage::diskName());
+        $disk = $this->disk ?: MediaStorage::diskName();
+        MediaStorage::delete($this->path, $disk);
+        foreach ($this->variants ?? [] as $variantPath) {
+            MediaStorage::delete($variantPath, $disk);
+        }
     }
 }

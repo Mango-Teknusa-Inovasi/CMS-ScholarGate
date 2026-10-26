@@ -81,7 +81,9 @@ export function AchievementsPage() {
                       }
                     >
                       <img
-                        src={coverSrc(item.cover_path, item.slug || item.id, 900, 560)}
+                        src={coverSrc(item.cover_url || item.cover_path, item.slug || item.id, 900, 560)}
+                        srcSet={item.cover_srcset || undefined}
+                        sizes="(max-width: 767px) 92vw, 33vw"
                         alt={item.title}
                         className="h-full w-full object-cover"
                         loading="lazy"

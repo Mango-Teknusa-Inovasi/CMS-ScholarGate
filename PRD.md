@@ -180,3 +180,8 @@ API:     /api/v1/*
 - Multi-school tenancy  
 
 Promote into §4 only when accepted by the product owner.
+
+
+## PPID module
+
+Built-in, toggleable PPID portal and staff workspace: manual DIP upload/version/publication, private attachments, dynamic versioned forms, public tracking, offline register, role assignments, survey reports, and protected archives. Storage follows the shared local/R2/S3 configuration. See [PPID operations](docs/PPID.md).

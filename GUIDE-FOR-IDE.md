@@ -88,3 +88,8 @@ Add unit tests for pure helpers (`SafeUrl`, settings whitelist, …) and feature
 - Links: `safeHref`
 - Admin destructive actions: modal + toast (no `window.confirm`)
 - Public UI: bento alignment (see `CLAUDE.md` §6)
+
+
+## PPID development
+
+PPID code is under app/Services/Ppid, app/Models/Ppid, app/Http/Controllers/Ppid and resources/js/pages/ppid. Its API is registered via routes/ppid.php. Never use public media URL helpers for private attachments. Run tests/Feature/Ppid when modifying permissions, form snapshots, workflow, or storage. See docs/PPID.md.

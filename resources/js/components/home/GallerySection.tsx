@@ -14,7 +14,7 @@ export function GallerySection({ items }: { items: GalleryItem[] }) {
       />
       <div className="grid grid-cols-2 gap-2.5 md:grid-cols-3 md:gap-3">
         {items.map((item, i) => {
-          const src = coverSrc(item.image_path, `gallery-${item.id || i}`, 800, 600)
+          const src = coverSrc(item.image_url || item.image_path, `gallery-${item.id || i}`, 800, 600)
           return (
             <figure
               key={item.id}
@@ -22,6 +22,8 @@ export function GallerySection({ items }: { items: GalleryItem[] }) {
             >
               <img
                 src={src}
+                srcSet={item.image_srcset || undefined}
+                sizes="(max-width: 767px) 90vw, 33vw"
                 alt={item.title || item.caption || `Galeri ${i + 1}`}
                 className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
                 loading="lazy"

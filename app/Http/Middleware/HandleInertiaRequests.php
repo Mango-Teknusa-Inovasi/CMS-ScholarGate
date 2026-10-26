@@ -2,7 +2,13 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Setting;
 use App\Models\User;
+use App\Services\BrandLogoService;
+use App\Services\Plugin\HookManager;
+use App\Services\Ppid\Access;
+use App\Services\Ppid\Settings;
+use App\Services\Theme\ThemeManager;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -46,16 +52,17 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn () => $request->session()->get('error'),
             ],
             'app' => [
-                'name' => \App\Models\Setting::getValue('site_name') ?: config('app.name', 'Portal Resmi'),
+                'name' => Setting::getValue('site_name') ?: config('app.name', 'Portal Resmi'),
                 'url' => config('app.url'),
-                'logo_url' => \App\Services\BrandLogoService::brandUrls()['logo'] ?? null,
-                'tagline' => \App\Models\Setting::getValue('site_tagline') ?: \App\Models\Setting::getValue('site_subtitle') ?: '',
-                'email' => \App\Models\Setting::getValue('contact_email') ?: \App\Models\Setting::getValue('site_email') ?: '',
-                'phone' => \App\Models\Setting::getValue('contact_phone') ?: \App\Models\Setting::getValue('site_phone') ?: '',
-                'address' => \App\Models\Setting::getValue('contact_address') ?: \App\Models\Setting::getValue('site_address') ?: '',
+                'logo_url' => BrandLogoService::brandUrls()['logo'] ?? null,
+                'tagline' => Setting::getValue('site_tagline') ?: Setting::getValue('site_subtitle') ?: '',
+                'email' => Setting::getValue('contact_email') ?: Setting::getValue('site_email') ?: '',
+                'phone' => Setting::getValue('contact_phone') ?: Setting::getValue('site_phone') ?: '',
+                'address' => Setting::getValue('contact_address') ?: Setting::getValue('site_address') ?: '',
             ],
-            'active_theme' => fn () => app(\App\Services\Theme\ThemeManager::class)->getActiveTheme(),
-            'hooks' => fn () => app(\App\Services\Plugin\HookManager::class)->getRegisteredHooks(),
+            'ppid_enabled' => fn () => Settings::get()['enabled'],
+            'active_theme' => fn () => app(ThemeManager::class)->getActiveTheme(),
+            'hooks' => fn () => app(HookManager::class)->getRegisteredHooks(),
         ];
     }
 
@@ -75,6 +82,7 @@ class HandleInertiaRequests extends Middleware
             'role' => $user->role,
             'gravatar_url' => $user->gravatar_url,
             'is_admin' => $user->isAdmin(),
+            'ppid_access' => Access::staff($user),
             'is_super_admin' => $user->isSuperAdmin(),
         ];
     }

@@ -5,6 +5,30 @@ All notable changes to **ScholarGate** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0] - 2026-10-26
+
+### Added
+- **Built-in PPID Module**:
+  - Public portal at `/ppid` and staff workspace at `/admin/ppid`, with activation, service, profile, working-day, deadline, and notification settings.
+  - Public Information Register (DIP) management with manual uploads, document links, physical availability, drafts, review, versioned publishing, and withdrawal.
+  - Versioned dynamic forms for information requests, objections, surveys, guest books, and visits; supports application tracking by register number and access code, as well as offline service records.
+  - PPID staff role assignments that do not require CMS administrator access, permission checks for endpoints and private files, and sensitive-access logging.
+  - PPID storage through the active media provider (local, R2, or S3), a private bucket for sensitive documents, separate public copies for published DIP documents, and encrypted PPID backups.
+  - Added module activation, operations, storage, backup, and testing documentation in `docs/PPID.md`.
+- **Responsive media**: WebP variants for public content images and the `media:generate-responsive-variants` command with a dry-run option.
+
+### Changed
+- The homepage now sends initial page data and SEO metadata through Inertia to reduce chained requests during initial load; API endpoints remain available.
+- Public content images use responsive `srcset` and sizing. Priority loading is limited to likely LCP images.
+- Onest fonts are served locally with `font-display: swap`, and page-level code splitting reduces the JavaScript sent initially to public pages.
+- Media storage consistently uses the selected provider, including when both S3 and R2 are configured.
+- Local Lighthouse measurements after these changes recorded median Performance scores of 75 (mobile) and 97 (desktop) on the default-theme homepage; these are not post-deployment production measurements.
+
+### Fixed
+- Anonymous visitors no longer trigger an `/auth/me` check when no legacy session token is present.
+- Improved category badge contrast and footer heading order for accessibility.
+- Stabilized the downloads page layout while content loads to reduce layout shifts.
+
 ## [2.4.0] - 2026-10-25
 
 ### Added

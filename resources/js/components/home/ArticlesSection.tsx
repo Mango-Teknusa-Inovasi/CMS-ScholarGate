@@ -26,7 +26,9 @@ export function ArticlesSection({ articles }: { articles: Article[] }) {
         >
           <div className="media-cover aspect-[16/10]">
             <img
-              src={coverSrc(featured.cover_path, featured.slug || featured.id, 1200, 750)}
+              src={coverSrc(featured.cover_url || featured.cover_path, featured.slug || featured.id, 1200, 750)}
+              srcSet={featured.cover_srcset || undefined}
+              sizes="(max-width: 767px) 92vw, 60vw"
               alt={featured.title}
               loading="lazy"
             />
@@ -62,7 +64,9 @@ export function ArticlesSection({ articles }: { articles: Article[] }) {
             >
               <div className="media-cover h-[88px] w-[112px] shrink-0 rounded-xl">
                 <img
-                  src={coverSrc(article.cover_path, article.slug || article.id, 320, 240)}
+                  src={coverSrc(article.cover_url || article.cover_path, article.slug || article.id, 320, 240)}
+                  srcSet={article.cover_srcset || undefined}
+                  sizes="(max-width: 767px) 92vw, 320px"
                   alt={article.title}
                   loading="lazy"
                   width={320}

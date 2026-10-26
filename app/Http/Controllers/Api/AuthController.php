@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\Ppid\Access;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -62,7 +64,7 @@ class AuthController extends Controller
             ]);
         }
 
-        if (! $user->isAdmin()) {
+        if (! $user->isAdmin() && ! Access::staff($user)) {
             throw ValidationException::withMessages([
                 'email' => ['Akun ini tidak punya akses admin CMS. Gunakan /login untuk member.'],
             ]);
@@ -158,7 +160,7 @@ class AuthController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
-            'email' => ['required', 'email', 'max:255', \Illuminate\Validation\Rule::unique('users', 'email')->ignore($user->id)],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
         ]);
 
         $user->update([
@@ -213,6 +215,7 @@ class AuthController extends Controller
             'role' => $user->role,
             'gravatar_url' => $user->gravatar_url,
             'is_admin' => $user->isAdmin(),
+            'ppid_access' => Access::staff($user),
             'is_super_admin' => $user->isSuperAdmin(),
         ];
     }

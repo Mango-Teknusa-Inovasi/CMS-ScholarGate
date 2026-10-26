@@ -157,7 +157,9 @@ export function AchievementDetailPage() {
             <div className="overflow-hidden rounded-[20px] border border-line bg-white shadow-[var(--shadow-card)]">
               <div className="media-cover aspect-[16/9] w-full bg-slate-100">
                 <img
-                  src={coverSrc(data.cover_path, data.slug || data.id, 1600, 900)}
+                  src={coverSrc(data.cover_url || data.cover_path, data.slug || data.id, 1600, 900)}
+                  srcSet={data.cover_srcset || undefined}
+                  sizes="(max-width: 767px) 100vw, 70vw"
                   alt={data.title}
                   className="h-full w-full object-cover"
                   loading="eager"
@@ -223,7 +225,7 @@ export function AchievementDetailPage() {
                     >
                       <div className="relative aspect-[4/3] w-20 shrink-0 overflow-hidden rounded-xl bg-amber-100/50 border border-line/60">
                         <img
-                          src={coverSrc(item.cover_path, item.slug || item.id, 240, 180)}
+                          src={coverSrc(item.cover_url || item.cover_path, item.slug || item.id, 240, 180)}
                           alt=""
                           className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                           loading="lazy"
@@ -287,7 +289,7 @@ export function AchievementDetailPage() {
                     >
                       <div className="relative aspect-[4/3] w-20 shrink-0 overflow-hidden rounded-xl bg-sky-100/50 border border-line/60">
                         <img
-                          src={coverSrc(art.cover_path, art.slug || art.id, 240, 180)}
+                          src={coverSrc(art.cover_url || art.cover_path, art.slug || art.id, 240, 180)}
                           alt=""
                           className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                           loading="lazy"

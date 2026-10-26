@@ -107,6 +107,7 @@ const navGroups: NavGroup[] = [
     items: [
       { to: '/admin/users', label: 'Pengguna', icon: UserCog },
       { to: '/admin/themes', label: 'Tema & Layout', icon: Palette },
+      { to: '/admin/ppid', label: 'PPID', icon: FileText },
       { to: '/admin/plugins', label: 'Plugin & Add-on', icon: Puzzle },
       { to: '/admin/settings', label: 'Pengaturan', icon: Settings },
       { to: '/admin/backups', label: 'Cadangan', icon: DatabaseBackup },
