@@ -1,0 +1,1 @@
+import{i as e}from"./vendor-react-CymN2coT.js";import{n as t}from"./vendor-query-BA6UyfQq.js";import{t as n}from"./api-BHeqfBaJ.js";function r(){let r=``;try{r=(e().props?.app?.name||``).trim()}catch{}let{data:i}=t({queryKey:[`settings`],queryFn:async()=>(await n.get(`/settings/public`)).data,staleTime:6e4});return i?.site_name?.trim()||r||`Portal Resmi`}export{r as t};

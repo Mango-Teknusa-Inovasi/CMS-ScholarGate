@@ -1,1 +1,0 @@
-import{p as e}from"./vendor-motion-9VQ07f1O.js";import{A as t,a as n,r}from"./app-Cu4_PTdC.js";var i=e();function a({html:e,plainFallback:a=!1,className:o,as:s=`div`}){let c=a?r(e):n(e);return c?(0,i.jsx)(s,{className:t(o),dangerouslySetInnerHTML:{__html:c}}):null}export{a as t};

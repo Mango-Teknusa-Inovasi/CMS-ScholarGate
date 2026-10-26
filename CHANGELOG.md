@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Onest fonts are served locally with `font-display: swap`, and page-level code splitting reduces the JavaScript sent initially to public pages.
 - Media storage consistently uses the selected provider, including when both S3 and R2 are configured.
 - Local Lighthouse measurements after these changes recorded median Performance scores of 75 (mobile) and 97 (desktop) on the default-theme homepage; these are not post-deployment production measurements.
+- Consolidated and upgraded core dependencies across backend and frontend based on security & Dependabot recommendations: Laravel Framework 13.38, Inertia Laravel 3.5.2, HTMLPurifier 4.19.1, @inertiajs/react 3.9.1, React Hook Form 7.90.0, Motion 14.6.0, TanStack React Query 5.104.5, Tiptap 3.32.0, Lucide React 1.61.0, Tailwind Merge 3.7.0, and @types/node 26.6.5 with zero audit vulnerabilities.
 
 ### Fixed
 - Anonymous visitors no longer trigger an `/auth/me` check when no legacy session token is present.
